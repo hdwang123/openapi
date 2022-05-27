@@ -8,7 +8,7 @@
     <artifactId>openapi</artifactId>
     <packaging>pom</packaging>
     <version>1.0.0</version>
-    <description>To introduce classes in the Java project POM</description>
+    <description>一个能够让您快速搭建开放api的sdk</description>
     <url>https://github.com/hdwang123/openapi</url>
     <!-- 许可证信息 -->
     <licenses>
@@ -52,7 +52,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>2.3.12.RELEASE</version>
+        <version>2.7.0</version>
         <relativePath/>
     </parent>
 
