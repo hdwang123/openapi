@@ -33,9 +33,9 @@ cn.hutool.hutool-all
 
 ````
 <dependency>
-    <groupId>openapi</groupId>
+    <groupId>io.github.hdwang123</groupId>
     <artifactId>openapi-server-sdk</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.0.0</version>
 </dependency>
 ````
 
@@ -117,9 +117,9 @@ public class UserApi {
 
 ````
 <dependency>
-    <groupId>openapi</groupId>
+    <groupId>io.github.hdwang123</groupId>
     <artifactId>openapi-client-sdk</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.0.0</version>
 </dependency>
 ````
 
