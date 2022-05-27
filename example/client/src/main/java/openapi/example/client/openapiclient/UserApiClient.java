@@ -16,7 +16,6 @@ import java.util.UUID;
 
 /**
  * @author wanghuidong
- * @date 2022/5/26 21:59
  */
 @Slf4j
 @Component

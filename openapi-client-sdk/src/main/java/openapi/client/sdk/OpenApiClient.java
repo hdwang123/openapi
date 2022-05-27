@@ -25,7 +25,6 @@ import static openapi.sdk.common.util.Base64Util.bytesToBase64;
  * 对外开放api客户端
  *
  * @author wanghuidong
- * @date 2022/5/26 18:08
  */
 @Slf4j
 public class OpenApiClient {

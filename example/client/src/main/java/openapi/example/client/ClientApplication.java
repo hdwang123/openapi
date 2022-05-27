@@ -11,7 +11,6 @@ import org.springframework.context.ConfigurableApplicationContext;
  * 项目启动
  *
  * @author wanghuidong
- * @date 2022/5/26 19:39
  */
 @Slf4j
 @SpringBootApplication

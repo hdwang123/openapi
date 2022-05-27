@@ -8,7 +8,6 @@ import lombok.Data;
  * openapi入参
  *
  * @author wanghuidong
- * @date 2022/5/26 15:09
  */
 @Data
 public class InParams {

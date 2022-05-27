@@ -9,7 +9,6 @@ import org.springframework.stereotype.Component;
  * openapi的配置信息
  *
  * @author wanghuidong
- * @date 2022/5/26 19:46
  */
 @Component
 public class OpenApiConfigImpl implements OpenApiConfig {

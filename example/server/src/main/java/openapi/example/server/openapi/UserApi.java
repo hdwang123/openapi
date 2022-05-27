@@ -13,7 +13,6 @@ import java.util.List;
  * 对外开放的接口：用户api
  *
  * @author wanghuidong
- * @date 2022/5/26 19:43
  */
 @Slf4j
 @OpenApi("userApi")

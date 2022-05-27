@@ -11,7 +11,6 @@ import java.lang.annotation.Target;
  * 开放api注解，标识一个开放api
  *
  * @author wanghuidong
- * @date 2022/5/26 15:20
  */
 @Component
 @Retention(RetentionPolicy.RUNTIME)

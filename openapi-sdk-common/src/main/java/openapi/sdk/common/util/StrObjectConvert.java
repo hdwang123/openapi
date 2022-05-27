@@ -1,8 +1,6 @@
 package openapi.sdk.common.util;
 
-import cn.hutool.json.JSONArray;
 import cn.hutool.json.JSONUtil;
-import com.sun.org.apache.xpath.internal.operations.Bool;
 import openapi.sdk.common.model.BusinessException;
 
 import java.util.Collection;
@@ -12,7 +10,6 @@ import java.util.List;
  * 字符串对象转换工具类
  *
  * @author wanghuidong
- * @date 2022/5/26 23:02
  */
 public class StrObjectConvert {
 

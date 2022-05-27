@@ -7,7 +7,6 @@ import lombok.Data;
  * openapi出参
  *
  * @author wanghuidong
- * @date 2022/5/26 14:56
  */
 @Data
 public class OutParams<T> {

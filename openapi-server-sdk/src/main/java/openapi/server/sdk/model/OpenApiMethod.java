@@ -10,7 +10,6 @@ import java.lang.annotation.Target;
  * 注：目前仅支持一个参数的方法，参数类型可以是基本类型、字符串、javabean、List等
  *
  * @author wanghuidong
- * @date 2022/5/26 15:20
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(value = {ElementType.METHOD})

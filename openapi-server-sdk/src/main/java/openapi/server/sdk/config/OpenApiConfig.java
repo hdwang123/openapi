@@ -7,7 +7,6 @@ import openapi.sdk.common.model.AsymmetricCryEnum;
  * 开放api配置类接口，由引入者去实现
  *
  * @author wanghuidong
- * @date 2022/5/26 16:53
  */
 public interface OpenApiConfig {
 

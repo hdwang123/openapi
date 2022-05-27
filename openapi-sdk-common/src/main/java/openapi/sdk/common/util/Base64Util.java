@@ -5,7 +5,6 @@ import java.util.Base64;
 
 /**
  * @author wanghuidong
- * @date 2022/5/26 18:39
  */
 public class Base64Util {
 

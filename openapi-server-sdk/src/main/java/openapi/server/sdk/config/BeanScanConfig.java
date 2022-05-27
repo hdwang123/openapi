@@ -9,7 +9,6 @@ import org.springframework.core.env.Environment;
 
 /**
  * @author wanghuidong
- * @date 2022/5/27 8:59
  */
 @ComponentScans(value =
         {@ComponentScan(value = "openapi.server.sdk")})

@@ -7,7 +7,6 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  * 项目启动
  *
  * @author wanghuidong
- * @date 2022/5/26 19:39
  */
 @SpringBootApplication(scanBasePackages = "openapi.example.server")
 public class ServerApplication {
