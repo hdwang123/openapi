@@ -116,15 +116,15 @@ public class OpenApiClient {
     private OutParams doCall(InParams inParams) {
         String url = URLUtil.completeUrl(baseUrl, Constant.OPENAPI_PATH);
         String body = JSONUtil.toJsonStr(inParams);
-        log.info("调用openapi入参:" + inParams);
+        log.debug("调用openapi入参:" + inParams);
         String ret = HttpUtil.post(url, body);
-        log.info("调用openapi返回值：" + ret);
+        log.debug("调用openapi返回值：" + ret);
         if (StrUtil.isBlank(ret)) {
             throw new BusinessException("返回值为空");
         }
         OutParams outParams = JSONUtil.toBean(ret, OutParams.class);
         if (OutParams.isSuccess(outParams)) {
-            log.info("调用openapi成功");
+            log.debug("调用openapi成功");
             //判断是否需要解密数据
             if (retDecrypt) {
                 decryptData(outParams);

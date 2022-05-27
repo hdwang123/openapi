@@ -11,9 +11,8 @@
     <modules>
         <module>openapi-server-sdk</module>
         <module>openapi-client-sdk</module>
-        <module>server</module>
-        <module>client</module>
         <module>openapi-sdk-common</module>
+        <module>example</module>
     </modules>
 
     <properties>

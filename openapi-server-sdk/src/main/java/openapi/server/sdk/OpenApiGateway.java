@@ -4,8 +4,10 @@ import cn.hutool.core.util.*;
 import cn.hutool.crypto.SecureUtil;
 import cn.hutool.crypto.SmUtil;
 import cn.hutool.crypto.asymmetric.*;
-import cn.hutool.json.JSONUtil;
 import lombok.extern.slf4j.Slf4j;
+import openapi.server.sdk.model.ApiHandler;
+import openapi.server.sdk.model.OpenApi;
+import openapi.server.sdk.model.OpenApiMethod;
 import openapi.sdk.common.constant.Constant;
 import openapi.sdk.common.model.AsymmetricCryEnum;
 import openapi.sdk.common.model.BusinessException;
@@ -14,7 +16,6 @@ import openapi.sdk.common.model.OutParams;
 import openapi.sdk.common.util.Base64Util;
 import openapi.sdk.common.util.StrObjectConvert;
 import openapi.server.sdk.config.OpenApiConfig;
-import openapi.server.sdk.model.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -105,7 +106,7 @@ public class OpenApiGateway {
     public OutParams callMethod(@RequestBody InParams inParams) {
         OutParams outParams = null;
         try {
-            log.info("接收到请求：" + inParams);
+            log.debug("接收到请求：" + inParams);
 
             //获取openapi处理器
             ApiHandler apiHandler = getApiHandler(inParams);
@@ -123,7 +124,7 @@ public class OpenApiGateway {
             return outParams = OutParams.error("系统异常");
         } finally {
             outParams.setUuid(inParams.getUuid());
-            log.info("调用完毕：" + outParams);
+            log.debug("调用完毕：" + outParams);
         }
     }
 
