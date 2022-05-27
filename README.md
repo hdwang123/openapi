@@ -11,9 +11,9 @@
 
 spring-boot
 
-## 依赖包
+## 主要依赖包
 
-cn.hutool.hutool-all、 org.projectlombok.lombok、 org.bouncycastle.bcprov-jdk15to18、 org.slf4j.slf4j-api ......
+cn.hutool.hutool-all
 
 ## 功能
 
