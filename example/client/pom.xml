@@ -20,7 +20,7 @@
     </properties>
 
     <dependencies>
-        <!-- openapi服务端sdk -->
+        <!-- openapi客户端sdk -->
         <dependency>
             <groupId>openapi</groupId>
             <artifactId>openapi-client-sdk</artifactId>
