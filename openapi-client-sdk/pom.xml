@@ -19,7 +19,7 @@
     <dependencies>
         <!-- openapi sdk 基础包 -->
         <dependency>
-            <groupId>openapi</groupId>
+            <groupId>io.github.hdwang123</groupId>
             <artifactId>openapi-sdk-common</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>

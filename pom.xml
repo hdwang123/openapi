@@ -8,6 +8,39 @@
     <artifactId>openapi</artifactId>
     <packaging>pom</packaging>
     <version>1.0-SNAPSHOT</version>
+    <!--    正式版本-->
+    <!--    <version>1.0-RELEASE</version>-->
+    <description>To introduce classes in the Java project POM</description>
+    <url>https://github.com/hdwang123/openapi</url>
+    <!-- 许可证信息 -->
+    <licenses>
+        <!-- Apache许可证 -->
+        <!--        <license>-->
+        <!--            <name>The Apache Software License, Version 2.0</name>-->
+        <!--            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>-->
+        <!--        </license>-->
+        <!-- MIT许可证 -->
+        <license>
+            <name>MIT License</name>
+            <url>http://www.opensource.org/licenses/mit-license.php</url>
+        </license>
+    </licenses>
+
+    <!-- SCM信息 ->  -->
+    <scm>
+        <connection>scm:git:git://github.com/hdwang123/openapi.git</connection>
+        <developerConnection>scm:git:ssh://github.com/hdwang123/openapi.git</developerConnection>
+        <url>https://github.com/hdwang123/openapi.git</url>
+    </scm>
+    <!-- 开发者信息 -->
+    <developers>
+        <developer>
+            <name>hdwang123</name>
+            <email>1182583214@qq.com</email>
+            <url>https://github.com/hdwang123</url>
+        </developer>
+    </developers>
+
     <modules>
         <module>openapi-server-sdk</module>
         <module>openapi-client-sdk</module>
@@ -105,7 +138,7 @@
                     </execution>
                 </executions>
             </plugin>
-<!--            &lt;!&ndash;  必须配置GPG插件用于使用以下配置对组件进行签名 &ndash;&gt;-->
+            <!--  必须配置GPG插件用于使用以下配置对组件进行签名 -->
 <!--            <plugin>-->
 <!--                <groupId>org.apache.maven.plugins</groupId>-->
 <!--                <artifactId>maven-gpg-plugin</artifactId>-->

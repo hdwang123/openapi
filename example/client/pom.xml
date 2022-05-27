@@ -3,13 +3,13 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
-        <artifactId>example</artifactId>
+        <artifactId>openapi-example</artifactId>
         <groupId>io.github.hdwang123</groupId>
         <version>1.0-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>client</artifactId>
+    <artifactId>openapi-client</artifactId>
 
     <properties>
         <maven.compiler.source>8</maven.compiler.source>
@@ -22,7 +22,7 @@
     <dependencies>
         <!-- openapi客户端sdk -->
         <dependency>
-            <groupId>openapi</groupId>
+            <groupId>io.github.hdwang123</groupId>
             <artifactId>openapi-client-sdk</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>
@@ -69,18 +69,4 @@
             <artifactId>junit</artifactId>
         </dependency>
     </dependencies>
-
-
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-deploy-plugin</artifactId>
-                <configuration>
-                    <skip>true</skip>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
-
 </project>
