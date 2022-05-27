@@ -3,23 +3,34 @@
 ## 致力于提供一个能够快速搭建开放api的sdk
 
 ## 背景
-对外服务的接口为了安全起见，往往需要进行相应的安全处理：数据加密传输和身份认证。
-数据加密传输有对称加密和非对称加密两种，为了更加安全起见采用非对称加密比较好些，身份认证则采用数字签名可以实现。
+
+对外服务的接口为了安全起见，往往需要进行相应的安全处理：数据加密传输和身份认证。 数据加密传输有对称加密和非对称加密两种，为了更加安全起见采用非对称加密比较好些，身份认证则采用数字签名可以实现。
 开发此sdk就是为了能够快速地实现项目中api的安全开放。
 
 ## 基于框架
+
 spring-boot
 
 ## 依赖包
-cn.hutool.hutool-all
-org.projectlombok.lombok
-org.bouncycastle.bcprov-jdk15to18
-org.slf4j.slf4j-api
-......
+
+cn.hutool.hutool-all、 org.projectlombok.lombok、 org.bouncycastle.bcprov-jdk15to18、 org.slf4j.slf4j-api ......
+
+## 功能
+
+1.负责对外开放接口（基于HTTP对外提供服务）  
+2.实现接口的参数与返回值的加解密（使用RSA或国密SM2实现非对称加解密）  
+3.实现接口的验签（服务端会校验客户端的签名，确保调用者身份以及数据不被篡改）
+
+## 注意实现
+
+目前OpenApiMethod仅支持单参数
 
 ## 使用方法
+
 ### 服务端
+
 1.引入openapi-server-sdk
+
 ````
 <dependency>
     <groupId>openapi</groupId>
@@ -27,7 +38,9 @@ org.slf4j.slf4j-api
     <version>1.0-SNAPSHOT</version>
 </dependency>
 ````
+
 2.实现OpenApiConfig接口进行配置
+
 ````
 @Component
 public class OpenApiConfigImpl implements OpenApiConfig {
@@ -63,7 +76,9 @@ public class OpenApiConfigImpl implements OpenApiConfig {
     }
 }
 ````
+
 3.自定义开放API
+
 ````
 /**
 * 对外开放的接口：用户api
@@ -124,7 +139,9 @@ public class OpenApiConfigImpl implements OpenApiConfig {
 ````
 
 ### 客户端
+
 1.引入openapi-client-sdk
+
 ````
 <dependency>
     <groupId>openapi</groupId>
@@ -132,7 +149,9 @@ public class OpenApiConfigImpl implements OpenApiConfig {
     <version>1.0-SNAPSHOT</version>
 </dependency>
 ````
+
 2.调用openapi
+
 ````
 @Slf4j
 @Component
@@ -234,7 +253,9 @@ public class UserApiClient {
 ````
 
 ## 运行效果
+
 ### 客户端
+
 ````
 2022-05-27 09:50:02 [main] INFO  o.e.c.o.UserApiClient - [getUserById,44] - 入参：{"method":"getUserById","body":"10001","uuid":"491266bc-8ce7-4276-a017-f3dca0cda2f1","callerId":"001","api":"userApi"}
 2022-05-27 09:50:03 [main] DEBUG o.c.s.OpenApiClient - [doCall,119] - 调用openapi入参:{"method":"getUserById","sign":"EIp6piiN367IHsh/HLTGiJMfXix1P/3O9KB8K2ZYTl0GLXFENTNKSF/U8tEPqV4FTBdE5nFZMCcKSDVGwjBjUcudOgJlgk5EwsLv8rfdWn5DDr4UyowHY5MFaOVtskGmdmVNOUAyO+NtTZmtAkw6MJoPbY5UiJfDrWsWKyeUlN8=","body":"aNMNlmvV3O6pfdDyi09Wagfbd7oKlfQUNIJTtr+t9u3q+RzPHmO/8L/jfRGQnHb6hz4onps6+0cGexkshPjuZzNTnMFGBxtnb4hzXoxCSR3UHH/6FIt/Ha7k50D3Js2pjpuqzlkLKGmcfee2dy+h9zygniTGQ1gqU/t6+vB+O6o=","uuid":"491266bc-8ce7-4276-a017-f3dca0cda2f1","callerId":"001","api":"userApi"}
@@ -252,7 +273,9 @@ public class UserApiClient {
 2022-05-27 09:50:04 [main] DEBUG o.c.s.OpenApiClient - [doCall,127] - 调用openapi成功
 2022-05-27 09:50:04 [main] INFO  o.e.c.o.UserApiClient - [listUsers,90] - 返回值：{"code":200,"data":"[{\"name\":\"李四\",\"id\":2},{\"name\":\"王五\",\"id\":3}]","uuid":"e67fe69b-e1fe-4ee8-b885-d801ea0bdf9d"}
 ````
+
 ### 服务端
+
 ````
 2022-05-27 09:50:03 [http-nio-8080-exec-1] INFO  o.a.c.c.C.[.[.[/] - [log,173] - Initializing Spring DispatcherServlet 'dispatcherServlet'
 2022-05-27 09:50:03 [http-nio-8080-exec-1] INFO  o.s.w.s.DispatcherServlet - [initServletBean,525] - Initializing Servlet 'dispatcherServlet'
