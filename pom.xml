@@ -7,18 +7,11 @@
     <groupId>io.github.hdwang123</groupId>
     <artifactId>openapi</artifactId>
     <packaging>pom</packaging>
-    <version>1.0-SNAPSHOT</version>
-    <!--    正式版本-->
-    <!--    <version>1.0-RELEASE</version>-->
+    <version>1.0.0</version>
     <description>To introduce classes in the Java project POM</description>
     <url>https://github.com/hdwang123/openapi</url>
     <!-- 许可证信息 -->
     <licenses>
-        <!-- Apache许可证 -->
-        <!--        <license>-->
-        <!--            <name>The Apache Software License, Version 2.0</name>-->
-        <!--            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>-->
-        <!--        </license>-->
         <!-- MIT许可证 -->
         <license>
             <name>MIT License</name>
@@ -28,9 +21,9 @@
 
     <!-- SCM信息 ->  -->
     <scm>
-        <connection>scm:git:git://github.com/hdwang123/openapi.git</connection>
-        <developerConnection>scm:git:ssh://github.com/hdwang123/openapi.git</developerConnection>
-        <url>https://github.com/hdwang123/openapi.git</url>
+        <connection>https://github.com/hdwang123/openapi.git</connection>
+        <developerConnection>https://github.com/hdwang123/openapi.git</developerConnection>
+        <url>https://github.com/hdwang123/openapi</url>
     </scm>
     <!-- 开发者信息 -->
     <developers>
@@ -45,7 +38,7 @@
         <module>openapi-server-sdk</module>
         <module>openapi-client-sdk</module>
         <module>openapi-sdk-common</module>
-        <module>example</module>
+        <module>openapi-example</module>
     </modules>
 
     <properties>
@@ -92,68 +85,65 @@
         </dependencies>
     </dependencyManagement>
 
+    <!-- 部署配置 -->
     <distributionManagement>
         <snapshotRepository>
             <id>ossrh</id>
             <url>https://s01.oss.sonatype.org/content/repositories/snapshots</url>
         </snapshotRepository>
+        <repository>
+            <id>ossrh</id>
+            <url>https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+        </repository>
     </distributionManagement>
 
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.sonatype.plugins</groupId>
-                <artifactId>nexus-staging-maven-plugin</artifactId>
-                <version>1.6.7</version>
-                <extensions>true</extensions>
-                <configuration>
-                    <serverId>ossrh</serverId>
-                    <nexusUrl>https://s01.oss.sonatype.org/</nexusUrl>
-                    <autoReleaseAfterClose>true</autoReleaseAfterClose>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-source-plugin</artifactId>
-                <version>2.2.1</version>
-                <executions>
-                    <execution>
-                        <id>attach-sources</id>
-                        <goals>
-                            <goal>jar-no-fork</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-javadoc-plugin</artifactId>
-                <version>2.9.1</version>
-                <executions>
-                    <execution>
-                        <id>attach-javadocs</id>
-                        <goals>
-                            <goal>jar</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <!--  必须配置GPG插件用于使用以下配置对组件进行签名 -->
-<!--            <plugin>-->
-<!--                <groupId>org.apache.maven.plugins</groupId>-->
-<!--                <artifactId>maven-gpg-plugin</artifactId>-->
-<!--                <version>1.5</version>-->
-<!--                <executions>-->
-<!--                    <execution>-->
-<!--                        <id>sign-artifacts</id>-->
-<!--                        <phase>verify</phase>-->
-<!--                        <goals>-->
-<!--                            <goal>sign</goal>-->
-<!--                        </goals>-->
-<!--                    </execution>-->
-<!--                </executions>-->
-<!--            </plugin>-->
-        </plugins>
-    </build>
-
+    <profiles>
+        <profile>
+            <id>release</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-source-plugin</artifactId>
+                        <version>2.2.1</version>
+                        <executions>
+                            <execution>
+                                <id>attach-sources</id>
+                                <goals>
+                                    <goal>jar-no-fork</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-javadoc-plugin</artifactId>
+                        <version>2.9.1</version>
+                        <executions>
+                            <execution>
+                                <id>attach-javadocs</id>
+                                <goals>
+                                    <goal>jar</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <version>3.0.1</version>
+                        <executions>
+                            <execution>
+                                <id>sign-artifacts</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>sign</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>
