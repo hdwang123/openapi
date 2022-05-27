@@ -20,7 +20,7 @@ public @interface OpenApi {
     /**
      * 开放api名称，可以与bean名不同
      *
-     * @return
+     * @return 开放api名称
      */
     String value() default "";
 }

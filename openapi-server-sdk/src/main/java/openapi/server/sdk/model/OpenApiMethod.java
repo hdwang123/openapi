@@ -18,7 +18,7 @@ public @interface OpenApiMethod {
     /**
      * 开放api方法名称，可以与方法名不同
      *
-     * @return
+     * @return 开放api方法名称
      */
     String value() default "";
 }

@@ -34,8 +34,8 @@ public class OutParams<T> {
     /**
      * 调用成功的结果
      *
-     * @param data
-     * @return
+     * @param data 数据
+     * @return 输出参数
      */
     public static OutParams success(String data) {
         OutParams outParams = new OutParams();
@@ -47,8 +47,8 @@ public class OutParams<T> {
     /**
      * 调用失败的结果
      *
-     * @param message
-     * @return
+     * @param message 错误消息
+     * @return 输出参数
      */
     public static OutParams error(String message) {
         OutParams outParams = new OutParams();

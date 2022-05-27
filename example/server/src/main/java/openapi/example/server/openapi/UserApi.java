@@ -33,12 +33,24 @@ public class UserApi {
         return user;
     }
 
+    /**
+     * 新增用户
+     *
+     * @param user 用户信息
+     * @return 是否成功
+     */
     @OpenApiMethod("saveUser")
     public Boolean saveUser(User user) {
         log.info("saveUser:" + JSONUtil.toJsonStr(user));
         return true;
     }
 
+    /**
+     * 列出指定用户列表
+     *
+     * @param ids 用户ID列表
+     * @return 用户列表
+     */
     @OpenApiMethod("listUsers")
     public List<User> listUsers(List<Long> ids) {
         log.info("listUsers: ids=" + ids);
@@ -51,8 +63,8 @@ public class UserApi {
     /**
      * 暂不支持该类型的参数
      *
-     * @param ids
-     * @return
+     * @param ids 用户ID数据
+     * @return 用户列表
      */
     @OpenApiMethod("listUsers2")
     public List<User> listUsers2(Long[] ids) {
