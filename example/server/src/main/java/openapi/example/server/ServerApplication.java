@@ -9,7 +9,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  * @author wanghuidong
  * @date 2022/5/26 19:39
  */
-@SpringBootApplication(scanBasePackages = "openapi")
+@SpringBootApplication(scanBasePackages = "openapi.example.server")
 public class ServerApplication {
 
     public static void main(String[] args) {
