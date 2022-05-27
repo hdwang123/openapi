@@ -80,44 +80,32 @@ public class OpenApiConfigImpl implements OpenApiConfig {
 3.自定义开放API
 
 ````
-/**
-* 对外开放的接口：用户api
-*
-* @author wanghuidong
-* @date 2022/5/26 19:43
-  */
-  @Slf4j
-  @OpenApi("userApi")
-  public class UserApi {
+@Slf4j
+@OpenApi("userApi")
+public class UserApi {
 
-  /**
-    * 根据用户ID查询用户信息
-    *
-    * @param id 用户ID
-    * @return 用户信息
-      */
-      @OpenApiMethod("getUserById")
-      public User getUserById(Long id) {
+  @OpenApiMethod("getUserById")
+  public User getUserById(Long id) {
       log.info("getUserById：id=" + id);
       User user = new User();
       user.setId(1L);
       user.setName("张三");
       return user;
-      }
+  }
 
   @OpenApiMethod("saveUser")
   public Boolean saveUser(User user) {
-  log.info("saveUser:" + JSONUtil.toJsonStr(user));
-  return true;
+      log.info("saveUser:" + JSONUtil.toJsonStr(user));
+      return true;
   }
 
   @OpenApiMethod("listUsers")
   public List<User> listUsers(List<Long> ids) {
-  log.info("listUsers: ids=" + ids);
-  List<User> users = new ArrayList<>();
-  users.add(new User(2L, "李四"));
-  users.add(new User(3L, "王五"));
-  return users;
+      log.info("listUsers: ids=" + ids);
+      List<User> users = new ArrayList<>();
+      users.add(new User(2L, "李四"));
+      users.add(new User(3L, "王五"));
+      return users;
   }
 
 }
