@@ -4,7 +4,6 @@ package openapi.sdk.common.model;
  * 对称加密算法
  *
  * @author wanghuidong
- * @date 2022/5/28 16:52
  */
 public enum SymmetricCryEnum {
 
