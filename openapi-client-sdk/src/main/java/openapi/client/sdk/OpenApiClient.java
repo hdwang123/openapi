@@ -232,7 +232,7 @@ public class OpenApiClient {
         String decryptedData = null;
         try {
             if (enableSymmetricCry) {
-                log.debug("启用对称加密，采用非对称加密{}+对称加密{}模式",asymmetricCryEnum, symmetricCryEnum);
+                log.debug("启用对称加密，采用非对称加密{}+对称加密{}模式", asymmetricCryEnum, symmetricCryEnum);
                 String key = asymmetricDeCry(outParams.getSymmetricCryKey());
                 byte[] keyBytes = Base64Util.base64ToBytes(key);
                 decryptedData = symmetricDeCry(outParams.getData(), keyBytes);

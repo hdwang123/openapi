@@ -1,12 +1,9 @@
 package openapi.sdk.common.util;
 
 import cn.hutool.crypto.KeyUtil;
-import cn.hutool.crypto.SecureUtil;
-import cn.hutool.crypto.symmetric.SymmetricAlgorithm;
 import openapi.sdk.common.model.SymmetricCryEnum;
 
 import javax.crypto.SecretKey;
-import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
 import java.util.UUID;
 
@@ -14,13 +11,13 @@ import java.util.UUID;
  * 对称加密工具类
  *
  * @author wanghuidong
- * @date 2022/5/28 19:18
  */
 public class SymmetricCryUtil {
 
     /**
      * 获取一个对称加密密钥
      *
+     * @param symmetricCryEnum 对称加密算法
      * @return 对称加密密钥
      */
     public static byte[] getKey(SymmetricCryEnum symmetricCryEnum) {
