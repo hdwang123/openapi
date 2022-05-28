@@ -231,4 +231,12 @@ public class UserApiClient {
 2022-05-27 09:50:04 [http-nio-8080-exec-3] DEBUG o.s.s.OpenApiGateway - [callMethod,127] - 调用完毕：{"code":200,"data":"lfkznguWD1lAhR2S81ZcfvUd0tWgvkwZvCGn3sGMlIcg78Nv0L+NVy2lky3Zd/vHlIxspcXk3+DQmkmCWUtAP8qM7D2j+MR1WFtuKiOYV9Ee683CtNqDUoI7rxB/E6pzLDbpXqhMKnhe94Gxyg7mNnjne+MX+p19QaVzHBl/ilY=","uuid":"e67fe69b-e1fe-4ee8-b885-d801ea0bdf9d"}
 ````
 
+## 版本记录
+
+1.0.0  
+初版，支持非对称加解密(RSA或SM2)和接口验签功能   
+
+1.1.0  
+新增对称加密模式(AES或SM4)，即：内容采用对称加密以提高加解密速度，对称加密的密钥用非对称加密后传输
+
 
