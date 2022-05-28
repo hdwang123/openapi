@@ -15,11 +15,9 @@ import lombok.extern.slf4j.Slf4j;
 import openapi.sdk.common.constant.Constant;
 import openapi.sdk.common.model.*;
 import openapi.sdk.common.util.Base64Util;
+import openapi.sdk.common.util.SymmetricCryUtil;
 
 import java.nio.charset.StandardCharsets;
-import java.util.UUID;
-
-import static openapi.sdk.common.util.Base64Util.bytesToBase64;
 
 /**
  * 对外开放api客户端
@@ -29,12 +27,39 @@ import static openapi.sdk.common.util.Base64Util.bytesToBase64;
 @Slf4j
 public class OpenApiClient {
 
+    /**
+     * openapi基础路径,例如(http://localhost)
+     */
     private String baseUrl;
+
+    /**
+     * 本系统私钥
+     */
     private String selfPrivateKey;
+
+    /**
+     * 远程系统的公钥
+     */
     private String remotePublicKey;
+
+    /**
+     * 非对称加密算法
+     */
     private AsymmetricCryEnum asymmetricCryEnum;
+
+    /**
+     * 返回值是否需要解密
+     */
     private boolean retDecrypt;
+
+    /**
+     * 是否启用对称加密(内容采用对称加密，对称加密密钥采用非对称加密)
+     */
     private boolean enableSymmetricCry;
+
+    /**
+     * 对称加密算法
+     */
     private SymmetricCryEnum symmetricCryEnum;
 
     /**
@@ -70,7 +95,7 @@ public class OpenApiClient {
      * @param retDecrypt        返回值是否需要解密
      */
     public OpenApiClient(String baseUrl, String selfPrivateKey, String remotePublicKey, AsymmetricCryEnum asymmetricCryEnum, boolean retDecrypt) {
-        this(baseUrl, selfPrivateKey, remotePublicKey, asymmetricCryEnum, retDecrypt, false, null);
+        this(baseUrl, selfPrivateKey, remotePublicKey, asymmetricCryEnum, retDecrypt, false, SymmetricCryEnum.AES);
     }
 
     /**
@@ -81,7 +106,7 @@ public class OpenApiClient {
      * @param remotePublicKey    远程系统的公钥
      * @param asymmetricCryEnum  非对称加密算法
      * @param retDecrypt         返回值是否需要解密
-     * @param enableSymmetricCry 是否启用对称加密
+     * @param enableSymmetricCry 是否启用对称加密(内容采用对称加密，对称加密密钥采用非对称加密)
      * @param symmetricCryEnum   对称加密算法
      */
     public OpenApiClient(String baseUrl, String selfPrivateKey, String remotePublicKey, AsymmetricCryEnum asymmetricCryEnum, boolean retDecrypt, boolean enableSymmetricCry, SymmetricCryEnum symmetricCryEnum) {
@@ -120,10 +145,13 @@ public class OpenApiClient {
             //加密
             if (this.enableSymmetricCry) {
                 //启用对称加密，则内容采用对称加密，需先生成对称密钥，密钥采用非对称加密后传输
+                log.debug("启用对称加密，采用非对称加密+对称加密模式");
 
                 //生成对称密钥key
-                String key = UUID.randomUUID().toString();
-                byte[] keyBytes = key.getBytes(StandardCharsets.UTF_8);
+                byte[] keyBytes = SymmetricCryUtil.getKey(symmetricCryEnum);
+
+                //转成base64不会有问题，如果采用new String("utf-8"),再转回来字节数会变大
+                String key = Base64Util.bytesToBase64(keyBytes);
 
                 //对key使用非对称加密
                 inParams.setSymmetricCryKey(asymmetricCry(key));
@@ -131,6 +159,7 @@ public class OpenApiClient {
                 //对内容进行对称加密
                 body = symmetricCry(body, keyBytes);
             } else {
+                log.debug("未启用对称加密，仅采用非对称加密模式");
                 //仅采用非对称加密
                 body = asymmetricCry(body);
             }
@@ -154,7 +183,7 @@ public class OpenApiClient {
             //签名
             byte[] data = content.getBytes(StandardCharsets.UTF_8);
             byte[] signed = sign.sign(data);
-            signedStr = bytesToBase64(signed);
+            signedStr = Base64Util.bytesToBase64(signed);
         } else if (asymmetricCryEnum == AsymmetricCryEnum.SM2) {
             SM2 sm2 = SmUtil.sm2(selfPrivateKey, null);
             signedStr = sm2.signHex(HexUtil.encodeHexStr(content));
@@ -164,65 +193,6 @@ public class OpenApiClient {
         return signedStr;
     }
 
-    /**
-     * 对称加密
-     *
-     * @param content  内容
-     * @param keyBytes 密码
-     * @return 加密后的内容
-     */
-    private String symmetricCry(String content, byte[] keyBytes) {
-        if (symmetricCryEnum == SymmetricCryEnum.AES) {
-            AES aes = new AES(keyBytes);
-            content = aes.encryptBase64(content);
-        } else if (symmetricCryEnum == SymmetricCryEnum.SM4) {
-            SM4 sm4 = new SM4(keyBytes);
-            content = sm4.encryptBase64(content);
-        } else {
-            throw new RuntimeException("不支持的对称加密算法");
-        }
-        return content;
-    }
-
-    /**
-     * 对称解密
-     *
-     * @param content  内容
-     * @param keyBytes 密钥
-     * @return 解密后的内容
-     */
-    private String symmetricDeCry(String content, byte[] keyBytes) {
-        if (symmetricCryEnum == SymmetricCryEnum.AES) {
-            AES aes = new AES(keyBytes);
-            content = aes.decryptStr(content);
-        } else if (symmetricCryEnum == SymmetricCryEnum.SM4) {
-            SM4 sm4 = new SM4(keyBytes);
-            content = sm4.decryptStr(content);
-        } else {
-            throw new RuntimeException("不支持的对称加密算法");
-        }
-        return content;
-    }
-
-    /**
-     * 非对称加密
-     *
-     * @param content 内容
-     * @return 加密后的内容
-     */
-    private String asymmetricCry(String content) {
-        if (asymmetricCryEnum == AsymmetricCryEnum.RSA) {
-            RSA rsa = new RSA(null, remotePublicKey);
-            byte[] encrypt = rsa.encrypt(StrUtil.bytes(content, CharsetUtil.CHARSET_UTF_8), KeyType.PublicKey);
-            content = bytesToBase64(encrypt);
-        } else if (asymmetricCryEnum == AsymmetricCryEnum.SM2) {
-            SM2 sm2 = SmUtil.sm2(null, remotePublicKey);
-            content = sm2.encryptBcd(content, KeyType.PublicKey);
-        } else {
-            throw new BusinessException("不支持的非对称加密算法");
-        }
-        return content;
-    }
 
     /**
      * 调用远程openapi接口
@@ -262,10 +232,12 @@ public class OpenApiClient {
         String decryptedData = null;
         try {
             if (enableSymmetricCry) {
+                log.debug("启用对称加密，采用非对称加密+对称加密模式");
                 String key = asymmetricDeCry(outParams.getSymmetricCryKey());
-                byte[] keyBytes = key.getBytes(StandardCharsets.UTF_8);
+                byte[] keyBytes = Base64Util.base64ToBytes(key);
                 decryptedData = symmetricDeCry(outParams.getData(), keyBytes);
             } else {
+                log.debug("未启用对称加密，仅采用非对称加密模式");
                 decryptedData = asymmetricDeCry(outParams.getData());
             }
             outParams.setData(decryptedData);
@@ -276,10 +248,70 @@ public class OpenApiClient {
     }
 
     /**
+     * 对称加密
+     *
+     * @param content  内容（普通字符串）
+     * @param keyBytes 密码
+     * @return 加密后的内容（Base64字符串）
+     */
+    private String symmetricCry(String content, byte[] keyBytes) {
+        if (symmetricCryEnum == SymmetricCryEnum.AES) {
+            AES aes = new AES(keyBytes);
+            content = aes.encryptBase64(content);
+        } else if (symmetricCryEnum == SymmetricCryEnum.SM4) {
+            SM4 sm4 = new SM4(keyBytes);
+            content = sm4.encryptBase64(content);
+        } else {
+            throw new RuntimeException("不支持的对称加密算法");
+        }
+        return content;
+    }
+
+    /**
+     * 对称解密
+     *
+     * @param content  内容 (Hex（16进制）或Base64表示的字符串)
+     * @param keyBytes 密钥
+     * @return 解密后的内容 (普通字符串)
+     */
+    private String symmetricDeCry(String content, byte[] keyBytes) {
+        if (symmetricCryEnum == SymmetricCryEnum.AES) {
+            AES aes = new AES(keyBytes);
+            content = aes.decryptStr(content);
+        } else if (symmetricCryEnum == SymmetricCryEnum.SM4) {
+            SM4 sm4 = new SM4(keyBytes);
+            content = sm4.decryptStr(content);
+        } else {
+            throw new RuntimeException("不支持的对称加密算法");
+        }
+        return content;
+    }
+
+    /**
+     * 非对称加密
+     *
+     * @param content 内容 （普通字符串）
+     * @return 加密后的内容（RSA:Base64字符串,SM2:ASCII字符串）
+     */
+    private String asymmetricCry(String content) {
+        if (asymmetricCryEnum == AsymmetricCryEnum.RSA) {
+            RSA rsa = new RSA(null, remotePublicKey);
+            byte[] encrypt = rsa.encrypt(StrUtil.bytes(content, CharsetUtil.CHARSET_UTF_8), KeyType.PublicKey);
+            content = Base64Util.bytesToBase64(encrypt);
+        } else if (asymmetricCryEnum == AsymmetricCryEnum.SM2) {
+            SM2 sm2 = SmUtil.sm2(null, remotePublicKey);
+            content = sm2.encryptBcd(content, KeyType.PublicKey);
+        } else {
+            throw new BusinessException("不支持的非对称加密算法");
+        }
+        return content;
+    }
+
+    /**
      * 非对称解密
      *
-     * @param content 内容
-     * @return 解密后的内容
+     * @param content 内容（RSA:Base64字符串,SM2:ASCII字符串）
+     * @return 解密后的内容（普通字符串）
      */
     private String asymmetricDeCry(String content) {
         String decryptedData;

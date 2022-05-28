@@ -36,6 +36,23 @@ public class OutParams<T> {
      */
     private String symmetricCryKey;
 
+    public OutParams setSuccess(String data) {
+        this.code = 200;
+        this.data = data;
+        return this;
+    }
+
+    /**
+     * 调用成功的结果
+     *
+     * @return 输出参数
+     */
+    public static OutParams success() {
+        OutParams outParams = new OutParams();
+        outParams.code = 200;
+        return outParams;
+    }
+
     /**
      * 调用成功的结果
      *

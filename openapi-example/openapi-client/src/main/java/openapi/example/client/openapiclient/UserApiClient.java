@@ -7,6 +7,7 @@ import openapi.client.sdk.OpenApiClient;
 import openapi.sdk.common.model.AsymmetricCryEnum;
 import openapi.sdk.common.model.InParams;
 import openapi.sdk.common.model.OutParams;
+import openapi.sdk.common.model.SymmetricCryEnum;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -33,7 +34,7 @@ public class UserApiClient {
     public void getUserById() {
         try {
             String baseUrl = "http://localhost:8080";
-            OpenApiClient apiClient = new OpenApiClient(baseUrl, privateKey, remotePublicKey, AsymmetricCryEnum.RSA, true);
+            OpenApiClient apiClient = new OpenApiClient(baseUrl, privateKey, remotePublicKey, AsymmetricCryEnum.RSA, true,true, SymmetricCryEnum.AES);
             InParams inParams = new InParams();
             inParams.setUuid(UUID.randomUUID().toString());
             inParams.setCallerId("001");
@@ -51,7 +52,7 @@ public class UserApiClient {
     public void saveUser() {
         try {
             String baseUrl = "http://localhost:8080";
-            OpenApiClient apiClient = new OpenApiClient(baseUrl, privateKey, remotePublicKey, AsymmetricCryEnum.RSA, true);
+            OpenApiClient apiClient = new OpenApiClient(baseUrl, privateKey, remotePublicKey, AsymmetricCryEnum.RSA, true, true, SymmetricCryEnum.AES);
             InParams inParams = new InParams();
             inParams.setUuid(UUID.randomUUID().toString());
             inParams.setCallerId("001");
@@ -73,7 +74,7 @@ public class UserApiClient {
     public void listUsers() {
         try {
             String baseUrl = "http://localhost:8080";
-            OpenApiClient apiClient = new OpenApiClient(baseUrl, privateKey, remotePublicKey, AsymmetricCryEnum.RSA, true);
+            OpenApiClient apiClient = new OpenApiClient(baseUrl, privateKey, remotePublicKey, AsymmetricCryEnum.RSA, true,true, SymmetricCryEnum.AES);
             InParams inParams = new InParams();
             inParams.setUuid(UUID.randomUUID().toString());
             inParams.setCallerId("001");
@@ -95,7 +96,7 @@ public class UserApiClient {
     public void listUsers2() {
         try {
             String baseUrl = "http://localhost:8080";
-            OpenApiClient apiClient = new OpenApiClient(baseUrl, privateKey, remotePublicKey, AsymmetricCryEnum.RSA, true);
+            OpenApiClient apiClient = new OpenApiClient(baseUrl, privateKey, remotePublicKey, AsymmetricCryEnum.RSA, true,true, SymmetricCryEnum.AES);
             InParams inParams = new InParams();
             inParams.setUuid(UUID.randomUUID().toString());
             inParams.setCallerId("001");

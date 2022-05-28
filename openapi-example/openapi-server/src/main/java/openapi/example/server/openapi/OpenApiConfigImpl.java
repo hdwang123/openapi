@@ -1,6 +1,7 @@
 package openapi.example.server.openapi;
 
 import openapi.sdk.common.model.AsymmetricCryEnum;
+import openapi.sdk.common.model.SymmetricCryEnum;
 import openapi.server.sdk.config.OpenApiConfig;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -41,5 +42,15 @@ public class OpenApiConfigImpl implements OpenApiConfig {
     @Override
     public boolean retEncrypt() {
         return true;
+    }
+
+    @Override
+    public boolean enableSymmetricCry() {
+        return true;
+    }
+
+    @Override
+    public SymmetricCryEnum getSymmetricCryEnum() {
+        return SymmetricCryEnum.AES;
     }
 }
