@@ -32,6 +32,11 @@ public class OutParams<T> {
     private String data;
 
     /**
+     * 对称加密Key(由sdk生成)
+     */
+    private String symmetricCryKey;
+
+    /**
      * 调用成功的结果
      *
      * @param data 数据

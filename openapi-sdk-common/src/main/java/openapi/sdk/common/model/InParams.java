@@ -33,14 +33,19 @@ public class InParams {
     private String method;
 
     /**
-     * 请求体内容（内容密文）
+     * 请求体内容（传入内容明文，由sdk生成内容密文）
      */
     private String body;
 
     /**
-     * 签名（根据内容密文生成）
+     * 签名（由sdk根据内容密文生成）
      */
     private String sign;
+
+    /**
+     * 对称加密Key(由sdk生成)
+     */
+    private String symmetricCryKey;
 
     @Override
     public String toString() {
