@@ -145,7 +145,7 @@ public class OpenApiClient {
             //加密
             if (this.enableSymmetricCry) {
                 //启用对称加密，则内容采用对称加密，需先生成对称密钥，密钥采用非对称加密后传输
-                log.debug("启用对称加密，采用非对称加密+对称加密模式");
+                log.debug("启用对称加密，采用非对称加密{}+对称加密{}模式", asymmetricCryEnum, symmetricCryEnum);
 
                 //生成对称密钥key
                 byte[] keyBytes = SymmetricCryUtil.getKey(symmetricCryEnum);
@@ -159,7 +159,7 @@ public class OpenApiClient {
                 //对内容进行对称加密
                 body = symmetricCry(body, keyBytes);
             } else {
-                log.debug("未启用对称加密，仅采用非对称加密模式");
+                log.debug("未启用对称加密，仅采用非对称加密{}模式", asymmetricCryEnum);
                 //仅采用非对称加密
                 body = asymmetricCry(body);
             }
@@ -232,12 +232,12 @@ public class OpenApiClient {
         String decryptedData = null;
         try {
             if (enableSymmetricCry) {
-                log.debug("启用对称加密，采用非对称加密+对称加密模式");
+                log.debug("启用对称加密，采用非对称加密{}+对称加密{}模式",asymmetricCryEnum, symmetricCryEnum);
                 String key = asymmetricDeCry(outParams.getSymmetricCryKey());
                 byte[] keyBytes = Base64Util.base64ToBytes(key);
                 decryptedData = symmetricDeCry(outParams.getData(), keyBytes);
             } else {
-                log.debug("未启用对称加密，仅采用非对称加密模式");
+                log.debug("未启用对称加密，仅采用非对称加密{}模式", asymmetricCryEnum);
                 decryptedData = asymmetricDeCry(outParams.getData());
             }
             outParams.setData(decryptedData);

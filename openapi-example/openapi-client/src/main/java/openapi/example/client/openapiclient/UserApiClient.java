@@ -11,6 +11,7 @@ import openapi.sdk.common.model.SymmetricCryEnum;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -31,10 +32,17 @@ public class UserApiClient {
     @Value("${keys.remote.rsa.publicKey}")
     private String remotePublicKey;
 
+
+    private OpenApiClient apiClient;
+
+    @PostConstruct
+    public void init() {
+        String baseUrl = "http://localhost:8080";
+        apiClient = new OpenApiClient(baseUrl, privateKey, remotePublicKey, AsymmetricCryEnum.RSA, true, true, SymmetricCryEnum.AES);
+    }
+
     public void getUserById() {
         try {
-            String baseUrl = "http://localhost:8080";
-            OpenApiClient apiClient = new OpenApiClient(baseUrl, privateKey, remotePublicKey, AsymmetricCryEnum.RSA, true,true, SymmetricCryEnum.AES);
             InParams inParams = new InParams();
             inParams.setUuid(UUID.randomUUID().toString());
             inParams.setCallerId("001");
@@ -51,8 +59,6 @@ public class UserApiClient {
 
     public void saveUser() {
         try {
-            String baseUrl = "http://localhost:8080";
-            OpenApiClient apiClient = new OpenApiClient(baseUrl, privateKey, remotePublicKey, AsymmetricCryEnum.RSA, true, true, SymmetricCryEnum.AES);
             InParams inParams = new InParams();
             inParams.setUuid(UUID.randomUUID().toString());
             inParams.setCallerId("001");
@@ -73,8 +79,6 @@ public class UserApiClient {
 
     public void listUsers() {
         try {
-            String baseUrl = "http://localhost:8080";
-            OpenApiClient apiClient = new OpenApiClient(baseUrl, privateKey, remotePublicKey, AsymmetricCryEnum.RSA, true,true, SymmetricCryEnum.AES);
             InParams inParams = new InParams();
             inParams.setUuid(UUID.randomUUID().toString());
             inParams.setCallerId("001");
@@ -95,8 +99,6 @@ public class UserApiClient {
 
     public void listUsers2() {
         try {
-            String baseUrl = "http://localhost:8080";
-            OpenApiClient apiClient = new OpenApiClient(baseUrl, privateKey, remotePublicKey, AsymmetricCryEnum.RSA, true,true, SymmetricCryEnum.AES);
             InParams inParams = new InParams();
             inParams.setUuid(UUID.randomUUID().toString());
             inParams.setCallerId("001");

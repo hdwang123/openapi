@@ -204,13 +204,13 @@ public class OpenApiGateway {
         try {
             if (config.enableSymmetricCry()) {
                 //启用对称加密模式
-                log.debug("启用对称加密，采用非对称加密+对称加密模式");
+                log.debug("启用对称加密，采用非对称加密{}+对称加密{}模式", config.getAsymmetricCry(), config.getSymmetricCry());
                 String key = asymmetricDeCry(inParams.getSymmetricCryKey());
                 byte[] keyBytes = Base64Util.base64ToBytes(key);
                 decryptedBody = symmetricDeCry(inParams.getBody(), keyBytes);
             } else {
                 //仅非对称加密模式
-                log.debug("未启用对称加密，仅采用非对称加密模式");
+                log.debug("未启用对称加密，仅采用非对称加密{}模式", config.getAsymmetricCry());
                 decryptedBody = asymmetricDeCry(inParams.getBody());
             }
         } catch (Exception ex) {
@@ -261,14 +261,14 @@ public class OpenApiGateway {
             //加密返回值
             if (config.enableSymmetricCry()) {
                 //启用对称加密模式
-                log.debug("启用对称加密，采用非对称加密+对称加密模式");
-                byte[] keyBytes = SymmetricCryUtil.getKey(config.getSymmetricCryEnum());
+                log.debug("启用对称加密，采用非对称加密{}+对称加密{}模式", config.getAsymmetricCry(), config.getSymmetricCry());
+                byte[] keyBytes = SymmetricCryUtil.getKey(config.getSymmetricCry());
                 String key = Base64Util.bytesToBase64(keyBytes);
                 outParams.setSymmetricCryKey(asymmetricCry(key, callerPublicKey));
                 retStr = symmetricCry(retStr, keyBytes);
             } else {
                 //仅采用非对称加密模式
-                log.debug("未启用对称加密，仅采用非对称加密模式");
+                log.debug("未启用对称加密，仅采用非对称加密{}模式", config.getAsymmetricCry());
                 retStr = asymmetricCry(retStr, callerPublicKey);
             }
         } catch (Exception ex) {
@@ -285,7 +285,7 @@ public class OpenApiGateway {
      * @return 加密后的内容（Base64字符串）
      */
     private String symmetricCry(String content, byte[] keyBytes) {
-        SymmetricCryEnum symmetricCryEnum = config.getSymmetricCryEnum();
+        SymmetricCryEnum symmetricCryEnum = config.getSymmetricCry();
         if (symmetricCryEnum == SymmetricCryEnum.AES) {
             AES aes = new AES(keyBytes);
             content = aes.encryptBase64(content);
@@ -306,7 +306,7 @@ public class OpenApiGateway {
      * @return 解密后的内容 (普通字符串)
      */
     private String symmetricDeCry(String content, byte[] keyBytes) {
-        SymmetricCryEnum symmetricCryEnum = config.getSymmetricCryEnum();
+        SymmetricCryEnum symmetricCryEnum = config.getSymmetricCry();
         if (symmetricCryEnum == SymmetricCryEnum.AES) {
             AES aes = new AES(keyBytes);
             content = aes.decryptStr(content);

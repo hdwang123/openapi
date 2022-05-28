@@ -57,7 +57,7 @@ public interface OpenApiConfig {
      *
      * @return 对称加密算法
      */
-    default SymmetricCryEnum getSymmetricCryEnum() {
+    default SymmetricCryEnum getSymmetricCry() {
         return SymmetricCryEnum.AES;
     }
 }

@@ -50,7 +50,7 @@ public class OpenApiConfigImpl implements OpenApiConfig {
     }
 
     @Override
-    public SymmetricCryEnum getSymmetricCryEnum() {
+    public SymmetricCryEnum getSymmetricCry() {
         return SymmetricCryEnum.AES;
     }
 }
