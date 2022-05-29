@@ -5,7 +5,7 @@
     <parent>
         <artifactId>openapi</artifactId>
         <groupId>io.github.hdwang123</groupId>
-        <version>1.1.1-SNAPSHOT</version>
+        <version>1.1.1</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -15,6 +15,11 @@
     <url>https://github.com/hdwang123/openapi</url>
     <!-- 许可证信息 -->
     <licenses>
+        <!-- Apache许可证 -->
+        <license>
+            <name>Apache License, Version 2.0</name>
+            <url>https://www.apache.org/licenses/LICENSE-2.0</url>
+        </license>
         <!-- MIT许可证 -->
         <license>
             <name>MIT License</name>
@@ -47,7 +52,7 @@
         <dependency>
             <groupId>io.github.hdwang123</groupId>
             <artifactId>openapi-sdk-common</artifactId>
-            <version>1.1.1-SNAPSHOT</version>
+            <version>1.1.1</version>
         </dependency>
 
         <!-- SpringBootWeb -->
