@@ -23,7 +23,7 @@ cn.hutool.hutool-all
 
 ## 注意事项
 
-目前OpenApiMethod仅支持单参数
+目前OpenApiMethod仅支持一个参数或无参数
 
 ## 使用方法
 
@@ -39,8 +39,8 @@ cn.hutool.hutool-all
 </dependency>
 ````
 
-2.实现OpenApiConfig接口进行配置
-
+2.实现OpenApiConfig接口进行配置  
+注：默认没有任何配置实现类，启动项目会报错，必须手动配置一个OpenApiConfig实现类
 ````
 @Component
 public class OpenApiConfigImpl implements OpenApiConfig {
@@ -77,8 +77,8 @@ public class OpenApiConfigImpl implements OpenApiConfig {
 }
 ````
 
-3.自定义开放API
-
+3.自定义开放API  
+注：被@OpenApi标识的类必须处于spring包的扫描路径下，方可注入容器中
 ````
 @Slf4j
 @OpenApi("userApi")
