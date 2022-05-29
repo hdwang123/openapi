@@ -1,9 +1,12 @@
 package openapi.sdk.common.util;
 
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.json.JSONUtil;
 import openapi.sdk.common.model.BusinessException;
 
 import java.lang.reflect.Array;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.Collection;
 import java.util.List;
 
@@ -17,31 +20,43 @@ public class StrObjectConvert {
     /**
      * 字符串转对象
      *
-     * @param str       字符串
-     * @param classType 对象类型
+     * @param str  字符串
+     * @param type 对象类型
      * @return 对象
      */
-    public static Object strToObj(String str, Class classType) {
+    public static Object strToObj(String str, Type type) {
+        String classTypeName = type.getTypeName();
+        boolean isClassType = false;
+        boolean isParameterizedType = false;
+        if (type instanceof Class) {
+            isClassType = true;
+        }
+        if (type instanceof ParameterizedType) {
+            isParameterizedType = true;
+        }
         Object ins = null;
-        if (classType.getName().equals(Long.class.getName())) {
+        if (classTypeName.equals(Long.class.getName()) || classTypeName.equals(long.class.getName())) {
             ins = Long.parseLong(str);
-        } else if (classType.getName().equals(Integer.class.getName())) {
+        } else if (classTypeName.equals(Integer.class.getName()) || classTypeName.equals(int.class.getName())) {
             ins = Integer.parseInt(str);
-        } else if (classType.getName().equals(Byte.class.getName())) {
+        } else if (classTypeName.equals(Short.class.getName()) || classTypeName.equals(short.class.getName())) {
+            ins = Short.parseShort(str);
+        } else if (classTypeName.equals(Byte.class.getName()) || classTypeName.equals(byte.class.getName())) {
             ins = Byte.parseByte(str);
-        } else if (classType.getName().equals(Float.class.getName())) {
+        } else if (classTypeName.equals(Float.class.getName()) || classTypeName.equals(float.class.getName())) {
             ins = Float.parseFloat(str);
-        } else if (classType.getName().equals(Double.class.getName())) {
+        } else if (classTypeName.equals(Double.class.getName()) || classTypeName.equals(double.class.getName())) {
             ins = Double.parseDouble(str);
-        } else if (classType.getName().equals(Boolean.class.getName())) {
-            ins = Boolean.parseBoolean(str);
-        } else if (classType.getName().equals(Character.class.getName())) {
+        } else if (classTypeName.equals(Character.class.getName()) || classTypeName.equals(char.class.getName())) {
             ins = str.charAt(0);
-        } else if (classType.getName().equals(String.class.getName())) {
-            //字符串类型，无需转换
+        } else if (classTypeName.equals(Boolean.class.getName()) || classTypeName.equals(boolean.class.getName())) {
+            ins = Boolean.parseBoolean(str);
+        } else if (classTypeName.equals(Void.class.getName()) || classTypeName.equals(void.class.getName())) {
+            ins = null;
+        } else if (classTypeName.equals(String.class.getName())) {
             ins = str;
-        } else if (classType.isArray()) {
-            Class elementType = classType.getComponentType();
+        } else if (isClassType && ((Class) type).isArray()) {
+            Class elementType = ((Class) type).getComponentType();
             //数组类型先转成List
             List list = JSONUtil.toList(str, elementType);
             //构建一个数组对象，然后把List数据赋值给数组
@@ -50,17 +65,25 @@ public class StrObjectConvert {
                 Array.set(array, i, list.get(i));
             }
             ins = array;
-//            throw new BusinessException("不支持数组类型的参数");
-        } else if (Collection.class.isAssignableFrom(classType)) {
-            if (classType.getName().equals(List.class.getName())) {
-                //Collection类型都转换为List(注：不支持set等)
-                ins = JSONUtil.toList(str, classType);
-            } else {
-                throw new BusinessException("不支持除List以外的集合类型参数");
+        } else if (isParameterizedType) {
+            ParameterizedType parameterizedType = (ParameterizedType) type;
+            Class rawType = (Class) parameterizedType.getRawType();
+            if (Collection.class.isAssignableFrom(rawType)) {
+                if (rawType.getName().equals(List.class.getName())) {
+                    //Collection类型都转换为List(注：不支持set等、也不支持List里套List)
+                    Type componentType = parameterizedType.getActualTypeArguments()[0];
+                    if (componentType instanceof Class) {
+                        ins = JSONUtil.toList(str, (Class) componentType);
+                    } else {
+                        throw new BusinessException("不支持泛型类里套泛型的参数");
+                    }
+                } else {
+                    throw new BusinessException("不支持除List以外的集合类型参数");
+                }
             }
         } else {
             //对象转换
-            ins = JSONUtil.toBean(str, classType);
+            ins = JSONUtil.toBean(str, type, false);
         }
         return ins;
     }
@@ -68,27 +91,16 @@ public class StrObjectConvert {
     /**
      * 对象转字符串
      *
-     * @param obj       对象
-     * @param classType 对象类型
+     * @param obj  对象
+     * @param type 对象类型
      * @return 字符串
      */
-    public static String objToStr(Object obj, Class classType) {
+    public static String objToStr(Object obj, Type type) {
         String str = null;
-        if (classType.getName().equals(Long.class.getName())) {
+        if (ObjectUtil.isBasicType(obj)) {
+            //是基本类型（包括包装类）：Boolean, Character, Byte, Short, Integer, Long, Float, Double, Void
             str = String.valueOf(obj);
-        } else if (classType.getName().equals(Integer.class.getName())) {
-            str = String.valueOf(obj);
-        } else if (classType.getName().equals(Byte.class.getName())) {
-            str = String.valueOf(obj);
-        } else if (classType.getName().equals(Float.class.getName())) {
-            str = String.valueOf(obj);
-        } else if (classType.getName().equals(Double.class.getName())) {
-            str = String.valueOf(obj);
-        } else if (classType.getName().equals(Boolean.class.getName())) {
-            str = String.valueOf(obj);
-        } else if (classType.getName().equals(Character.class.getName())) {
-            str = String.valueOf(obj);
-        } else if (classType.getName().equals(String.class.getName())) {
+        } else if (type.getTypeName().equals(String.class.getName())) {
             //字符串类型，无需转换
             str = (String) obj;
         } else {

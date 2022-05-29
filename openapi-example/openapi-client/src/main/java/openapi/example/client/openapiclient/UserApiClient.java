@@ -202,10 +202,12 @@ public class UserApiClient {
     public void addUser() {
         try {
             OpenApiClient apiClient = new OpenApiClient(baseUrl, privateKey, remotePublicKey, AsymmetricCryEnum.RSA, true, true, SymmetricCryEnum.AES);
+            List<User> users = new ArrayList<>();
             User user = new User();
             user.setId(1L);
             user.setName("张三");
-            OutParams outParams = apiClient.callOpenApi("001", "userApi", "addUser", 5, "展昭", user);
+            users.add(user);
+            OutParams outParams = apiClient.callOpenApi("001", "userApi", "addUser", 5, "展昭", users);
             log.info("返回值：" + outParams);
         } catch (Exception ex) {
             log.error("异常", ex);

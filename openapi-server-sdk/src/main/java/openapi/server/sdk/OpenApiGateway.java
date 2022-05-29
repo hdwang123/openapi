@@ -26,6 +26,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.PostConstruct;
 import java.lang.reflect.Method;
+import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
@@ -80,15 +81,15 @@ public class OpenApiGateway {
                         OpenApiMethod openApiMethod = method.getAnnotation(OpenApiMethod.class);
                         String openApiMethodName = openApiMethod.value();
 
-                        //获取方法参数
-                        Class[] classes = method.getParameterTypes();
+                        //获取方法参数类型
+                        Type[] types = method.getGenericParameterTypes();
 
                         //保存处理器到Map中
                         String handlerKey = getHandlerKey(openApiName, openApiMethodName);
                         ApiHandler apiHandler = new ApiHandler();
                         apiHandler.setBean(bean);
                         apiHandler.setMethod(method);
-                        apiHandler.setParamClasses(classes);
+                        apiHandler.setParamTypes(types);
                         apiHandler.setOpenApiMethod(openApiMethod);
                         handlerMap.put(handlerKey, apiHandler);
                     }
@@ -162,22 +163,22 @@ public class OpenApiGateway {
             String decryptedBody = decryptBody(inParams, apiHandler);
 
             try {
-                Class[] paramClasses = apiHandler.getParamClasses();
+                Type[] paramTypes = apiHandler.getParamTypes();
                 if (inParams.isMultiParam()) {
                     //多参支持
                     List<Object> list = JSONUtil.toList(decryptedBody, Object.class);
-                    if (list.size() != paramClasses.length) {
+                    if (list.size() != paramTypes.length) {
                         throw new BusinessException("参数个数不匹配");
                     }
                     for (int i = 0; i < list.size(); i++) {
-                        String str = StrObjectConvert.objToStr(list.get(i), paramClasses[i]);
-                        params.add(StrObjectConvert.strToObj(str, paramClasses[i]));
+                        String str = StrObjectConvert.objToStr(list.get(i), paramTypes[i]);
+                        params.add(StrObjectConvert.strToObj(str, paramTypes[i]));
                     }
                 } else {
-                    if (paramClasses.length == 1) {
+                    if (paramTypes.length == 1) {
                         //单参
-                        Class paramClass = paramClasses[0];
-                        params.add(StrObjectConvert.strToObj(decryptedBody, paramClass));
+                        Type paramType = paramTypes[0];
+                        params.add(StrObjectConvert.strToObj(decryptedBody, paramType));
                     } else {
                         //无参
                     }
@@ -257,7 +258,6 @@ public class OpenApiGateway {
         if (StrUtil.isNotBlank(apiHandler.getOpenApiMethod().enableSymmetricCry())) {
             enableSymmetricCry = Boolean.parseBoolean(apiHandler.getOpenApiMethod().enableSymmetricCry());
         }
-        log.debug("是否启用对称加密：{}", enableSymmetricCry);
         return enableSymmetricCry;
     }
 
@@ -274,7 +274,9 @@ public class OpenApiGateway {
         try {
             OutParams outParams = new OutParams();
             Object[] params = paramList.stream().toArray();
+            log.debug("调用API:{},入参：{}", apiHandler, params);
             Object ret = apiHandler.getMethod().invoke(apiHandler.getBean(), params);
+            log.debug("调用API:{},出参：{}", apiHandler, ret);
             String retStr = StrUtil.EMPTY;
             if (ret != null) {
                 retStr = StrObjectConvert.objToStr(ret, ret.getClass());
@@ -306,7 +308,6 @@ public class OpenApiGateway {
         if (StrUtil.isNotBlank(apiHandler.getOpenApiMethod().retEncrypt())) {
             retEncrypt = Boolean.parseBoolean(apiHandler.getOpenApiMethod().retEncrypt());
         }
-        log.debug("返回值是否需要加密：{}", retEncrypt);
         return retEncrypt;
     }
 

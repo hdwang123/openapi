@@ -48,6 +48,7 @@ public class UserApi {
     @OpenApiMethod("batchSaveUser")
     public void batchSaveUser(List<User> users) {
         log.info("batchSaveUser:" + JSONUtil.toJsonStr(users));
+        log.info(JSONUtil.toJsonStr(users.get(0)));
     }
 
     @OpenApiMethod("batchSaveUser2")
@@ -115,13 +116,13 @@ public class UserApi {
      *
      * @param id
      * @param name
-     * @param user
+     * @param users
      * @return
      */
     @OpenApiMethod("addUser")
-    public User addUser(Long id, String name, User user) {
-        log.info("addUser:id={},name={},user={}", id, name, JSONUtil.toJsonStr(user));
-        return user;
+    public User addUser(int id, String name, User[] users) {
+        log.info("addUser:id={},name={},user={}", id, name, JSONUtil.toJsonStr(users));
+        return users[0];
     }
 
 }

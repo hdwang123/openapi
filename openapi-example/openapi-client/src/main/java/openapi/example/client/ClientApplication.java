@@ -19,14 +19,14 @@ public class ClientApplication {
     public static void main(String[] args) {
         ConfigurableApplicationContext context = new SpringApplicationBuilder().sources(ClientApplication.class).web(WebApplicationType.NONE).run(args);
         UserApiClient client = context.getBean(UserApiClient.class);
-//        client.getUserById();
-//        client.saveUser();
-//        client.batchSaveUser();
-//        client.batchSaveUser2();
-//        client.listUsers();
-//        client.listUsers2();
-//        client.listUsers3();
-//        client.getAllUsers();
+        client.getUserById();
+        client.saveUser();
+        client.batchSaveUser();
+        client.batchSaveUser2();
+        client.listUsers();
+        client.listUsers2();
+        client.listUsers3();
+        client.getAllUsers();
         client.addUser();
     }
 }
