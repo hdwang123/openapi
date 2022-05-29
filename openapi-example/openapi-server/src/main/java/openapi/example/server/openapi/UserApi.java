@@ -46,8 +46,13 @@ public class UserApi {
     }
 
     @OpenApiMethod("batchSaveUser")
-    public void batchSaveUser(List<User> users){
+    public void batchSaveUser(List<User> users) {
         log.info("batchSaveUser:" + JSONUtil.toJsonStr(users));
+    }
+
+    @OpenApiMethod("batchSaveUser2")
+    public void batchSaveUser(User[] users) {
+        log.info("batchSaveUser2:" + JSONUtil.toJsonStr(users));
     }
 
     /**
@@ -58,7 +63,7 @@ public class UserApi {
      */
     @OpenApiMethod(value = "listUsers", retEncrypt = "false", enableSymmetricCry = "false")
     public List<User> listUsers(List<Long> ids) {
-        log.info("listUsers: ids=" + ids);
+        log.info("listUsers: ids=" + JSONUtil.toJsonStr(ids));
         List<User> users = new ArrayList<>();
         users.add(new User(2L, "李四"));
         users.add(new User(3L, "王五"));
@@ -73,7 +78,16 @@ public class UserApi {
      */
     @OpenApiMethod("listUsers2")
     public List<User> listUsers2(Long[] ids) {
-        log.info("listUsers: ids=" + ids);
+        log.info("listUsers: ids=" + JSONUtil.toJsonStr(ids));
+        List<User> users = new ArrayList<>();
+        users.add(new User(2L, "李四"));
+        users.add(new User(3L, "王五"));
+        return users;
+    }
+
+    @OpenApiMethod("listUsers3")
+    public List<User> listUsers3(long[] ids) {
+        log.info("listUsers3: ids=" + JSONUtil.toJsonStr(ids));
         List<User> users = new ArrayList<>();
         users.add(new User(2L, "李四"));
         users.add(new User(3L, "王五"));

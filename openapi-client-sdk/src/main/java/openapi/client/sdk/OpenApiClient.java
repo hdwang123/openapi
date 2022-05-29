@@ -213,7 +213,6 @@ public class OpenApiClient {
         }
         OutParams outParams = JSONUtil.toBean(ret, OutParams.class);
         if (OutParams.isSuccess(outParams)) {
-            log.debug("调用openapi成功");
             //判断是否需要解密数据
             if (retDecrypt) {
                 decryptData(outParams);

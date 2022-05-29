@@ -32,18 +32,12 @@ public class UserApiClient {
     @Value("${keys.remote.rsa.publicKey}")
     private String remotePublicKey;
 
-
-    private OpenApiClient apiClient;
-
     String baseUrl = "http://localhost:8080";
 
-    @PostConstruct
-    public void init() {
-        apiClient = new OpenApiClient(baseUrl, privateKey, remotePublicKey, AsymmetricCryEnum.RSA, true, true, SymmetricCryEnum.AES);
-    }
 
     public void getUserById() {
         try {
+            OpenApiClient apiClient = new OpenApiClient(baseUrl, privateKey, remotePublicKey, AsymmetricCryEnum.RSA, true, true, SymmetricCryEnum.AES);
             InParams inParams = new InParams();
             inParams.setUuid(UUID.randomUUID().toString());
             inParams.setCallerId("001");
@@ -60,6 +54,7 @@ public class UserApiClient {
 
     public void saveUser() {
         try {
+            OpenApiClient apiClient = new OpenApiClient(baseUrl, privateKey, remotePublicKey, AsymmetricCryEnum.RSA, true, true, SymmetricCryEnum.AES);
             InParams inParams = new InParams();
             inParams.setUuid(UUID.randomUUID().toString());
             inParams.setCallerId("001");
@@ -80,6 +75,7 @@ public class UserApiClient {
 
     public void batchSaveUser() {
         try {
+            OpenApiClient apiClient = new OpenApiClient(baseUrl, privateKey, remotePublicKey, AsymmetricCryEnum.RSA, true, true, SymmetricCryEnum.AES);
             InParams inParams = new InParams();
             inParams.setUuid(UUID.randomUUID().toString());
             inParams.setCallerId("001");
@@ -100,9 +96,32 @@ public class UserApiClient {
         }
     }
 
+    public void batchSaveUser2() {
+        try {
+            OpenApiClient apiClient = new OpenApiClient(baseUrl, privateKey, remotePublicKey, AsymmetricCryEnum.RSA, true, true, SymmetricCryEnum.AES);
+            InParams inParams = new InParams();
+            inParams.setUuid(UUID.randomUUID().toString());
+            inParams.setCallerId("001");
+            inParams.setApi("userApi");
+            inParams.setMethod("batchSaveUser2");
+
+            User[] users = new User[1];
+            User user = new User();
+            user.setId(1L);
+            user.setName("张三");
+            users[0] = user;
+            inParams.setBody(JSONUtil.toJsonStr(users));
+            log.info("入参：" + inParams);
+            OutParams outParams = apiClient.callOpenApi(inParams);
+            log.info("返回值：" + outParams);
+        } catch (Exception ex) {
+            log.error("异常", ex);
+        }
+    }
+
     public void listUsers() {
         try {
-            apiClient = new OpenApiClient(baseUrl, privateKey, remotePublicKey, AsymmetricCryEnum.RSA, false, false, null);
+            OpenApiClient apiClient = new OpenApiClient(baseUrl, privateKey, remotePublicKey, AsymmetricCryEnum.RSA, false, false, null);
             InParams inParams = new InParams();
             inParams.setUuid(UUID.randomUUID().toString());
             inParams.setCallerId("001");
@@ -123,6 +142,7 @@ public class UserApiClient {
 
     public void listUsers2() {
         try {
+            OpenApiClient apiClient = new OpenApiClient(baseUrl, privateKey, remotePublicKey, AsymmetricCryEnum.RSA, true, true, SymmetricCryEnum.AES);
             InParams inParams = new InParams();
             inParams.setUuid(UUID.randomUUID().toString());
             inParams.setCallerId("001");
@@ -141,8 +161,30 @@ public class UserApiClient {
         }
     }
 
+    public void listUsers3() {
+        try {
+            OpenApiClient apiClient = new OpenApiClient(baseUrl, privateKey, remotePublicKey, AsymmetricCryEnum.RSA, true, true, SymmetricCryEnum.AES);
+            InParams inParams = new InParams();
+            inParams.setUuid(UUID.randomUUID().toString());
+            inParams.setCallerId("001");
+            inParams.setApi("userApi");
+            inParams.setMethod("listUsers3");
+
+            long[] ids = new long[]{
+                    2L, 3L
+            };
+            inParams.setBody(JSONUtil.toJsonStr(ids));
+            log.info("入参：" + inParams);
+            OutParams outParams = apiClient.callOpenApi(inParams);
+            log.info("返回值：" + outParams);
+        } catch (Exception ex) {
+            log.error("异常", ex);
+        }
+    }
+
     public void getAllUsers() {
         try {
+            OpenApiClient apiClient = new OpenApiClient(baseUrl, privateKey, remotePublicKey, AsymmetricCryEnum.RSA, true, true, SymmetricCryEnum.AES);
             InParams inParams = new InParams();
             inParams.setUuid(UUID.randomUUID().toString());
             inParams.setCallerId("001");
