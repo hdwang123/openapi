@@ -51,7 +51,7 @@ public class UserApi {
      * @param ids 用户ID列表
      * @return 用户列表
      */
-    @OpenApiMethod("listUsers")
+    @OpenApiMethod(value = "listUsers", retEncrypt = "false", enableSymmetricCry = "false")
     public List<User> listUsers(List<Long> ids) {
         log.info("listUsers: ids=" + ids);
         List<User> users = new ArrayList<>();
@@ -81,7 +81,7 @@ public class UserApi {
      *
      * @return 用户列表
      */
-    @OpenApiMethod("getAllUsers")
+    @OpenApiMethod(value = "getAllUsers")
     public List<User> getAllUsers() {
         log.info("getAllUsers");
         List<User> users = new ArrayList<>();

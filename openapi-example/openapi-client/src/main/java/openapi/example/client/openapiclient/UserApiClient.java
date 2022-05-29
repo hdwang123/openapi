@@ -35,9 +35,10 @@ public class UserApiClient {
 
     private OpenApiClient apiClient;
 
+    String baseUrl = "http://localhost:8080";
+
     @PostConstruct
     public void init() {
-        String baseUrl = "http://localhost:8080";
         apiClient = new OpenApiClient(baseUrl, privateKey, remotePublicKey, AsymmetricCryEnum.RSA, true, true, SymmetricCryEnum.AES);
     }
 
@@ -79,6 +80,7 @@ public class UserApiClient {
 
     public void listUsers() {
         try {
+            apiClient = new OpenApiClient(baseUrl, privateKey, remotePublicKey, AsymmetricCryEnum.RSA, false, false, null);
             InParams inParams = new InParams();
             inParams.setUuid(UUID.randomUUID().toString());
             inParams.setCallerId("001");
@@ -117,7 +119,7 @@ public class UserApiClient {
         }
     }
 
-    public void getAllUsers(){
+    public void getAllUsers() {
         try {
             InParams inParams = new InParams();
             inParams.setUuid(UUID.randomUUID().toString());

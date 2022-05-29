@@ -21,4 +21,19 @@ public @interface OpenApiMethod {
      * @return 开放api方法名称
      */
     String value() default "";
+
+    /**
+     * 返回值是否需要加密(true:需要，false:不需要，默认为空由OpenApiConfig决定)，优先级高于OpenApiConfig中的配置
+     *
+     * @return 返回值是否需要加密
+     */
+    String retEncrypt() default "";
+
+    /**
+     * 是否启用对称加密，(true:启用，false:不启用，默认为空由OpenApiConfig决定)，优先级高于OpenApiConfig中的配置
+     * 注：内容采用对称加密，对称加密密钥采用非对称加密
+     *
+     * @return 是否启用对称加密
+     */
+    String enableSymmetricCry() default "";
 }

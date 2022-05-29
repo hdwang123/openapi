@@ -26,4 +26,9 @@ public class ApiHandler {
      * 方法参数类型
      */
     private Class[] paramClasses;
+
+    /**
+     * 方法的注解
+     */
+    private OpenApiMethod openApiMethod;
 }

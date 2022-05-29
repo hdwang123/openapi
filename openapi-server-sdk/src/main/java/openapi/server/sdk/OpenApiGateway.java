@@ -89,6 +89,7 @@ public class OpenApiGateway {
                         apiHandler.setBean(bean);
                         apiHandler.setMethod(method);
                         apiHandler.setParamClasses(classes);
+                        apiHandler.setOpenApiMethod(openApiMethod);
                         handlerMap.put(handlerKey, apiHandler);
                     }
                 }
@@ -158,7 +159,7 @@ public class OpenApiGateway {
 
         //解密
         if (StrUtil.isNotBlank(inParams.getBody())) {
-            String decryptedBody = decryptBody(inParams);
+            String decryptedBody = decryptBody(inParams, apiHandler);
 
             try {
                 //当前仅支持一个参数的方法
@@ -198,13 +199,15 @@ public class OpenApiGateway {
     /**
      * 解密入参体
      *
-     * @param inParams 入参
+     * @param inParams   入参
+     * @param apiHandler openapi处理器
      * @return 解密后的入参体
      */
-    private String decryptBody(InParams inParams) {
+    private String decryptBody(InParams inParams, ApiHandler apiHandler) {
         String decryptedBody = null;
         try {
-            if (config.enableSymmetricCry()) {
+            boolean enableSymmetricCry = isEnableSymmetricCry(apiHandler);
+            if (enableSymmetricCry) {
                 //启用对称加密模式
                 log.debug("启用对称加密，采用非对称加密{}+对称加密{}模式", config.getAsymmetricCry(), config.getSymmetricCry());
                 String key = asymmetricDeCry(inParams.getSymmetricCryKey());
@@ -220,6 +223,21 @@ public class OpenApiGateway {
             throw new BusinessException("解密失败");
         }
         return decryptedBody;
+    }
+
+    /**
+     * 判断是否启用对称加密
+     *
+     * @param apiHandler openapi处理器
+     * @return 是否启用对称加密
+     */
+    private boolean isEnableSymmetricCry(ApiHandler apiHandler) {
+        boolean enableSymmetricCry = config.enableSymmetricCry();
+        if (StrUtil.isNotBlank(apiHandler.getOpenApiMethod().enableSymmetricCry())) {
+            enableSymmetricCry = Boolean.parseBoolean(apiHandler.getOpenApiMethod().enableSymmetricCry());
+        }
+        log.debug("是否启用对称加密：{}", enableSymmetricCry);
+        return enableSymmetricCry;
     }
 
 
@@ -241,9 +259,10 @@ public class OpenApiGateway {
             }
             Object ret = apiHandler.getMethod().invoke(apiHandler.getBean(), params);
             String retStr = StrObjectConvert.objToStr(ret, ret.getClass());
-            //返回值需要加密
-            if (config.retEncrypt()) {
-                retStr = encryptRet(inParams, retStr, outParams);
+            //判断返回值是否需要加密
+            boolean retEncrypt = isRetEncrypt(apiHandler);
+            if (retEncrypt) {
+                retStr = encryptRet(inParams, retStr, outParams, apiHandler);
             }
             return outParams.setSuccess(retStr);
         } catch (Exception ex) {
@@ -253,20 +272,37 @@ public class OpenApiGateway {
     }
 
     /**
+     * 判断返回值是否需要加密
+     *
+     * @param apiHandler openapi处理器
+     * @return 是否需要加密
+     */
+    private boolean isRetEncrypt(ApiHandler apiHandler) {
+        boolean retEncrypt = config.retEncrypt();
+        if (StrUtil.isNotBlank(apiHandler.getOpenApiMethod().retEncrypt())) {
+            retEncrypt = Boolean.parseBoolean(apiHandler.getOpenApiMethod().retEncrypt());
+        }
+        log.debug("返回值是否需要加密：{}", retEncrypt);
+        return retEncrypt;
+    }
+
+    /**
      * 加密返回值
      *
-     * @param inParams  openapi入参
-     * @param retStr    返回值
-     * @param outParams openapi出参
+     * @param inParams   openapi入参
+     * @param retStr     返回值
+     * @param outParams  openapi出参
+     * @param apiHandler openapi处理器
      * @return 加密后的返回值
      */
-    private String encryptRet(InParams inParams, String retStr, OutParams outParams) {
+    private String encryptRet(InParams inParams, String retStr, OutParams outParams, ApiHandler apiHandler) {
         try {
             //获取调用者公钥
             String callerPublicKey = config.getCallerPublicKey(inParams.getCallerId());
 
             //加密返回值
-            if (config.enableSymmetricCry()) {
+            boolean enableSymmetricCry = isEnableSymmetricCry(apiHandler);
+            if (enableSymmetricCry) {
                 //启用对称加密模式
                 log.debug("启用对称加密，采用非对称加密{}+对称加密{}模式", config.getAsymmetricCry(), config.getSymmetricCry());
                 byte[] keyBytes = SymmetricCryUtil.getKey(config.getSymmetricCry());
