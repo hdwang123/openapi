@@ -96,11 +96,6 @@ public class UserApi {
     }
 
 
-    /**
-     * 获取所有的用户
-     *
-     * @return 用户列表
-     */
     @OpenApiMethod(value = "getAllUsers")
     public List<User> getAllUsers() {
         log.info("getAllUsers");
@@ -111,14 +106,7 @@ public class UserApi {
         return users;
     }
 
-    /**
-     * 测试多参
-     *
-     * @param id
-     * @param name
-     * @param users
-     * @return
-     */
+
     @OpenApiMethod("addUser")
     public User addUser(int id, String name, User[] users) {
         log.info("addUser:id={},name={},user={}", id, name, JSONUtil.toJsonStr(users));
