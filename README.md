@@ -29,7 +29,7 @@ cn.hutool.hutool-all
 
 ### 服务端
 
-1.引入openapi-server-sdk
+#### 1.引入openapi-server-sdk
 
 ````
 <dependency>
@@ -39,7 +39,7 @@ cn.hutool.hutool-all
 </dependency>
 ````
 
-2.实现OpenApiConfig接口进行配置  
+#### 2.实现OpenApiConfig接口进行配置  
 注：默认没有任何配置实现类，启动项目会报错，必须手动配置一个OpenApiConfig实现类
 ````
 @Component
@@ -77,7 +77,7 @@ public class OpenApiConfigImpl implements OpenApiConfig {
 }
 ````
 
-3.自定义开放API  
+#### 3.自定义开放API  
 注：被@OpenApi标识的类必须处于spring包的扫描路径下，方可注入容器中
 ````
 @Slf4j
@@ -113,7 +113,7 @@ public class UserApi {
 
 ### 客户端
 
-1.引入openapi-client-sdk
+#### 1.引入openapi-client-sdk
 
 ````
 <dependency>
@@ -123,7 +123,7 @@ public class UserApi {
 </dependency>
 ````
 
-2.调用openapi
+#### 2.调用openapi
 
 ````
 @Slf4j
@@ -233,13 +233,13 @@ public class UserApiClient {
 
 ## 版本记录
 
-v1.0.0  
+### v1.0.0  
 初版，支持非对称加解密(RSA或SM2)和接口验签功能
 
-v1.1.0  
+### v1.1.0  
 新增对称加密模式(AES或SM4)，即：内容采用对称加密以提高加解密速度，对称加密的密钥用非对称加密后传输
 
-v1.1.1  
+### v1.1.1  
 1.签名优化，将请求流水号ID加到签名内容中，保证无参方法的调用也是经过验签的  
 2.方法新增数组类型参数的支持  
 3.注解OpenApiMethod新增属性，支持方法级别的配置  
