@@ -17,9 +17,9 @@ cn.hutool.hutool-all
 
 ## 功能
 
-1.负责对外开放接口（基于HTTP对外提供服务）  
-2.实现接口的参数与返回值的加解密（使用非对称加密：RSA/SM2，或对称加密：AES/SM4）  
-3.实现接口的验签（服务端会校验客户端的签名，确保调用者身份以及数据不被篡改）
+1.负责对外开放接口（<font size=1>基于HTTP对外提供服务</font>）  
+2.实现接口的参数与返回值的加解密（<font size=1>使用非对称加密：RSA/SM2，或对称加密：AES/SM4</font>）  
+3.实现接口的验签（<font size=1>服务端会校验客户端的签名，确保调用者身份以及数据不被篡改</font>）
 
 ## 注意事项
 
@@ -40,7 +40,8 @@ cn.hutool.hutool-all
 ````
 
 #### 2.实现OpenApiConfig接口进行配置  
-注：默认没有任何配置实现类，启动项目会报错，必须手动配置一个OpenApiConfig实现类
+<font size=1 color=#ff6600>注：默认没有任何配置实现类，启动项目会报错，必须手动配置一个OpenApiConfig实现类
+</font>
 ````
 @Component
 public class OpenApiConfigImpl implements OpenApiConfig {
@@ -78,7 +79,8 @@ public class OpenApiConfigImpl implements OpenApiConfig {
 ````
 
 #### 3.自定义开放API  
-注：被@OpenApi标识的类必须处于spring包的扫描路径下，方可注入容器中
+<font size=1  color=#ff6600>注：被@OpenApi标识的类必须处于spring包的扫描路径下，方可注入容器中
+</font>
 ````
 @Slf4j
 @OpenApi("userApi")
