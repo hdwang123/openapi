@@ -116,4 +116,19 @@ public class UserApiClient {
             log.error("异常", ex);
         }
     }
+
+    public void getAllUsers(){
+        try {
+            InParams inParams = new InParams();
+            inParams.setUuid(UUID.randomUUID().toString());
+            inParams.setCallerId("001");
+            inParams.setApi("userApi");
+            inParams.setMethod("getAllUsers");
+            log.info("入参：" + inParams);
+            OutParams outParams = apiClient.callOpenApi(inParams);
+            log.info("返回值：" + outParams);
+        } catch (Exception ex) {
+            log.error("异常", ex);
+        }
+    }
 }

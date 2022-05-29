@@ -75,4 +75,20 @@ public class UserApi {
         return users;
     }
 
+
+    /**
+     * 获取所有的用户
+     *
+     * @return 用户列表
+     */
+    @OpenApiMethod("getAllUsers")
+    public List<User> getAllUsers() {
+        log.info("getAllUsers");
+        List<User> users = new ArrayList<>();
+        users.add(new User(1L, "张三"));
+        users.add(new User(2L, "李四"));
+        users.add(new User(3L, "王五"));
+        return users;
+    }
+
 }

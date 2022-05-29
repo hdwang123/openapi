@@ -15,6 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 import openapi.sdk.common.constant.Constant;
 import openapi.sdk.common.model.*;
 import openapi.sdk.common.util.Base64Util;
+import openapi.sdk.common.util.CommonUtil;
 import openapi.sdk.common.util.SymmetricCryUtil;
 
 import java.nio.charset.StandardCharsets;
@@ -140,9 +141,9 @@ public class OpenApiClient {
      * @param inParams 入参
      */
     private void encryptAndSign(InParams inParams) {
+        //加密
         String body = inParams.getBody();
         if (StrUtil.isNotBlank(body)) {
-            //加密
             if (this.enableSymmetricCry) {
                 //启用对称加密，则内容采用对称加密，需先生成对称密钥，密钥采用非对称加密后传输
                 log.debug("启用对称加密，采用非对称加密{}+对称加密{}模式", asymmetricCryEnum, symmetricCryEnum);
@@ -164,10 +165,11 @@ public class OpenApiClient {
                 body = asymmetricCry(body);
             }
             inParams.setBody(body);
-
-            //加签(对内容密文进行加签)
-            inParams.setSign(sign(body));
         }
+
+        //加签
+        String signContent = CommonUtil.getSignContent(inParams);
+        inParams.setSign(sign(signContent));
     }
 
     /**

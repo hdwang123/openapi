@@ -23,5 +23,6 @@ public class ClientApplication {
         client.saveUser();
         client.listUsers();
 //        client.listUsers2();
+        client.getAllUsers();
     }
 }

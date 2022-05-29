@@ -8,6 +8,7 @@ import cn.hutool.crypto.symmetric.AES;
 import cn.hutool.crypto.symmetric.SM4;
 import lombok.extern.slf4j.Slf4j;
 import openapi.sdk.common.model.*;
+import openapi.sdk.common.util.CommonUtil;
 import openapi.sdk.common.util.SymmetricCryUtil;
 import openapi.server.sdk.model.ApiHandler;
 import openapi.server.sdk.model.OpenApi;
@@ -152,11 +153,11 @@ public class OpenApiGateway {
      */
     private Object getParam(InParams inParams, ApiHandler apiHandler) {
         Object param = null;
-        if (StrUtil.isNotBlank(inParams.getBody())) {
-            //验签
-            verifySign(inParams);
+        //验签
+        verifySign(inParams);
 
-            //解密
+        //解密
+        if (StrUtil.isNotBlank(inParams.getBody())) {
             String decryptedBody = decryptBody(inParams);
 
             try {
@@ -179,12 +180,13 @@ public class OpenApiGateway {
     private void verifySign(InParams inParams) {
         boolean verify;
         String callerPublicKey = config.getCallerPublicKey(inParams.getCallerId());
+        String signContent = CommonUtil.getSignContent(inParams);
         if (config.getAsymmetricCry() == AsymmetricCryEnum.RSA) {
             Sign sign = SecureUtil.sign(SignAlgorithm.SHA256withRSA, null, callerPublicKey);
-            verify = sign.verify(inParams.getBody().getBytes(StandardCharsets.UTF_8), Base64Util.base64ToBytes(inParams.getSign()));
+            verify = sign.verify(signContent.getBytes(StandardCharsets.UTF_8), Base64Util.base64ToBytes(inParams.getSign()));
         } else if (config.getAsymmetricCry() == AsymmetricCryEnum.SM2) {
             SM2 sm2 = SmUtil.sm2(null, callerPublicKey);
-            verify = sm2.verifyHex(HexUtil.encodeHexStr(inParams.getBody()), inParams.getSign());
+            verify = sm2.verifyHex(HexUtil.encodeHexStr(signContent), inParams.getSign());
         } else {
             throw new BusinessException("不支持的非对称加密算法");
         }
@@ -232,7 +234,12 @@ public class OpenApiGateway {
     private OutParams doCall(ApiHandler apiHandler, Object param, InParams inParams) {
         try {
             OutParams outParams = new OutParams();
-            Object ret = apiHandler.getMethod().invoke(apiHandler.getBean(), param);
+            Object[] params = new Object[]{param};
+            if (ArrayUtil.isEmpty(apiHandler.getParamClasses())) {
+                //空数组表示无参
+                params = new Object[0];
+            }
+            Object ret = apiHandler.getMethod().invoke(apiHandler.getBean(), params);
             String retStr = StrObjectConvert.objToStr(ret, ret.getClass());
             //返回值需要加密
             if (config.retEncrypt()) {
