@@ -78,6 +78,28 @@ public class UserApiClient {
         }
     }
 
+    public void batchSaveUser() {
+        try {
+            InParams inParams = new InParams();
+            inParams.setUuid(UUID.randomUUID().toString());
+            inParams.setCallerId("001");
+            inParams.setApi("userApi");
+            inParams.setMethod("batchSaveUser");
+
+            List<User> users = new ArrayList<>();
+            User user = new User();
+            user.setId(1L);
+            user.setName("张三");
+            users.add(user);
+            inParams.setBody(JSONUtil.toJsonStr(users));
+            log.info("入参：" + inParams);
+            OutParams outParams = apiClient.callOpenApi(inParams);
+            log.info("返回值：" + outParams);
+        } catch (Exception ex) {
+            log.error("异常", ex);
+        }
+    }
+
     public void listUsers() {
         try {
             apiClient = new OpenApiClient(baseUrl, privateKey, remotePublicKey, AsymmetricCryEnum.RSA, false, false, null);

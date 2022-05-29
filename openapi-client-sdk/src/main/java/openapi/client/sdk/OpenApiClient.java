@@ -230,19 +230,25 @@ public class OpenApiClient {
      * @param outParams 返回值
      */
     private void decryptData(OutParams outParams) {
-        //解密
-        String decryptedData = null;
         try {
-            if (enableSymmetricCry) {
-                log.debug("启用对称加密，采用非对称加密{}+对称加密{}模式", asymmetricCryEnum, symmetricCryEnum);
-                String key = asymmetricDeCry(outParams.getSymmetricCryKey());
-                byte[] keyBytes = Base64Util.base64ToBytes(key);
-                decryptedData = symmetricDeCry(outParams.getData(), keyBytes);
-            } else {
-                log.debug("未启用对称加密，仅采用非对称加密{}模式", asymmetricCryEnum);
-                decryptedData = asymmetricDeCry(outParams.getData());
+            String data = outParams.getData();
+            if (StrUtil.isNotBlank(data)) {
+                String decryptedData = null;
+                if (enableSymmetricCry) {
+                    log.debug("启用对称加密，采用非对称加密{}+对称加密{}模式", asymmetricCryEnum, symmetricCryEnum);
+                    String key = asymmetricDeCry(outParams.getSymmetricCryKey());
+                    byte[] keyBytes = Base64Util.base64ToBytes(key);
+                    decryptedData = symmetricDeCry(data, keyBytes);
+                } else {
+                    log.debug("未启用对称加密，仅采用非对称加密{}模式", asymmetricCryEnum);
+                    decryptedData = asymmetricDeCry(data);
+                }
+                outParams.setData(decryptedData);
             }
-            outParams.setData(decryptedData);
+        } catch (BusinessException be) {
+            String errorMsg = "解密失败：" + be.getMessage();
+            log.error(errorMsg, be);
+            throw new BusinessException(errorMsg);
         } catch (Exception ex) {
             log.error("解密失败", ex);
             throw new BusinessException("解密失败");

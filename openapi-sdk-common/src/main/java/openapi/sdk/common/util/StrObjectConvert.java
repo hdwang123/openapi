@@ -3,6 +3,7 @@ package openapi.sdk.common.util;
 import cn.hutool.json.JSONUtil;
 import openapi.sdk.common.model.BusinessException;
 
+import java.lang.reflect.Array;
 import java.util.Collection;
 import java.util.List;
 
@@ -40,7 +41,16 @@ public class StrObjectConvert {
             //字符串类型，无需转换
             ins = str;
         } else if (classType.isArray()) {
-            throw new BusinessException("不支持数组类型的参数");
+            Class elementType = classType.getComponentType();
+            //数组类型先转成List
+            List list = JSONUtil.toList(str, elementType);
+            //构建一个数组对象，然后把List数据赋值给数组
+            Object array = Array.newInstance(elementType, list.size());
+            for (int i = 0; i < list.size(); i++) {
+                Array.set(array, i, list.get(i));
+            }
+            ins = array;
+//            throw new BusinessException("不支持数组类型的参数");
         } else if (Collection.class.isAssignableFrom(classType)) {
             if (classType.getName().equals(List.class.getName())) {
                 //Collection类型都转换为List(注：不支持set等)

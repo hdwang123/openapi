@@ -45,6 +45,11 @@ public class UserApi {
         return true;
     }
 
+    @OpenApiMethod("batchSaveUser")
+    public void batchSaveUser(List<User> users){
+        log.info("batchSaveUser:" + JSONUtil.toJsonStr(users));
+    }
+
     /**
      * 列出指定用户列表
      *

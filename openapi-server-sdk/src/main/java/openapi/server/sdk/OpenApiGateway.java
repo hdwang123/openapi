@@ -165,6 +165,8 @@ public class OpenApiGateway {
                 //当前仅支持一个参数的方法
                 Class paramClass = apiHandler.getParamClasses()[0];
                 param = StrObjectConvert.strToObj(decryptedBody, paramClass);
+            } catch (BusinessException be) {
+                throw new BusinessException("入参转换异常：" + be.getMessage());
             } catch (Exception ex) {
                 log.error("入参转换异常", ex);
                 throw new BusinessException("入参转换异常");
@@ -218,6 +220,8 @@ public class OpenApiGateway {
                 log.debug("未启用对称加密，仅采用非对称加密{}模式", config.getAsymmetricCry());
                 decryptedBody = asymmetricDeCry(inParams.getBody());
             }
+        } catch (BusinessException be) {
+            throw new BusinessException("解密失败：" + be.getMessage());
         } catch (Exception ex) {
             log.error("解密失败", ex);
             throw new BusinessException("解密失败");
@@ -258,13 +262,20 @@ public class OpenApiGateway {
                 params = new Object[0];
             }
             Object ret = apiHandler.getMethod().invoke(apiHandler.getBean(), params);
-            String retStr = StrObjectConvert.objToStr(ret, ret.getClass());
-            //判断返回值是否需要加密
-            boolean retEncrypt = isRetEncrypt(apiHandler);
-            if (retEncrypt) {
-                retStr = encryptRet(inParams, retStr, outParams, apiHandler);
+            String retStr = StrUtil.EMPTY;
+            if (ret != null) {
+                retStr = StrObjectConvert.objToStr(ret, ret.getClass());
+            }
+            if (StrUtil.isNotBlank(retStr)) {
+                //判断返回值是否需要加密
+                boolean retEncrypt = isRetEncrypt(apiHandler);
+                if (retEncrypt) {
+                    retStr = encryptRet(inParams, retStr, outParams, apiHandler);
+                }
             }
             return outParams.setSuccess(retStr);
+        } catch (BusinessException be) {
+            throw new BusinessException("调用opeapi处理器异常:" + be.getMessage());
         } catch (Exception ex) {
             log.error("调用opeapi处理器异常", ex);
             throw new BusinessException("调用opeapi处理器异常");
@@ -314,6 +325,8 @@ public class OpenApiGateway {
                 log.debug("未启用对称加密，仅采用非对称加密{}模式", config.getAsymmetricCry());
                 retStr = asymmetricCry(retStr, callerPublicKey);
             }
+        } catch (BusinessException be) {
+            throw new BusinessException("返回值加密异常:" + be.getMessage());
         } catch (Exception ex) {
             throw new BusinessException("返回值加密异常", ex);
         }
