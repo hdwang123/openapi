@@ -80,6 +80,8 @@ public class StrObjectConvert {
                 } else {
                     throw new BusinessException("不支持除List以外的集合类型参数");
                 }
+            } else {
+                throw new BusinessException("不支持除List以外的参数化类型参数");
             }
         } else {
             //对象转换
