@@ -13,7 +13,7 @@ import lombok.Data;
 public class InParams {
 
     /**
-     * 流水线ID
+     * 流水号ID
      */
     private String uuid;
 
