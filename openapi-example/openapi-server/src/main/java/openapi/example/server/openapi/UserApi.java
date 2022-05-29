@@ -110,4 +110,18 @@ public class UserApi {
         return users;
     }
 
+    /**
+     * 测试多参
+     *
+     * @param id
+     * @param name
+     * @param user
+     * @return
+     */
+    @OpenApiMethod("addUser")
+    public User addUser(Long id, String name, User user) {
+        log.info("addUser:id={},name={},user={}", id, name, JSONUtil.toJsonStr(user));
+        return user;
+    }
+
 }

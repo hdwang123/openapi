@@ -10,15 +10,18 @@ import cn.hutool.crypto.asymmetric.*;
 import cn.hutool.crypto.symmetric.AES;
 import cn.hutool.crypto.symmetric.SM4;
 import cn.hutool.http.HttpUtil;
+import cn.hutool.json.JSONArray;
 import cn.hutool.json.JSONUtil;
 import lombok.extern.slf4j.Slf4j;
 import openapi.sdk.common.constant.Constant;
 import openapi.sdk.common.model.*;
 import openapi.sdk.common.util.Base64Util;
 import openapi.sdk.common.util.CommonUtil;
+import openapi.sdk.common.util.StrObjectConvert;
 import openapi.sdk.common.util.SymmetricCryUtil;
 
 import java.nio.charset.StandardCharsets;
+import java.util.UUID;
 
 /**
  * 对外开放api客户端
@@ -134,6 +137,57 @@ public class OpenApiClient {
         OutParams outParams = doCall(inParams);
         return outParams;
     }
+
+    /**
+     * 调用openapi
+     *
+     * @param callerId 调用者ID
+     * @param api      接口名
+     * @param method   方法名
+     * @param params   方法参数
+     * @return 返回值
+     */
+    public OutParams callOpenApi(String callerId, String api, String method, Object... params) {
+        InParams inParams = new InParams();
+        inParams.setUuid(UUID.randomUUID().toString());
+        inParams.setCallerId(callerId);
+        inParams.setApi(api);
+        inParams.setMethod(method);
+
+        //设置入参的body
+        setInParamsBody(inParams, params);
+        log.debug("入参：{}", inParams);
+
+        //调用openapi
+        return this.callOpenApi(inParams);
+    }
+
+    /**
+     * 设置入参的body
+     *
+     * @param inParams 入参
+     * @param params   方法参数
+     */
+    private void setInParamsBody(InParams inParams, Object[] params) {
+        String body;
+        boolean multiParam;
+        if (params == null || params.length == 0) {
+            //无参函数
+            body = StrUtil.EMPTY;
+            multiParam = false;
+        } else if (params.length == 1) {
+            //单参函数
+            body = StrObjectConvert.objToStr(params[0], params[0].getClass());
+            multiParam = false;
+        } else {
+            //多参函数
+            body = JSONUtil.toJsonStr(params);
+            multiParam = true;
+        }
+        inParams.setBody(body);
+        inParams.setMultiParam(multiParam);
+    }
+
 
     /**
      * 加密&加签

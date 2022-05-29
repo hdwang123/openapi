@@ -47,6 +47,11 @@ public class InParams {
      */
     private String symmetricCryKey;
 
+    /**
+     * 是否是多参方法
+     */
+    private boolean multiParam;
+
     @Override
     public String toString() {
         return JSONUtil.toJsonStr(this);

@@ -197,4 +197,18 @@ public class UserApiClient {
             log.error("异常", ex);
         }
     }
+
+
+    public void addUser() {
+        try {
+            OpenApiClient apiClient = new OpenApiClient(baseUrl, privateKey, remotePublicKey, AsymmetricCryEnum.RSA, true, true, SymmetricCryEnum.AES);
+            User user = new User();
+            user.setId(1L);
+            user.setName("张三");
+            OutParams outParams = apiClient.callOpenApi("001", "userApi", "addUser", 5, "展昭", user);
+            log.info("返回值：" + outParams);
+        } catch (Exception ex) {
+            log.error("异常", ex);
+        }
+    }
 }

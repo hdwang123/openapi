@@ -6,6 +6,7 @@ import cn.hutool.crypto.SmUtil;
 import cn.hutool.crypto.asymmetric.*;
 import cn.hutool.crypto.symmetric.AES;
 import cn.hutool.crypto.symmetric.SM4;
+import cn.hutool.json.JSONUtil;
 import lombok.extern.slf4j.Slf4j;
 import openapi.sdk.common.model.*;
 import openapi.sdk.common.util.CommonUtil;
@@ -26,8 +27,7 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.annotation.PostConstruct;
 import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * 对外开放api网关入口
@@ -114,10 +114,10 @@ public class OpenApiGateway {
             ApiHandler apiHandler = getApiHandler(inParams);
 
             //获取方法参数
-            Object param = getParam(inParams, apiHandler);
+            List<Object> params = getParam(inParams, apiHandler);
 
             //调用目标方法
-            return outParams = doCall(apiHandler, param, inParams);
+            return outParams = doCall(apiHandler, params, inParams);
         } catch (BusinessException be) {
             log.error(be.getMessage());
             return outParams = OutParams.error(be.getMessage());
@@ -152,8 +152,8 @@ public class OpenApiGateway {
      * @param apiHandler openapi处理器
      * @return 方法参数
      */
-    private Object getParam(InParams inParams, ApiHandler apiHandler) {
-        Object param = null;
+    private List<Object> getParam(InParams inParams, ApiHandler apiHandler) {
+        List<Object> params = new ArrayList<>();
         //验签
         verifySign(inParams);
 
@@ -162,9 +162,26 @@ public class OpenApiGateway {
             String decryptedBody = decryptBody(inParams, apiHandler);
 
             try {
-                //当前仅支持一个参数的方法
-                Class paramClass = apiHandler.getParamClasses()[0];
-                param = StrObjectConvert.strToObj(decryptedBody, paramClass);
+                Class[] paramClasses = apiHandler.getParamClasses();
+                if (inParams.isMultiParam()) {
+                    //多参支持
+                    List<Object> list = JSONUtil.toList(decryptedBody, Object.class);
+                    if (list.size() != paramClasses.length) {
+                        throw new BusinessException("参数个数不匹配");
+                    }
+                    for (int i = 0; i < list.size(); i++) {
+                        String str = StrObjectConvert.objToStr(list.get(i), paramClasses[i]);
+                        params.add(StrObjectConvert.strToObj(str, paramClasses[i]));
+                    }
+                } else {
+                    if (paramClasses.length == 1) {
+                        //单参
+                        Class paramClass = paramClasses[0];
+                        params.add(StrObjectConvert.strToObj(decryptedBody, paramClass));
+                    } else {
+                        //无参
+                    }
+                }
             } catch (BusinessException be) {
                 throw new BusinessException("入参转换异常：" + be.getMessage());
             } catch (Exception ex) {
@@ -172,7 +189,7 @@ public class OpenApiGateway {
                 throw new BusinessException("入参转换异常");
             }
         }
-        return param;
+        return params;
     }
 
     /**
@@ -249,18 +266,14 @@ public class OpenApiGateway {
      * 调用目标方法
      *
      * @param apiHandler openapi处理器
-     * @param param      方法参数
+     * @param paramList  方法参数
      * @param inParams   openapi入参
      * @return 返回结果
      */
-    private OutParams doCall(ApiHandler apiHandler, Object param, InParams inParams) {
+    private OutParams doCall(ApiHandler apiHandler, List<Object> paramList, InParams inParams) {
         try {
             OutParams outParams = new OutParams();
-            Object[] params = new Object[]{param};
-            if (ArrayUtil.isEmpty(apiHandler.getParamClasses())) {
-                //空数组表示无参
-                params = new Object[0];
-            }
+            Object[] params = paramList.stream().toArray();
             Object ret = apiHandler.getMethod().invoke(apiHandler.getBean(), params);
             String retStr = StrUtil.EMPTY;
             if (ret != null) {
