@@ -244,4 +244,8 @@ public class UserApiClient {
 
 ### v1.1.2  
 1.方法多参数支持  
-2.修复类型转换错误  
+2.修复类型转换错误 
+
+### v1.1.3  
+1.OpenApiClient构造优化，新增OpenApiClientBuilder类  
+2.OpenApiClient调用优化，新增多个callOpenApi重载方法  
