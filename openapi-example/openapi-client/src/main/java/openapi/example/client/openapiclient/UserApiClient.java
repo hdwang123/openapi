@@ -2,6 +2,7 @@ package openapi.example.client.openapiclient;
 
 import cn.hutool.json.JSONUtil;
 import lombok.extern.slf4j.Slf4j;
+import openapi.client.sdk.OpenApiClientBuilder;
 import openapi.example.client.model.User;
 import openapi.client.sdk.OpenApiClient;
 import openapi.sdk.common.model.AsymmetricCryEnum;
@@ -11,7 +12,6 @@ import openapi.sdk.common.model.SymmetricCryEnum;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -208,6 +208,33 @@ public class UserApiClient {
             user.setName("张三");
             users.add(user);
             OutParams outParams = apiClient.callOpenApi("001", "userApi", "addUser", 5, "展昭", users);
+            log.info("返回值：" + outParams);
+        } catch (Exception ex) {
+            log.error("异常", ex);
+        }
+    }
+
+    public void testUserApi() {
+        try {
+            //使用OpenApiClientBuilder构建OpenApiClient对象
+            OpenApiClientBuilder builder = new OpenApiClientBuilder(baseUrl, privateKey, remotePublicKey, "001", "userApi");
+            builder.asymmetricCry(AsymmetricCryEnum.RSA);
+            builder.retDecrypt(true);
+            builder.enableSymmetricCry(true);
+            builder.symmetricCry(SymmetricCryEnum.AES);
+            OpenApiClient apiClient = builder.build();
+
+            //调用远程无参方法
+            OutParams outParams = apiClient.callOpenApi("getAllUsers");
+            log.info("返回值：" + outParams);
+
+            //调用远程有参方法
+            List<User> users = new ArrayList<>();
+            User user = new User();
+            user.setId(1L);
+            user.setName("张三");
+            users.add(user);
+            outParams = apiClient.callOpenApi("addUser", 5, "展昭", users);
             log.info("返回值：" + outParams);
         } catch (Exception ex) {
             log.error("异常", ex);

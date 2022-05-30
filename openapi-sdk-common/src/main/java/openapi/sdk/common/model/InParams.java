@@ -48,7 +48,7 @@ public class InParams {
     private String symmetricCryKey;
 
     /**
-     * 是否是多参方法
+     * 是否是多参方法（由sdk判断）
      */
     private boolean multiParam;
 

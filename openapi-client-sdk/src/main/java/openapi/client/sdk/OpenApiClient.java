@@ -24,6 +24,7 @@ import java.util.UUID;
 
 /**
  * 对外开放api客户端
+ * 注：推荐使用{@link OpenApiClientBuilder}构建对象
  *
  * @author wanghuidong
  */
@@ -64,6 +65,16 @@ public class OpenApiClient {
      * 对称加密算法
      */
     private SymmetricCryEnum symmetricCryEnum;
+
+    /**
+     * 调用者ID
+     */
+    private String callerId;
+
+    /**
+     * API接口名称
+     */
+    private String api;
 
     /**
      * openapi客户端
@@ -123,12 +134,39 @@ public class OpenApiClient {
     }
 
     /**
+     * openapi客户端
+     *
+     * @param baseUrl            openapi基础路径
+     * @param selfPrivateKey     本系统私钥
+     * @param remotePublicKey    远程系统的公钥
+     * @param asymmetricCryEnum  非对称加密算法
+     * @param retDecrypt         返回值是否需要解密
+     * @param enableSymmetricCry 是否启用对称加密(内容采用对称加密，对称加密密钥采用非对称加密)
+     * @param symmetricCryEnum   对称加密算法
+     * @param callerId           调用者ID
+     * @param api                接口名称
+     */
+    public OpenApiClient(String baseUrl, String selfPrivateKey, String remotePublicKey, AsymmetricCryEnum asymmetricCryEnum, boolean retDecrypt, boolean enableSymmetricCry, SymmetricCryEnum symmetricCryEnum, String callerId, String api) {
+        this.baseUrl = baseUrl;
+        this.selfPrivateKey = selfPrivateKey;
+        this.remotePublicKey = remotePublicKey;
+        this.asymmetricCryEnum = asymmetricCryEnum;
+        this.retDecrypt = retDecrypt;
+        this.enableSymmetricCry = enableSymmetricCry;
+        this.symmetricCryEnum = symmetricCryEnum;
+        this.callerId = callerId;
+        this.api = api;
+    }
+
+    /**
      * 调用openapi
+     * 注：推荐使用其它重载方法
      *
      * @param inParams 入参
      * @return 返回值
      */
     public OutParams callOpenApi(InParams inParams) {
+
         //加密&加签
         encryptAndSign(inParams);
 
@@ -139,14 +177,74 @@ public class OpenApiClient {
 
     /**
      * 调用openapi
+     * 注：请用{@link OpenApiClientBuilder}构建{@link OpenApiClient}对象
+     *
+     * @param method API方法名
+     * @param params API方法参数
+     * @return 返回值
+     */
+    public OutParams callOpenApi(String method, Object... params) {
+        //检查方法参数
+        checkInParams(callerId, api, method);
+
+        //构建InParams对象
+        InParams inParams = new InParams();
+        inParams.setUuid(UUID.randomUUID().toString());
+        inParams.setCallerId(callerId);
+        inParams.setApi(api);
+        inParams.setMethod(method);
+
+        //设置入参的body
+        setInParamsBody(inParams, params);
+        log.debug("入参：{}", inParams);
+
+        //调用openapi
+        return this.callOpenApi(inParams);
+    }
+
+
+    /**
+     * 调用openapi
+     * 注：请用{@link OpenApiClientBuilder}构建{@link OpenApiClient}对象
+     *
+     * @param api    API接口名
+     * @param method API方法名
+     * @param params API方法参数
+     * @return 返回值
+     */
+    public OutParams callOpenApi(String api, String method, Object... params) {
+        //检查方法参数
+        checkInParams(callerId, api, method);
+
+        //构建InParams对象
+        InParams inParams = new InParams();
+        inParams.setUuid(UUID.randomUUID().toString());
+        inParams.setCallerId(callerId);
+        inParams.setApi(api);
+        inParams.setMethod(method);
+
+        //设置入参的body
+        setInParamsBody(inParams, params);
+        log.debug("入参：{}", inParams);
+
+        //调用openapi
+        return this.callOpenApi(inParams);
+    }
+
+    /**
+     * 调用openapi
      *
      * @param callerId 调用者ID
-     * @param api      接口名
-     * @param method   方法名
-     * @param params   方法参数
+     * @param api      API接口名
+     * @param method   API方法名
+     * @param params   API方法参数
      * @return 返回值
      */
     public OutParams callOpenApi(String callerId, String api, String method, Object... params) {
+        //检查方法参数
+        checkInParams(callerId, api, method);
+
+        //构建InParams对象
         InParams inParams = new InParams();
         inParams.setUuid(UUID.randomUUID().toString());
         inParams.setCallerId(callerId);
@@ -389,5 +487,23 @@ public class OpenApiClient {
         return decryptedData;
     }
 
+    /**
+     * 检查入参
+     *
+     * @param callerId 调用者ID
+     * @param api      API接口名
+     * @param method   API方法名
+     */
+    private void checkInParams(String callerId, String api, String method) {
+        if (StrUtil.isBlank(callerId)) {
+            throw new BusinessException("调用者ID不能为空");
+        }
+        if (StrUtil.isBlank(api)) {
+            throw new BusinessException("API接口名不能为空");
+        }
+        if (StrUtil.isBlank(method)) {
+            throw new BusinessException("API方法名不能为空");
+        }
+    }
 
 }

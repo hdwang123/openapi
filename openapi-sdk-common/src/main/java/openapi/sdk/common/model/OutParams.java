@@ -9,7 +9,7 @@ import lombok.Data;
  * @author wanghuidong
  */
 @Data
-public class OutParams<T> {
+public class OutParams {
 
     /**
      * 流水号ID

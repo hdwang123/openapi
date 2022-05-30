@@ -7,7 +7,7 @@
     <groupId>io.github.hdwang123</groupId>
     <artifactId>openapi</artifactId>
     <packaging>pom</packaging>
-    <version>1.1.2</version>
+    <version>1.1.3-SNAPSHOT</version>
     <description>一个能够让您快速搭建开放api的sdk,包括openapi-client-sdk/openapi-server-sdk</description>
     <url>https://github.com/hdwang123/openapi</url>
     <!-- 许可证信息 -->
@@ -78,7 +78,14 @@
             <dependency>
                 <groupId>cn.hutool</groupId>
                 <artifactId>hutool-all</artifactId>
-                <version>5.7.22</version>
+                <version>5.8.2</version>
+            </dependency>
+
+            <!-- 加密工具包 -->
+            <dependency>
+                <groupId>org.bouncycastle</groupId>
+                <artifactId>bcprov-jdk15to18</artifactId>
+                <version>1.71</version>
             </dependency>
 
             <dependency>
