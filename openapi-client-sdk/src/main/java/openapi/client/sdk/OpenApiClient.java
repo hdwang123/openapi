@@ -77,6 +77,11 @@ public class OpenApiClient {
     private String api;
 
     /**
+     * 日志前缀
+     */
+    private ThreadLocal<String> logPrefix = new ThreadLocal<>();
+
+    /**
      * openapi客户端
      *
      * @param baseUrl         openapi基础路径
@@ -166,12 +171,25 @@ public class OpenApiClient {
      * @return 返回值
      */
     public OutParams callOpenApi(InParams inParams) {
+        //再次检查入参，可能有直接调用此函数的
+        checkInParams(inParams.getCallerId(), inParams.getApi(), inParams.getMethod());
+
+        //没有设置uuid则给设置一个
+        if (StrUtil.isBlank(inParams.getUuid())) {
+            inParams.setUuid(UUID.randomUUID().toString());
+        }
+
+        //设置日志前缀
+        logPrefix.set(String.format("uuid=%s:", inParams.getUuid()));
+        log.debug("{}入参：{}", logPrefix.get(), inParams);
+
 
         //加密&加签
         encryptAndSign(inParams);
 
         //调用openapi 并 处理返回值
         OutParams outParams = doCall(inParams);
+        log.debug("{}出参：{}", logPrefix.get(), outParams);
         return outParams;
     }
 
@@ -196,7 +214,6 @@ public class OpenApiClient {
 
         //设置入参的body
         setInParamsBody(inParams, params);
-        log.debug("入参：{}", inParams);
 
         //调用openapi
         return this.callOpenApi(inParams);
@@ -225,7 +242,6 @@ public class OpenApiClient {
 
         //设置入参的body
         setInParamsBody(inParams, params);
-        log.debug("入参：{}", inParams);
 
         //调用openapi
         return this.callOpenApi(inParams);
@@ -253,7 +269,6 @@ public class OpenApiClient {
 
         //设置入参的body
         setInParamsBody(inParams, params);
-        log.debug("入参：{}", inParams);
 
         //调用openapi
         return this.callOpenApi(inParams);
@@ -297,7 +312,7 @@ public class OpenApiClient {
         if (StrUtil.isNotBlank(body)) {
             if (this.enableSymmetricCry) {
                 //启用对称加密，则内容采用对称加密，需先生成对称密钥，密钥采用非对称加密后传输
-                log.debug("启用对称加密，采用非对称加密{}+对称加密{}模式", asymmetricCryEnum, symmetricCryEnum);
+                log.debug("{}启用对称加密，采用非对称加密{}+对称加密{}模式", logPrefix.get(), asymmetricCryEnum, symmetricCryEnum);
 
                 //生成对称密钥key
                 byte[] keyBytes = SymmetricCryUtil.getKey(symmetricCryEnum);
@@ -311,7 +326,7 @@ public class OpenApiClient {
                 //对内容进行对称加密
                 body = symmetricCry(body, keyBytes);
             } else {
-                log.debug("未启用对称加密，仅采用非对称加密{}模式", asymmetricCryEnum);
+                log.debug("{}未启用对称加密，仅采用非对称加密{}模式", logPrefix.get(), asymmetricCryEnum);
                 //仅采用非对称加密
                 body = asymmetricCry(body);
             }
@@ -356,9 +371,9 @@ public class OpenApiClient {
     private OutParams doCall(InParams inParams) {
         String url = URLUtil.completeUrl(baseUrl, Constant.OPENAPI_PATH);
         String body = JSONUtil.toJsonStr(inParams);
-        log.debug("调用openapi入参:" + inParams);
+        log.debug("{}调用openapi入参:{}", logPrefix.get(), inParams);
         String ret = HttpUtil.post(url, body);
-        log.debug("调用openapi返回值：" + ret);
+        log.debug("{}调用openapi出参：{}", logPrefix.get(), ret);
         if (StrUtil.isBlank(ret)) {
             throw new BusinessException("返回值为空");
         }
@@ -385,22 +400,22 @@ public class OpenApiClient {
             if (StrUtil.isNotBlank(data)) {
                 String decryptedData = null;
                 if (enableSymmetricCry) {
-                    log.debug("启用对称加密，采用非对称加密{}+对称加密{}模式", asymmetricCryEnum, symmetricCryEnum);
+                    log.debug("{}启用对称加密，采用非对称加密{}+对称加密{}模式", logPrefix.get(), asymmetricCryEnum, symmetricCryEnum);
                     String key = asymmetricDeCry(outParams.getSymmetricCryKey());
                     byte[] keyBytes = Base64Util.base64ToBytes(key);
                     decryptedData = symmetricDeCry(data, keyBytes);
                 } else {
-                    log.debug("未启用对称加密，仅采用非对称加密{}模式", asymmetricCryEnum);
+                    log.debug("{}未启用对称加密，仅采用非对称加密{}模式", logPrefix.get(), asymmetricCryEnum);
                     decryptedData = asymmetricDeCry(data);
                 }
                 outParams.setData(decryptedData);
             }
         } catch (BusinessException be) {
             String errorMsg = "解密失败：" + be.getMessage();
-            log.error(errorMsg, be);
+            log.error(logPrefix.get() + errorMsg, be);
             throw new BusinessException(errorMsg);
         } catch (Exception ex) {
-            log.error("解密失败", ex);
+            log.error(logPrefix.get() + "解密失败", ex);
             throw new BusinessException("解密失败");
         }
     }

@@ -60,6 +60,11 @@ public class OpenApiGateway {
     private OpenApiConfig config;
 
     /**
+     * 日志前缀
+     */
+    private ThreadLocal<String> logPrefix = new ThreadLocal<>();
+
+    /**
      * 初始化
      */
     @PostConstruct
@@ -107,9 +112,11 @@ public class OpenApiGateway {
      */
     @PostMapping(Constant.OPENAPI_PATH)
     public OutParams callMethod(@RequestBody InParams inParams) {
+        //设置日志前缀
+        logPrefix.set(String.format("uuid=%s:", inParams.getUuid()));
         OutParams outParams = null;
         try {
-            log.debug("接收到请求：" + inParams);
+            log.debug("{}接收到请求：{}", logPrefix.get(), inParams);
 
             //获取openapi处理器
             ApiHandler apiHandler = getApiHandler(inParams);
@@ -120,14 +127,14 @@ public class OpenApiGateway {
             //调用目标方法
             return outParams = doCall(apiHandler, params, inParams);
         } catch (BusinessException be) {
-            log.error(be.getMessage());
+            log.error(logPrefix.get() + be.getMessage());
             return outParams = OutParams.error(be.getMessage());
         } catch (Exception ex) {
-            log.error("系统异常：", ex);
+            log.error(logPrefix.get() + "系统异常：", ex);
             return outParams = OutParams.error("系统异常");
         } finally {
             outParams.setUuid(inParams.getUuid());
-            log.debug("调用完毕：" + outParams);
+            log.debug(logPrefix.get() + "调用完毕：" + outParams);
         }
     }
 
@@ -186,7 +193,7 @@ public class OpenApiGateway {
             } catch (BusinessException be) {
                 throw new BusinessException("入参转换异常：" + be.getMessage());
             } catch (Exception ex) {
-                log.error("入参转换异常", ex);
+                log.error(logPrefix.get() + "入参转换异常", ex);
                 throw new BusinessException("入参转换异常");
             }
         }
@@ -229,19 +236,19 @@ public class OpenApiGateway {
             boolean enableSymmetricCry = isEnableSymmetricCry(apiHandler);
             if (enableSymmetricCry) {
                 //启用对称加密模式
-                log.debug("启用对称加密，采用非对称加密{}+对称加密{}模式", config.getAsymmetricCry(), config.getSymmetricCry());
+                log.debug("{}启用对称加密，采用非对称加密{}+对称加密{}模式", logPrefix.get(), config.getAsymmetricCry(), config.getSymmetricCry());
                 String key = asymmetricDeCry(inParams.getSymmetricCryKey());
                 byte[] keyBytes = Base64Util.base64ToBytes(key);
                 decryptedBody = symmetricDeCry(inParams.getBody(), keyBytes);
             } else {
                 //仅非对称加密模式
-                log.debug("未启用对称加密，仅采用非对称加密{}模式", config.getAsymmetricCry());
+                log.debug("{}未启用对称加密，仅采用非对称加密{}模式", logPrefix.get(), config.getAsymmetricCry());
                 decryptedBody = asymmetricDeCry(inParams.getBody());
             }
         } catch (BusinessException be) {
             throw new BusinessException("解密失败：" + be.getMessage());
         } catch (Exception ex) {
-            log.error("解密失败", ex);
+            log.error(logPrefix.get() + "解密失败", ex);
             throw new BusinessException("解密失败");
         }
         return decryptedBody;
@@ -274,9 +281,9 @@ public class OpenApiGateway {
         try {
             OutParams outParams = new OutParams();
             Object[] params = paramList.stream().toArray();
-            log.debug("调用API:{},入参：{}", apiHandler, params);
+            log.debug("{}调用API:{},入参：{}", logPrefix.get(), apiHandler, params);
             Object ret = apiHandler.getMethod().invoke(apiHandler.getBean(), params);
-            log.debug("调用API:{},出参：{}", apiHandler, ret);
+            log.debug("{}调用API:{},出参：{}", logPrefix.get(), apiHandler, ret);
             String retStr = StrUtil.EMPTY;
             if (ret != null) {
                 retStr = StrObjectConvert.objToStr(ret, ret.getClass());
@@ -292,7 +299,7 @@ public class OpenApiGateway {
         } catch (BusinessException be) {
             throw new BusinessException("调用opeapi处理器异常:" + be.getMessage());
         } catch (Exception ex) {
-            log.error("调用opeapi处理器异常", ex);
+            log.error(logPrefix.get() + "调用opeapi处理器异常", ex);
             throw new BusinessException("调用opeapi处理器异常");
         }
     }
@@ -329,14 +336,14 @@ public class OpenApiGateway {
             boolean enableSymmetricCry = isEnableSymmetricCry(apiHandler);
             if (enableSymmetricCry) {
                 //启用对称加密模式
-                log.debug("启用对称加密，采用非对称加密{}+对称加密{}模式", config.getAsymmetricCry(), config.getSymmetricCry());
+                log.debug("{}启用对称加密，采用非对称加密{}+对称加密{}模式", logPrefix.get(), config.getAsymmetricCry(), config.getSymmetricCry());
                 byte[] keyBytes = SymmetricCryUtil.getKey(config.getSymmetricCry());
                 String key = Base64Util.bytesToBase64(keyBytes);
                 outParams.setSymmetricCryKey(asymmetricCry(key, callerPublicKey));
                 retStr = symmetricCry(retStr, keyBytes);
             } else {
                 //仅采用非对称加密模式
-                log.debug("未启用对称加密，仅采用非对称加密{}模式", config.getAsymmetricCry());
+                log.debug("{}未启用对称加密，仅采用非对称加密{}模式", logPrefix.get(), config.getAsymmetricCry());
                 retStr = asymmetricCry(retStr, callerPublicKey);
             }
         } catch (BusinessException be) {

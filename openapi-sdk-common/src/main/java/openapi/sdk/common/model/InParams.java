@@ -1,6 +1,5 @@
 package openapi.sdk.common.model;
 
-import cn.hutool.json.JSON;
 import cn.hutool.json.JSONUtil;
 import lombok.Data;
 
@@ -13,7 +12,7 @@ import lombok.Data;
 public class InParams {
 
     /**
-     * 流水号ID
+     * 流水号
      */
     private String uuid;
 

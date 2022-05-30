@@ -12,7 +12,7 @@ import lombok.Data;
 public class OutParams {
 
     /**
-     * 流水号ID
+     * 流水号
      */
     private String uuid;
 
