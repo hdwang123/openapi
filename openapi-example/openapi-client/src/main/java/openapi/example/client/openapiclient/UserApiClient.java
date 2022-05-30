@@ -216,16 +216,16 @@ public class UserApiClient {
 
     public void testUserApi() {
         try {
-            //使用OpenApiClientBuilder构建OpenApiClient对象
-            OpenApiClientBuilder builder = new OpenApiClientBuilder(baseUrl, privateKey, remotePublicKey, "001", "userApi");
-            builder.asymmetricCry(AsymmetricCryEnum.RSA);
-            builder.retDecrypt(true);
-            builder.enableSymmetricCry(true);
-            builder.symmetricCry(SymmetricCryEnum.AES);
-            OpenApiClient apiClient = builder.build();
+            //使用OpenApiClientBuilder构建OpenApiClient对象，未指定API接口名
+            OpenApiClient apiClient = new OpenApiClientBuilder(baseUrl, privateKey, remotePublicKey, "001")
+                    .asymmetricCry(AsymmetricCryEnum.RSA)
+                    .retDecrypt(true)
+                    .enableSymmetricCry(true)
+                    .symmetricCry(SymmetricCryEnum.AES)
+                    .build();
 
             //调用远程无参方法
-            OutParams outParams = apiClient.callOpenApi("getAllUsers");
+            OutParams outParams = apiClient.callOpenApi("userApi", "getAllUsers");
             log.info("返回值：" + outParams);
 
             //调用远程有参方法
@@ -234,6 +234,22 @@ public class UserApiClient {
             user.setId(1L);
             user.setName("张三");
             users.add(user);
+            outParams = apiClient.callOpenApi("userApi", "addUser", 5, "展昭", users);
+            log.info("返回值：" + outParams);
+
+            //使用OpenApiClientBuilder构建OpenApiClient对象，已指定API接口名
+            apiClient = new OpenApiClientBuilder(baseUrl, privateKey, remotePublicKey, "001", "userApi")
+                    .asymmetricCry(AsymmetricCryEnum.RSA)
+                    .retDecrypt(true)
+                    .enableSymmetricCry(true)
+                    .symmetricCry(SymmetricCryEnum.AES)
+                    .build();
+
+            //调用远程无参方法
+            outParams = apiClient.callOpenApi("getAllUsers");
+            log.info("返回值：" + outParams);
+
+            //调用远程有参方法
             outParams = apiClient.callOpenApi("addUser", 5, "展昭", users);
             log.info("返回值：" + outParams);
         } catch (Exception ex) {
