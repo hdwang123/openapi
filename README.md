@@ -21,6 +21,11 @@ cn.hutool.hutool-all
 2.实现接口的参数与返回值的加解密（<font size=1>使用非对称加密：RSA/SM2，或对称加密：AES/SM4</font>）  
 3.实现接口的验签（<font size=1>服务端会校验客户端的签名，确保调用者身份以及数据不被篡改</font>）
 
+## 程序流程图
+
+<img src="https://github.com/hdwang123/openapi/blob/main/doc/openapi.png" />   
+<img src="https://github.com/hdwang123/openapi/blob/main/doc/openapi2.png" />   
+
 ## 使用方法
 
 ### 服务端
