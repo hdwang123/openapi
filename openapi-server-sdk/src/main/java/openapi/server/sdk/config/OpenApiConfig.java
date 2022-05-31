@@ -12,12 +12,11 @@ import openapi.sdk.common.model.SymmetricCryEnum;
 public interface OpenApiConfig {
 
     /**
-     * 获取采用的非对称加密算法(rsa,sm2)
+     * 获取本系统的私钥
      *
-     * @return 加密算法
-     * @see AsymmetricCryEnum
+     * @return 本系统私钥
      */
-    AsymmetricCryEnum getAsymmetricCry();
+    String getSelfPrivateKey();
 
     /**
      * 获取调用者的公钥
@@ -28,11 +27,12 @@ public interface OpenApiConfig {
     String getCallerPublicKey(String callerId);
 
     /**
-     * 获取本系统的私钥
+     * 获取采用的非对称加密算法(rsa,sm2)
      *
-     * @return 本系统私钥
+     * @return 加密算法
+     * @see AsymmetricCryEnum
      */
-    String getSelfPrivateKey();
+    AsymmetricCryEnum getAsymmetricCry();
 
     /**
      * 获取返回值是否加密

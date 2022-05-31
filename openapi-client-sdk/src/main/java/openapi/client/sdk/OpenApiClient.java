@@ -129,13 +129,7 @@ public class OpenApiClient {
      * @param symmetricCryEnum   对称加密算法
      */
     public OpenApiClient(String baseUrl, String selfPrivateKey, String remotePublicKey, AsymmetricCryEnum asymmetricCryEnum, boolean retDecrypt, boolean enableSymmetricCry, SymmetricCryEnum symmetricCryEnum) {
-        this.baseUrl = baseUrl;
-        this.selfPrivateKey = selfPrivateKey;
-        this.remotePublicKey = remotePublicKey;
-        this.asymmetricCryEnum = asymmetricCryEnum;
-        this.retDecrypt = retDecrypt;
-        this.enableSymmetricCry = enableSymmetricCry;
-        this.symmetricCryEnum = symmetricCryEnum;
+        this(baseUrl, selfPrivateKey, remotePublicKey, asymmetricCryEnum, retDecrypt, enableSymmetricCry, symmetricCryEnum, null, null);
     }
 
     /**
@@ -161,6 +155,14 @@ public class OpenApiClient {
         this.symmetricCryEnum = symmetricCryEnum;
         this.callerId = callerId;
         this.api = api;
+
+        //初始化信息打印
+        log.info("OpenApiClient init:" + this);
+        if (this.enableSymmetricCry) {
+            log.debug("启用对称加密，采用非对称加密{}+对称加密{}模式", asymmetricCryEnum, symmetricCryEnum);
+        } else {
+            log.debug("未启用对称加密，仅采用非对称加密{}模式", asymmetricCryEnum);
+        }
     }
 
     /**
@@ -312,8 +314,6 @@ public class OpenApiClient {
         if (StrUtil.isNotBlank(body)) {
             if (this.enableSymmetricCry) {
                 //启用对称加密，则内容采用对称加密，需先生成对称密钥，密钥采用非对称加密后传输
-                log.debug("{}启用对称加密，采用非对称加密{}+对称加密{}模式", logPrefix.get(), asymmetricCryEnum, symmetricCryEnum);
-
                 //生成对称密钥key
                 byte[] keyBytes = SymmetricCryUtil.getKey(symmetricCryEnum);
 
@@ -326,7 +326,6 @@ public class OpenApiClient {
                 //对内容进行对称加密
                 body = symmetricCry(body, keyBytes);
             } else {
-                log.debug("{}未启用对称加密，仅采用非对称加密{}模式", logPrefix.get(), asymmetricCryEnum);
                 //仅采用非对称加密
                 body = asymmetricCry(body);
             }
@@ -400,12 +399,10 @@ public class OpenApiClient {
             if (StrUtil.isNotBlank(data)) {
                 String decryptedData = null;
                 if (enableSymmetricCry) {
-                    log.debug("{}启用对称加密，采用非对称加密{}+对称加密{}模式", logPrefix.get(), asymmetricCryEnum, symmetricCryEnum);
                     String key = asymmetricDeCry(outParams.getSymmetricCryKey());
                     byte[] keyBytes = Base64Util.base64ToBytes(key);
                     decryptedData = symmetricDeCry(data, keyBytes);
                 } else {
-                    log.debug("{}未启用对称加密，仅采用非对称加密{}模式", logPrefix.get(), asymmetricCryEnum);
                     decryptedData = asymmetricDeCry(data);
                 }
                 outParams.setData(decryptedData);
@@ -519,6 +516,12 @@ public class OpenApiClient {
         if (StrUtil.isBlank(method)) {
             throw new BusinessException("API方法名不能为空");
         }
+    }
+
+    @Override
+    public String toString() {
+        return String.format("\nbaseUrl:%s,\nselfPrivateKey:%s,\nremotePublicKey:%s,\nasymmetricCryEnum:%s,\nretDecrypt:%s;\nenableSymmetricCry:%s,\nsymmetricCryEnum:%s,\ncallerId:%s,\napi:%s",
+                baseUrl, selfPrivateKey, remotePublicKey, asymmetricCryEnum, retDecrypt, enableSymmetricCry, symmetricCryEnum, callerId, api);
     }
 
 }

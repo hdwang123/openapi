@@ -28,6 +28,6 @@ public class ClientApplication {
         client.listUsers3();
         client.getAllUsers();
         client.addUser();
-        client.testUserApi();
+        client.addUsers();
     }
 }

@@ -12,6 +12,7 @@ import openapi.sdk.common.model.SymmetricCryEnum;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -34,226 +35,101 @@ public class UserApiClient {
 
     String baseUrl = "http://localhost:8080";
 
+    /**
+     * 定义OpenApiClient
+     */
+    OpenApiClient apiClient = null;
+
+    @PostConstruct
+    public void init() {
+        apiClient = new OpenApiClientBuilder(baseUrl, privateKey, remotePublicKey, "001", "userApi")
+                .asymmetricCry(AsymmetricCryEnum.RSA)
+                .retDecrypt(true)
+                .enableSymmetricCry(true)
+                .symmetricCry(SymmetricCryEnum.AES)
+                .build();
+    }
+
 
     public void getUserById() {
-        try {
-            OpenApiClient apiClient = new OpenApiClient(baseUrl, privateKey, remotePublicKey, AsymmetricCryEnum.RSA, true, true, SymmetricCryEnum.AES);
-            InParams inParams = new InParams();
-            inParams.setUuid(UUID.randomUUID().toString());
-            inParams.setCallerId("001");
-            inParams.setApi("userApi");
-            inParams.setMethod("getUserById");
-            inParams.setBody("10001");
-            log.info("入参：" + inParams);
-            OutParams outParams = apiClient.callOpenApi(inParams);
-            log.info("返回值：" + outParams);
-        } catch (Exception ex) {
-            log.error("异常", ex);
-        }
+        OutParams outParams = apiClient.callOpenApi("getUserById", 10001);
+        log.info("返回值：" + outParams);
     }
 
     public void saveUser() {
-        try {
-            OpenApiClient apiClient = new OpenApiClient(baseUrl, privateKey, remotePublicKey, AsymmetricCryEnum.RSA, true, true, SymmetricCryEnum.AES);
-            InParams inParams = new InParams();
-            inParams.setUuid(UUID.randomUUID().toString());
-            inParams.setCallerId("001");
-            inParams.setApi("userApi");
-            inParams.setMethod("saveUser");
-
-            User user = new User();
-            user.setId(1L);
-            user.setName("张三");
-            inParams.setBody(JSONUtil.toJsonStr(user));
-            log.info("入参：" + inParams);
-            OutParams outParams = apiClient.callOpenApi(inParams);
-            log.info("返回值：" + outParams);
-        } catch (Exception ex) {
-            log.error("异常", ex);
-        }
+        User user = new User();
+        user.setId(1L);
+        user.setName("张三");
+        OutParams outParams = apiClient.callOpenApi("saveUser", user);
+        log.info("返回值：" + outParams);
     }
 
     public void batchSaveUser() {
-        try {
-            OpenApiClient apiClient = new OpenApiClient(baseUrl, privateKey, remotePublicKey, AsymmetricCryEnum.RSA, true, true, SymmetricCryEnum.AES);
-            InParams inParams = new InParams();
-            inParams.setUuid(UUID.randomUUID().toString());
-            inParams.setCallerId("001");
-            inParams.setApi("userApi");
-            inParams.setMethod("batchSaveUser");
-
-            List<User> users = new ArrayList<>();
-            User user = new User();
-            user.setId(1L);
-            user.setName("张三");
-            users.add(user);
-            inParams.setBody(JSONUtil.toJsonStr(users));
-            log.info("入参：" + inParams);
-            OutParams outParams = apiClient.callOpenApi(inParams);
-            log.info("返回值：" + outParams);
-        } catch (Exception ex) {
-            log.error("异常", ex);
-        }
+        List<User> users = new ArrayList<>();
+        User user = new User();
+        user.setId(1L);
+        user.setName("张三");
+        users.add(user);
+        OutParams outParams = apiClient.callOpenApi("batchSaveUser", users);
+        log.info("返回值：" + outParams);
     }
 
     public void batchSaveUser2() {
-        try {
-            OpenApiClient apiClient = new OpenApiClient(baseUrl, privateKey, remotePublicKey, AsymmetricCryEnum.RSA, true, true, SymmetricCryEnum.AES);
-            InParams inParams = new InParams();
-            inParams.setUuid(UUID.randomUUID().toString());
-            inParams.setCallerId("001");
-            inParams.setApi("userApi");
-            inParams.setMethod("batchSaveUser2");
-
-            User[] users = new User[1];
-            User user = new User();
-            user.setId(1L);
-            user.setName("张三");
-            users[0] = user;
-            inParams.setBody(JSONUtil.toJsonStr(users));
-            log.info("入参：" + inParams);
-            OutParams outParams = apiClient.callOpenApi(inParams);
-            log.info("返回值：" + outParams);
-        } catch (Exception ex) {
-            log.error("异常", ex);
-        }
+        User[] users = new User[1];
+        User user = new User();
+        user.setId(1L);
+        user.setName("张三");
+        users[0] = user;
+        //仅一个参数且是数组类型，必须转成Object类型，否则会被识别为多个参数
+        OutParams outParams = apiClient.callOpenApi("batchSaveUser2", (Object) users);
+        log.info("返回值：" + outParams);
     }
 
     public void listUsers() {
-        try {
-            OpenApiClient apiClient = new OpenApiClient(baseUrl, privateKey, remotePublicKey, AsymmetricCryEnum.RSA, false, false, null);
-            InParams inParams = new InParams();
-            inParams.setUuid(UUID.randomUUID().toString());
-            inParams.setCallerId("001");
-            inParams.setApi("userApi");
-            inParams.setMethod("listUsers");
-
-            List<Long> ids = new ArrayList<>();
-            ids.add(2L);
-            ids.add(3L);
-            inParams.setBody(JSONUtil.toJsonStr(ids));
-            log.info("入参：" + inParams);
-            OutParams outParams = apiClient.callOpenApi(inParams);
-            log.info("返回值：" + outParams);
-        } catch (Exception ex) {
-            log.error("异常", ex);
-        }
+        List<Long> ids = new ArrayList<>();
+        ids.add(2L);
+        ids.add(3L);
+        OutParams outParams = apiClient.callOpenApi("listUsers", ids);
+        log.info("返回值：" + outParams);
     }
 
     public void listUsers2() {
-        try {
-            OpenApiClient apiClient = new OpenApiClient(baseUrl, privateKey, remotePublicKey, AsymmetricCryEnum.RSA, true, true, SymmetricCryEnum.AES);
-            InParams inParams = new InParams();
-            inParams.setUuid(UUID.randomUUID().toString());
-            inParams.setCallerId("001");
-            inParams.setApi("userApi");
-            inParams.setMethod("listUsers2");
+        Long[] ids = new Long[]{
+                2L, 3L
+        };
+        //仅一个参数且是数组类型，必须转成Object类型，否则会被识别为多个参数
+        OutParams outParams = apiClient.callOpenApi("listUsers2", (Object) ids);
+        log.info("返回值：" + outParams);
 
-            Long[] ids = new Long[]{
-                    2L, 3L
-            };
-            inParams.setBody(JSONUtil.toJsonStr(ids));
-            log.info("入参：" + inParams);
-            OutParams outParams = apiClient.callOpenApi(inParams);
-            log.info("返回值：" + outParams);
-        } catch (Exception ex) {
-            log.error("异常", ex);
-        }
     }
 
     public void listUsers3() {
-        try {
-            OpenApiClient apiClient = new OpenApiClient(baseUrl, privateKey, remotePublicKey, AsymmetricCryEnum.RSA, true, true, SymmetricCryEnum.AES);
-            InParams inParams = new InParams();
-            inParams.setUuid(UUID.randomUUID().toString());
-            inParams.setCallerId("001");
-            inParams.setApi("userApi");
-            inParams.setMethod("listUsers3");
-
-            long[] ids = new long[]{
-                    2L, 3L
-            };
-            inParams.setBody(JSONUtil.toJsonStr(ids));
-            log.info("入参：" + inParams);
-            OutParams outParams = apiClient.callOpenApi(inParams);
-            log.info("返回值：" + outParams);
-        } catch (Exception ex) {
-            log.error("异常", ex);
-        }
+        long[] ids = new long[]{
+                2L, 3L
+        };
+        //仅一个参数且是数组类型,long这种基本类型非包装类型数组不需要强转Object
+        OutParams outParams = apiClient.callOpenApi("listUsers3", ids);
+        log.info("返回值：" + outParams);
     }
 
     public void getAllUsers() {
-        try {
-            OpenApiClient apiClient = new OpenApiClient(baseUrl, privateKey, remotePublicKey, AsymmetricCryEnum.RSA, true, true, SymmetricCryEnum.AES);
-            InParams inParams = new InParams();
-            inParams.setUuid(UUID.randomUUID().toString());
-            inParams.setCallerId("001");
-            inParams.setApi("userApi");
-            inParams.setMethod("getAllUsers");
-            log.info("入参：" + inParams);
-            OutParams outParams = apiClient.callOpenApi(inParams);
-            log.info("返回值：" + outParams);
-        } catch (Exception ex) {
-            log.error("异常", ex);
-        }
+        OutParams outParams = apiClient.callOpenApi("getAllUsers");
+        log.info("返回值：" + outParams);
     }
-
 
     public void addUser() {
-        try {
-            OpenApiClient apiClient = new OpenApiClient(baseUrl, privateKey, remotePublicKey, AsymmetricCryEnum.RSA, true, true, SymmetricCryEnum.AES);
-            List<User> users = new ArrayList<>();
-            User user = new User();
-            user.setId(1L);
-            user.setName("张三");
-            users.add(user);
-            OutParams outParams = apiClient.callOpenApi("001", "userApi", "addUser", 5, "展昭", users);
-            log.info("返回值：" + outParams);
-        } catch (Exception ex) {
-            log.error("异常", ex);
-        }
+        //为了精确调用到想要的重载方法，这里将第一个参数转成了Object对象
+        OutParams outParams = apiClient.callOpenApi("addUser", (Object) "展昭", "13312341234", "1331234@qq.com");
+        log.info("返回值：" + outParams);
     }
 
-    public void testUserApi() {
-        try {
-            //使用OpenApiClientBuilder构建OpenApiClient对象，未指定API接口名
-            OpenApiClient apiClient = new OpenApiClientBuilder(baseUrl, privateKey, remotePublicKey, "001")
-                    .asymmetricCry(AsymmetricCryEnum.RSA)
-                    .retDecrypt(true)
-                    .enableSymmetricCry(true)
-                    .symmetricCry(SymmetricCryEnum.AES)
-                    .build();
-
-            //调用远程无参方法
-            OutParams outParams = apiClient.callOpenApi("userApi", "getAllUsers");
-            log.info("返回值：" + outParams);
-
-            //调用远程有参方法
-            List<User> users = new ArrayList<>();
-            User user = new User();
-            user.setId(1L);
-            user.setName("张三");
-            users.add(user);
-            outParams = apiClient.callOpenApi("userApi", "addUser", 5, "展昭", users);
-            log.info("返回值：" + outParams);
-
-            //使用OpenApiClientBuilder构建OpenApiClient对象，已指定API接口名
-            apiClient = new OpenApiClientBuilder(baseUrl, privateKey, remotePublicKey, "001", "userApi")
-                    .asymmetricCry(AsymmetricCryEnum.RSA)
-                    .retDecrypt(true)
-                    .enableSymmetricCry(true)
-                    .symmetricCry(SymmetricCryEnum.AES)
-                    .build();
-
-            //调用远程无参方法
-            outParams = apiClient.callOpenApi("getAllUsers");
-            log.info("返回值：" + outParams);
-
-            //调用远程有参方法
-            outParams = apiClient.callOpenApi("addUser", 5, "展昭", users);
-            log.info("返回值：" + outParams);
-        } catch (Exception ex) {
-            log.error("异常", ex);
-        }
+    public void addUsers() {
+        List<User> users = new ArrayList<>();
+        User user = new User();
+        user.setId(1L);
+        user.setName("张三");
+        users.add(user);
+        OutParams outParams = apiClient.callOpenApi("addUsers", 5L, "李寻欢", users);
+        log.info("返回值：" + outParams);
     }
 }

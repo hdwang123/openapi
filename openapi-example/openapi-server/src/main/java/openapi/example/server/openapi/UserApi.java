@@ -7,6 +7,7 @@ import openapi.server.sdk.model.OpenApiMethod;
 import openapi.server.sdk.model.OpenApi;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -18,12 +19,6 @@ import java.util.List;
 @OpenApi("userApi")
 public class UserApi {
 
-    /**
-     * 根据用户ID查询用户信息
-     *
-     * @param id 用户ID
-     * @return 用户信息
-     */
     @OpenApiMethod("getUserById")
     public User getUserById(Long id) {
         log.info("getUserById：id=" + id);
@@ -33,12 +28,6 @@ public class UserApi {
         return user;
     }
 
-    /**
-     * 新增用户
-     *
-     * @param user 用户信息
-     * @return 是否成功
-     */
     @OpenApiMethod("saveUser")
     public Boolean saveUser(User user) {
         log.info("saveUser:" + JSONUtil.toJsonStr(user));
@@ -56,13 +45,7 @@ public class UserApi {
         log.info("batchSaveUser2:" + JSONUtil.toJsonStr(users));
     }
 
-    /**
-     * 列出指定用户列表
-     *
-     * @param ids 用户ID列表
-     * @return 用户列表
-     */
-    @OpenApiMethod(value = "listUsers", retEncrypt = "false", enableSymmetricCry = "false")
+    @OpenApiMethod(value = "listUsers")
     public List<User> listUsers(List<Long> ids) {
         log.info("listUsers: ids=" + JSONUtil.toJsonStr(ids));
         List<User> users = new ArrayList<>();
@@ -71,12 +54,6 @@ public class UserApi {
         return users;
     }
 
-    /**
-     * 暂不支持该类型的参数
-     *
-     * @param ids 用户ID数据
-     * @return 用户列表
-     */
     @OpenApiMethod("listUsers2")
     public List<User> listUsers2(Long[] ids) {
         log.info("listUsers: ids=" + JSONUtil.toJsonStr(ids));
@@ -108,9 +85,24 @@ public class UserApi {
 
 
     @OpenApiMethod("addUser")
-    public User addUser(int id, String name, User[] users) {
-        log.info("addUser:id={},name={},user={}", id, name, JSONUtil.toJsonStr(users));
-        return users[0];
+    public User addUser(String name, String phone, String email) {
+        User user = new User();
+        user.setName(name);
+        user.setPhone(phone);
+        user.setEmail(email);
+        log.info("addUser:user={}", JSONUtil.toJsonStr(user));
+        return user;
     }
+
+    @OpenApiMethod("addUsers")
+    public User addUser(Long id, String name, List<User> users) {
+        List<User> list = new ArrayList<>();
+        User user = new User(id, name);
+        list.add(user);
+        list.addAll(users);
+        log.info("addUser:users={}", id, name, JSONUtil.toJsonStr(list));
+        return user;
+    }
+
 
 }
