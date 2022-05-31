@@ -7,7 +7,6 @@ import openapi.server.sdk.model.OpenApiMethod;
 import openapi.server.sdk.model.OpenApi;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -72,7 +71,6 @@ public class UserApi {
         return users;
     }
 
-
     @OpenApiMethod(value = "getAllUsers")
     public List<User> getAllUsers() {
         log.info("getAllUsers");
@@ -82,7 +80,6 @@ public class UserApi {
         users.add(new User(3L, "王五"));
         return users;
     }
-
 
     @OpenApiMethod("addUser")
     public User addUser(String name, String phone, String email) {
@@ -103,6 +100,4 @@ public class UserApi {
         log.info("addUser:users={}", id, name, JSONUtil.toJsonStr(list));
         return user;
     }
-
-
 }
