@@ -59,7 +59,7 @@ public class OpenApiRefProxyFactoryBean<T> implements FactoryBean<T> {
                 .build();
         OpenApiRefProxyInvocationHandler invocationHandler = new OpenApiRefProxyInvocationHandler(apiClient);
 
-        //动态创建OpenApiRef接口的代理类
+        //动态创建OpenApiRef接口的代理对象
         return (T) Proxy.newProxyInstance(interClass.getClassLoader(), new Class[]{interClass}, invocationHandler);
     }
 

@@ -86,10 +86,10 @@ public class OpenApiRefProxyRegistryPostProcessor implements BeanDefinitionRegis
     /**
      * 获取指定注解的接口类
      *
-     * @param openApiReferenceClass 注解类
+     * @param openApiRefClass 注解类
      * @return 接口类
      */
-    public Set<Class<?>> getTypesAnnotatedWith(Class<OpenApiRef> openApiReferenceClass) {
+    public Set<Class<?>> getTypesAnnotatedWith(Class<OpenApiRef> openApiRefClass) {
         String scanPath = environment.getProperty("openapi.config.openApiRefPath");
         if (StrUtil.isBlank(scanPath)) {
             throw new BusinessException("OpenApiRef接口所在路径为空");
@@ -108,7 +108,7 @@ public class OpenApiRefProxyRegistryPostProcessor implements BeanDefinitionRegis
                         // 当类型是接口再添加到集合
                         if (metadataReader.getClassMetadata().isInterface()) {
                             Class interClass = Class.forName(metadataReader.getClassMetadata().getClassName());
-                            if (interClass.isAnnotationPresent(openApiReferenceClass)) {
+                            if (interClass.isAnnotationPresent(openApiRefClass)) {
                                 classes.add(interClass);
                             }
                         }
