@@ -2,6 +2,7 @@ package openapi.client.sdk.proxy;
 
 import cn.hutool.core.util.StrUtil;
 import lombok.extern.slf4j.Slf4j;
+import openapi.client.sdk.constant.Constant;
 import openapi.client.sdk.model.OpenApiRef;
 import openapi.sdk.common.model.BusinessException;
 import org.springframework.beans.BeansException;
@@ -26,15 +27,15 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * bean工厂的后置处理器，用于动态注册OpenApiRef代理对象，当存在配置openapi.config.openApiRefPath时生效
+ * OpenApiRef代理对象注册器，用于动态注册OpenApiRef代理对象，当存在配置openapi.config.openApiRefPath时生效
  *
  * @author wanghuidong
  * 时间： 2022/6/1 22:12
  */
 @Slf4j
 @Component
-@ConditionalOnProperty("openapi.config.openApiRefPath")
-public class OpenApiRefProxyRegistryPostProcessor implements BeanDefinitionRegistryPostProcessor, ResourceLoaderAware, EnvironmentAware {
+@ConditionalOnProperty(Constant.OPENAPI_REF_PATH)
+public class OpenApiRefProxyRegistry implements BeanDefinitionRegistryPostProcessor, ResourceLoaderAware, EnvironmentAware {
 
     /**
      * 环境对象，用来获取各种配置
@@ -90,7 +91,7 @@ public class OpenApiRefProxyRegistryPostProcessor implements BeanDefinitionRegis
      * @return 接口类
      */
     public Set<Class<?>> getTypesAnnotatedWith(Class<OpenApiRef> openApiRefClass) {
-        String scanPath = environment.getProperty("openapi.config.openApiRefPath");
+        String scanPath = environment.getProperty(Constant.OPENAPI_REF_PATH);
         if (StrUtil.isBlank(scanPath)) {
             throw new BusinessException("OpenApiRef接口所在路径为空");
         }
@@ -100,26 +101,22 @@ public class OpenApiRefProxyRegistryPostProcessor implements BeanDefinitionRegis
                     .concat(ClassUtils.convertClassNameToResourcePath(SystemPropertyUtils.resolvePlaceholders(scanPath))
                             .concat("/**/*.class"));
             Resource[] resources = resolver.getResources(packageSearchPath);
-            MetadataReader metadataReader = null;
+            MetadataReader metadataReader;
             for (Resource resource : resources) {
                 if (resource.isReadable()) {
                     metadataReader = metadataReaderFactory.getMetadataReader(resource);
-                    try {
-                        // 当类型是接口再添加到集合
-                        if (metadataReader.getClassMetadata().isInterface()) {
-                            Class interClass = Class.forName(metadataReader.getClassMetadata().getClassName());
-                            if (interClass.isAnnotationPresent(openApiRefClass)) {
-                                classes.add(interClass);
-                            }
+                    // 当类型是接口再添加到集合
+                    if (metadataReader.getClassMetadata().isInterface()) {
+                        Class interClass = Class.forName(metadataReader.getClassMetadata().getClassName());
+                        if (interClass.isAnnotationPresent(openApiRefClass)) {
+                            classes.add(interClass);
                         }
-                    } catch (Exception e) {
-                        e.printStackTrace();
                     }
                 }
             }
             return classes;
         } catch (Exception ex) {
-            log.error("扫描包下的资源异常", ex);
+            log.error(String.format("扫描%s下的OpenApiRef接口信息异常", scanPath), ex);
             return classes;
         }
     }

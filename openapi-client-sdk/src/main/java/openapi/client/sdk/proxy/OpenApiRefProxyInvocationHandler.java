@@ -12,7 +12,7 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 
 /**
- * OpenApiRef代理调用处理器
+ * OpenApiRef代理对象调用处理器
  *
  * @author wanghuidong
  * 时间： 2022/6/1 19:17
@@ -55,7 +55,7 @@ public class OpenApiRefProxyInvocationHandler implements InvocationHandler {
                 OpenApiMethod openApiMethod = method.getAnnotation(OpenApiMethod.class);
                 String methodName = openApiMethod.value();
                 if (StrUtil.isBlank(methodName)) {
-                    throw new BusinessException("api方法名称为空");
+                    throw new BusinessException(method.getName() + "api方法名称不能为空");
                 }
                 OutParams outParams = openApiClient.callOpenApi(methodName, args);
                 Class<?> returnClass = method.getReturnType();

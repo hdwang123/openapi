@@ -13,7 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.lang.reflect.Proxy;
 
 /**
- * OpenApiRef代理工厂，用于创建OpenApiRef代理对象
+ * OpenApiRef代理对象工厂，用于创建OpenApiRef所标注接口的代理对象
  *
  * @author wanghuidong
  * 时间： 2022/6/1 22:00
@@ -21,15 +21,32 @@ import java.lang.reflect.Proxy;
 @Slf4j
 public class OpenApiRefProxyFactoryBean<T> implements FactoryBean<T> {
 
+    /**
+     * sdk配置类
+     */
     @Autowired
     private OpenApiConfig config;
 
+    /**
+     * OpenApiRef标注的接口类
+     */
     private Class<T> interClass;
 
+    /**
+     * 构造器
+     *
+     * @param interClass OpenApiRef标注的接口类
+     */
     public OpenApiRefProxyFactoryBean(Class<T> interClass) {
         this.interClass = interClass;
     }
 
+    /**
+     * 获取一个OpenApiRef代理对象
+     *
+     * @return OpenApiRef所标注接口的代理对象
+     * @throws Exception
+     */
     @Override
     public T getObject() throws Exception {
         if (StrUtil.isBlank(config.getBaseUrl())) {
@@ -49,7 +66,7 @@ public class OpenApiRefProxyFactoryBean<T> implements FactoryBean<T> {
         OpenApiRef openApiRef = interClass.getAnnotation(OpenApiRef.class);
         String api = openApiRef.value();
         if (StrUtil.isBlank(api)) {
-            throw new BusinessException("api名称为空");
+            throw new BusinessException(interClass.getName() + "api名称不能为空");
         }
         OpenApiClient apiClient = new OpenApiClientBuilder(config.getBaseUrl(), config.getSelfPrivateKey(), config.getRemotePublicKey(), config.getCallerId(), api)
                 .asymmetricCry(config.getAsymmetricCryEnum())
@@ -57,12 +74,19 @@ public class OpenApiRefProxyFactoryBean<T> implements FactoryBean<T> {
                 .enableSymmetricCry(config.isEnableSymmetricCry())
                 .symmetricCry(config.getSymmetricCryEnum())
                 .build();
+
+        //创建OpenApiRef代理调用处理器对象
         OpenApiRefProxyInvocationHandler invocationHandler = new OpenApiRefProxyInvocationHandler(apiClient);
 
         //动态创建OpenApiRef接口的代理对象
         return (T) Proxy.newProxyInstance(interClass.getClassLoader(), new Class[]{interClass}, invocationHandler);
     }
 
+    /**
+     * 获取代理对象的类型
+     *
+     * @return 代理对象的类型
+     */
     @Override
     public Class<?> getObjectType() {
         return interClass;

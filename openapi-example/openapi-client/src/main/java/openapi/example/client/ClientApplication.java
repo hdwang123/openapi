@@ -16,7 +16,6 @@ import org.springframework.context.annotation.ComponentScan;
  * @author wanghuidong
  */
 @Slf4j
-@ComponentScan(value = "openapi")
 @SpringBootApplication
 public class ClientApplication {
 

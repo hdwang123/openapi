@@ -5,16 +5,17 @@ spring:
 
 ##openapi配置
 openapi:
-  config:
-    openApiRefPath: openapi.example.client.openapiclient
-    baseUrl: http://localhost:8080
-    selfPrivateKey: ${keys.local.rsa.privateKey}
-    remotePublicKey: ${keys.remote.rsa.publicKey}
-    asymmetricCryEnum: RSA
-    retDecrypt: true
-    enableSymmetricCry: true
-    symmetricCryEnum: AES
-    callerId: 001
+  client:
+    config:
+      openApiRefPath: openapi.example.client.openapiclient
+      baseUrl: http://localhost:8080
+      selfPrivateKey: ${keys.local.rsa.privateKey}
+      remotePublicKey: ${keys.remote.rsa.publicKey}
+      asymmetricCryEnum: RSA
+      retDecrypt: true
+      enableSymmetricCry: true
+      symmetricCryEnum: AES
+      callerId: 001
 
 #对非对称加密密钥对
 keys:

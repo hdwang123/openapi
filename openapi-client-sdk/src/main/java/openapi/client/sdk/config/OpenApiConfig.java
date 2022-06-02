@@ -12,22 +12,23 @@ import org.springframework.stereotype.Component;
  *
  * 详细配置如下：
  * openapi:
- *   config:
- *     openApiRefPath: openapi.example.client.openapiclient
- *     baseUrl: http://localhost:8080
- *     selfPrivateKey: ${selfPrivateKey}
- *     remotePublicKey: ${remotePublicKey}
- *     asymmetricCryEnum: RSA
- *     retDecrypt: true
- *     enableSymmetricCry: true
- *     symmetricCryEnum: AES
- *     callerId: 001
+ *   client:
+ *     config:
+ *       openApiRefPath: openapi.example.client.openapiclient
+ *       baseUrl: http://localhost:8080
+ *       selfPrivateKey: ${your selfPrivateKey}
+ *       remotePublicKey: ${your remotePublicKey}
+ *       asymmetricCryEnum: RSA
+ *       retDecrypt: true
+ *       enableSymmetricCry: true
+ *       symmetricCryEnum: AES
+ *       callerId: 001
  *
  * @author wanghuidong
  */
 @Data
 @Component
-@ConfigurationProperties(prefix = "openapi.config")
+@ConfigurationProperties(prefix = "openapi.client.config")
 public class OpenApiConfig {
     /**
      * 接口所在路径(包名)
