@@ -99,80 +99,6 @@ public class UserApi {
         user.setName("张三");
         return user;
     }
-
-    @OpenApiMethod("saveUser")
-    public Boolean saveUser(User user) {
-        log.info("saveUser:" + JSONUtil.toJsonStr(user));
-        return true;
-    }
-
-    @OpenApiMethod("batchSaveUser")
-    public void batchSaveUser(List<User> users) {
-        log.info("batchSaveUser:" + JSONUtil.toJsonStr(users));
-        log.info(JSONUtil.toJsonStr(users.get(0)));
-    }
-
-    @OpenApiMethod("batchSaveUser2")
-    public void batchSaveUser(User[] users) {
-        log.info("batchSaveUser2:" + JSONUtil.toJsonStr(users));
-    }
-
-    @OpenApiMethod(value = "listUsers")
-    public List<User> listUsers(List<Long> ids) {
-        log.info("listUsers: ids=" + JSONUtil.toJsonStr(ids));
-        List<User> users = new ArrayList<>();
-        users.add(new User(2L, "李四"));
-        users.add(new User(3L, "王五"));
-        return users;
-    }
-
-    @OpenApiMethod("listUsers2")
-    public List<User> listUsers2(Long[] ids) {
-        log.info("listUsers: ids=" + JSONUtil.toJsonStr(ids));
-        List<User> users = new ArrayList<>();
-        users.add(new User(2L, "李四"));
-        users.add(new User(3L, "王五"));
-        return users;
-    }
-
-    @OpenApiMethod("listUsers3")
-    public List<User> listUsers3(long[] ids) {
-        log.info("listUsers3: ids=" + JSONUtil.toJsonStr(ids));
-        List<User> users = new ArrayList<>();
-        users.add(new User(2L, "李四"));
-        users.add(new User(3L, "王五"));
-        return users;
-    }
-
-    @OpenApiMethod(value = "getAllUsers")
-    public List<User> getAllUsers() {
-        log.info("getAllUsers");
-        List<User> users = new ArrayList<>();
-        users.add(new User(1L, "张三"));
-        users.add(new User(2L, "李四"));
-        users.add(new User(3L, "王五"));
-        return users;
-    }
-
-    @OpenApiMethod("addUser")
-    public User addUser(String name, String phone, String email) {
-        User user = new User();
-        user.setName(name);
-        user.setPhone(phone);
-        user.setEmail(email);
-        log.info("addUser:user={}", JSONUtil.toJsonStr(user));
-        return user;
-    }
-
-    @OpenApiMethod("addUsers")
-    public User addUser(Long id, String name, List<User> users) {
-        List<User> list = new ArrayList<>();
-        User user = new User(id, name);
-        list.add(user);
-        list.addAll(users);
-        log.info("addUser:users={}", id, name, JSONUtil.toJsonStr(list));
-        return user;
-    }
 }
 ````
 
@@ -189,6 +115,10 @@ public class UserApi {
 ````
 
 #### 2.调用openapi
+
+##### 方式一
+
+直接调用OpenApiClient
 
 ````
 @Slf4j
@@ -226,84 +156,54 @@ public class UserApiClient {
         OutParams outParams = apiClient.callOpenApi("getUserById", 10001);
         log.info("返回值：" + outParams);
     }
-
-    public void saveUser() {
-        User user = new User();
-        user.setId(1L);
-        user.setName("张三");
-        OutParams outParams = apiClient.callOpenApi("saveUser", user);
-        log.info("返回值：" + outParams);
-    }
-
-    public void batchSaveUser() {
-        List<User> users = new ArrayList<>();
-        User user = new User();
-        user.setId(1L);
-        user.setName("张三");
-        users.add(user);
-        OutParams outParams = apiClient.callOpenApi("batchSaveUser", users);
-        log.info("返回值：" + outParams);
-    }
-
-    public void batchSaveUser2() {
-        User[] users = new User[1];
-        User user = new User();
-        user.setId(1L);
-        user.setName("张三");
-        users[0] = user;
-        //仅一个参数且是数组类型，必须转成Object类型，否则会被识别为多个参数
-        OutParams outParams = apiClient.callOpenApi("batchSaveUser2", (Object) users);
-        log.info("返回值：" + outParams);
-    }
-
-    public void listUsers() {
-        List<Long> ids = new ArrayList<>();
-        ids.add(2L);
-        ids.add(3L);
-        OutParams outParams = apiClient.callOpenApi("listUsers", ids);
-        log.info("返回值：" + outParams);
-    }
-
-    public void listUsers2() {
-        Long[] ids = new Long[]{
-                2L, 3L
-        };
-        //仅一个参数且是数组类型，必须转成Object类型，否则会被识别为多个参数
-        OutParams outParams = apiClient.callOpenApi("listUsers2", (Object) ids);
-        log.info("返回值：" + outParams);
-
-    }
-
-    public void listUsers3() {
-        long[] ids = new long[]{
-                2L, 3L
-        };
-        //仅一个参数且是数组类型,long这种基本类型非包装类型数组不需要强转Object
-        OutParams outParams = apiClient.callOpenApi("listUsers3", ids);
-        log.info("返回值：" + outParams);
-    }
-
-    public void getAllUsers() {
-        OutParams outParams = apiClient.callOpenApi("getAllUsers");
-        log.info("返回值：" + outParams);
-    }
-
-    public void addUser() {
-        //为了精确调用到想要的重载方法，这里将第一个参数转成了Object对象
-        OutParams outParams = apiClient.callOpenApi("addUser", (Object) "展昭", "13312341234", "1331234@qq.com");
-        log.info("返回值：" + outParams);
-    }
-
-    public void addUsers() {
-        List<User> users = new ArrayList<>();
-        User user = new User();
-        user.setId(1L);
-        user.setName("张三");
-        users.add(user);
-        OutParams outParams = apiClient.callOpenApi("addUsers", 5L, "李寻欢", users);
-        log.info("返回值：" + outParams);
-    }
 }
+````
+
+##### 方式二
+
+使用注解@OpenApiRef定义服务引用，在需要的地方注入即可  
+1.定义配置
+
+````
+openapi:
+  client:
+    config:
+      openApiRefPath: openapi.example.client.openapiclient
+      baseUrl: http://localhost:8080
+      selfPrivateKey: ${keys.local.rsa.privateKey}
+      remotePublicKey: ${keys.remote.rsa.publicKey}
+      asymmetricCryEnum: RSA
+      retDecrypt: true
+      enableSymmetricCry: true
+      symmetricCryEnum: AES
+      callerId: 001
+````
+
+2.定义服务引用
+
+````
+@OpenApiRef(value = "userApi")
+public interface UserApiClient {
+
+    @OpenApiMethod("getUserById")
+    User getUserById(Long id);
+}
+````
+
+3.注入服务引用调用远程openapi服务
+
+````
+@Component
+public class UserApiTest2 {
+
+    @Autowired
+    UserApiClient userApiClient;
+
+    public void getUserById() {
+        User user = userApiClient.getUserById(10001L);
+        log.info("返回值：" + user);
+    }
+}    
 ````
 
 ## 版本记录
@@ -338,4 +238,8 @@ public class UserApiClient {
 
 ### v1.1.5
 
-完善日志打印：SDK打印初始配置信息  
+完善日志打印：SDK打印初始配置信息
+
+### v1.2.0
+
+openapi-client-sdk新增服务引用方式调用openapi  
