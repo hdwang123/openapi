@@ -221,7 +221,6 @@ public class OpenApiClient {
         return this.callOpenApi(inParams);
     }
 
-
     /**
      * 调用openapi
      * 注：请用{@link OpenApiClientBuilder}构建{@link OpenApiClient}对象
@@ -520,8 +519,9 @@ public class OpenApiClient {
 
     @Override
     public String toString() {
-        return String.format("\nbaseUrl:%s,\nselfPrivateKey:%s,\nremotePublicKey:%s,\nasymmetricCryEnum:%s,\nretDecrypt:%s;\nenableSymmetricCry:%s,\nsymmetricCryEnum:%s,\ncallerId:%s,\napi:%s",
-                baseUrl, selfPrivateKey, remotePublicKey, asymmetricCryEnum, retDecrypt, enableSymmetricCry, symmetricCryEnum, callerId, api);
+        return String.format("\nopenApiClient hashCode:%x,\nbaseUrl:%s,\nselfPrivateKey:%s,\nremotePublicKey:%s,\nasymmetricCryEnum:%s,\nretDecrypt:%s;\nenableSymmetricCry:%s,\nsymmetricCryEnum:%s,\ncallerId:%s,\napi:%s",
+                this.hashCode(), baseUrl, selfPrivateKey, remotePublicKey, asymmetricCryEnum, retDecrypt, enableSymmetricCry, symmetricCryEnum, callerId, api);
     }
+
 
 }

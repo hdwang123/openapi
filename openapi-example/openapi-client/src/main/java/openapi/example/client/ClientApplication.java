@@ -21,9 +21,7 @@ public class ClientApplication {
 
     public static void main(String[] args) {
         ConfigurableApplicationContext context = new SpringApplicationBuilder().sources(ClientApplication.class).web(WebApplicationType.NONE).run(args);
-//        UserApiTest test = context.getBean(UserApiTest.class);
-        UserApiTest2 test =  context.getBean(UserApiTest2.class);
-        test.getRoleById();
+        UserApiTest test = context.getBean(UserApiTest.class);
         test.getUserById();
         test.saveUser();
         test.batchSaveUser();
@@ -34,5 +32,18 @@ public class ClientApplication {
         test.getAllUsers();
         test.addUser();
         test.addUsers();
+
+        UserApiTest2 test2 =  context.getBean(UserApiTest2.class);
+        test2.getRoleById();
+        test2.getUserById();
+        test2.saveUser();
+        test2.batchSaveUser();
+        test2.batchSaveUser2();
+        test2.listUsers();
+        test2.listUsers2();
+        test2.listUsers3();
+        test2.getAllUsers();
+        test2.addUser();
+        test2.addUsers();
     }
 }

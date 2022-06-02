@@ -8,7 +8,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
 /**
- * 开放api配置类，由引入者添加配置
+ * 开放api客户端配置类，由引入者添加配置
  *
  * 详细配置如下：
  * openapi:

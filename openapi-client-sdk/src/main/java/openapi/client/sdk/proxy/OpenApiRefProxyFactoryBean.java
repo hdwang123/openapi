@@ -22,7 +22,7 @@ import java.lang.reflect.Proxy;
 public class OpenApiRefProxyFactoryBean<T> implements FactoryBean<T> {
 
     /**
-     * sdk配置类
+     * 开放api客户端配置
      */
     @Autowired
     private OpenApiConfig config;
@@ -76,7 +76,7 @@ public class OpenApiRefProxyFactoryBean<T> implements FactoryBean<T> {
                 .build();
 
         //创建OpenApiRef代理调用处理器对象
-        OpenApiRefProxyInvocationHandler invocationHandler = new OpenApiRefProxyInvocationHandler(apiClient);
+        OpenApiRefProxyInvocationHandler invocationHandler = new OpenApiRefProxyInvocationHandler(apiClient, config);
 
         //动态创建OpenApiRef接口的代理对象
         return (T) Proxy.newProxyInstance(interClass.getClassLoader(), new Class[]{interClass}, invocationHandler);

@@ -3,6 +3,7 @@ package openapi.example.client.openapiclient;
 import cn.hutool.json.JSONUtil;
 import lombok.extern.slf4j.Slf4j;
 import openapi.client.sdk.OpenApiClientBuilder;
+import openapi.client.sdk.config.OpenApiConfig;
 import openapi.example.client.model.User;
 import openapi.client.sdk.OpenApiClient;
 import openapi.sdk.common.model.AsymmetricCryEnum;
@@ -113,7 +114,14 @@ public class UserApiTest {
     }
 
     public void getAllUsers() {
-        OutParams outParams = apiClient.callOpenApi("getAllUsers");
+        //存在方法级别配置，需构建新的client
+        OpenApiClient client = new OpenApiClientBuilder(baseUrl, privateKey, remotePublicKey, "001", "userApi")
+                .asymmetricCry(AsymmetricCryEnum.RSA)
+                .retDecrypt(false)
+                .enableSymmetricCry(false)
+                .symmetricCry(SymmetricCryEnum.AES)
+                .build();
+        OutParams outParams = client.callOpenApi("getAllUsers");
         log.info("返回值：" + outParams);
     }
 

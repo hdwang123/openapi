@@ -34,7 +34,7 @@ public interface UserApiClient {
     @OpenApiMethod("listUsers3")
     List<User> listUsers3(long[] ids);
 
-    @OpenApiMethod(value = "getAllUsers")
+    @OpenApiMethod(value = "getAllUsers", retDecrypt = "false", enableSymmetricCry = "false")
     List<User> getAllUsers();
 
     @OpenApiMethod("addUser")

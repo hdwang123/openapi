@@ -23,11 +23,11 @@ public @interface OpenApiMethod {
     String value() default "";
 
     /**
-     * 返回值是否需要加密(true:需要，false:不需要，默认为空由OpenApiConfig决定)，优先级高于OpenApiConfig中的配置
+     * 返回值是否需要解密(true:需要，false:不需要，默认为空由OpenApiConfig决定)，优先级高于OpenApiConfig中的配置
      *
-     * @return 返回值是否需要加密
+     * @return 返回值是否需要解密
      */
-    String retEncrypt() default "";
+    String retDecrypt() default "";
 
     /**
      * 是否启用对称加密，(true:启用，false:不启用，默认为空由OpenApiConfig决定)，优先级高于OpenApiConfig中的配置

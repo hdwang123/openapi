@@ -71,7 +71,7 @@ public class UserApi {
         return users;
     }
 
-    @OpenApiMethod(value = "getAllUsers")
+    @OpenApiMethod(value = "getAllUsers", retEncrypt = "false", enableSymmetricCry = "false")
     public List<User> getAllUsers() {
         log.info("getAllUsers");
         List<User> users = new ArrayList<>();

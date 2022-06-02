@@ -3,7 +3,10 @@ package openapi.client.sdk.proxy;
 import cn.hutool.core.util.StrUtil;
 import lombok.extern.slf4j.Slf4j;
 import openapi.client.sdk.OpenApiClient;
+import openapi.client.sdk.OpenApiClientBuilder;
+import openapi.client.sdk.config.OpenApiConfig;
 import openapi.client.sdk.model.OpenApiMethod;
+import openapi.client.sdk.model.OpenApiRef;
 import openapi.sdk.common.model.BusinessException;
 import openapi.sdk.common.model.OutParams;
 import openapi.sdk.common.util.StrObjectConvert;
@@ -26,12 +29,19 @@ public class OpenApiRefProxyInvocationHandler implements InvocationHandler {
     private OpenApiClient openApiClient;
 
     /**
+     * 开放api客户端配置
+     */
+    private OpenApiConfig config;
+
+    /**
      * 构造函数
      *
      * @param openApiClient openapi客户端
+     * @param config 开放api客户端配置
      */
-    public OpenApiRefProxyInvocationHandler(OpenApiClient openApiClient) {
+    public OpenApiRefProxyInvocationHandler(OpenApiClient openApiClient, OpenApiConfig config) {
         this.openApiClient = openApiClient;
+        this.config = config;
     }
 
     /**
@@ -57,7 +67,20 @@ public class OpenApiRefProxyInvocationHandler implements InvocationHandler {
                 if (StrUtil.isBlank(methodName)) {
                     throw new BusinessException(method.getName() + "api方法名称不能为空");
                 }
-                OutParams outParams = openApiClient.callOpenApi(methodName, args);
+                //方法级别的配置与默认配置不同，需要构建新的Client
+                boolean retDecryptDif = StrUtil.isNotBlank(openApiMethod.retDecrypt()) && Boolean.parseBoolean(openApiMethod.retDecrypt()) != config.isRetDecrypt();
+                boolean enableSymmetricCryDif = StrUtil.isNotBlank(openApiMethod.enableSymmetricCry()) && Boolean.parseBoolean(openApiMethod.enableSymmetricCry()) != config.isEnableSymmetricCry();
+                OpenApiClient apiClient = this.openApiClient;
+                if (retDecryptDif || enableSymmetricCryDif) {
+                    String api = method.getDeclaringClass().getAnnotation(OpenApiRef.class).value();
+                    apiClient = new OpenApiClientBuilder(config.getBaseUrl(), config.getSelfPrivateKey(), config.getRemotePublicKey(), config.getCallerId(), api)
+                            .asymmetricCry(config.getAsymmetricCryEnum())
+                            .retDecrypt(Boolean.parseBoolean(openApiMethod.retDecrypt()))
+                            .enableSymmetricCry(Boolean.parseBoolean(openApiMethod.enableSymmetricCry()))
+                            .symmetricCry(config.getSymmetricCryEnum())
+                            .build();
+                }
+                OutParams outParams = apiClient.callOpenApi(methodName, args);
                 Class<?> returnClass = method.getReturnType();
                 if (OutParams.isSuccess(outParams)) {
                     return StrObjectConvert.strToObj(outParams.getData(), returnClass);
