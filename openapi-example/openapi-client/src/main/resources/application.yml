@@ -15,7 +15,7 @@ openapi:
       retDecrypt: true
       enableSymmetricCry: true
       symmetricCryEnum: AES
-      callerId: 001
+      callerId: "001"
 
 #对非对称加密密钥对
 keys:

@@ -176,7 +176,7 @@ openapi:
       retDecrypt: true
       enableSymmetricCry: true
       symmetricCryEnum: AES
-      callerId: 001
+      callerId: "001"
 ````
 
 2.定义服务引用
