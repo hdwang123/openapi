@@ -22,9 +22,9 @@ public class AsymmetricCryUtil {
      */
     public static openapi.sdk.common.model.KeyPair generateSM2Keys() {
         KeyPair pair = SecureUtil.generateKeyPair("SM2");
-        byte[] privateKey = pair.getPrivate().getEncoded();
-        byte[] publicKey = pair.getPublic().getEncoded();
-        return new openapi.sdk.common.model.KeyPair(Base64Util.bytesToBase64(privateKey), Base64Util.bytesToBase64(publicKey));
+        String privateKey = Base64Util.bytesToBase64(pair.getPrivate().getEncoded());
+        String publicKey = Base64Util.bytesToBase64(pair.getPublic().getEncoded());
+        return new openapi.sdk.common.model.KeyPair(privateKey, publicKey);
     }
 
     /**
@@ -35,8 +35,8 @@ public class AsymmetricCryUtil {
     public static openapi.sdk.common.model.KeyPair generateRSAKeys() {
         //生成公私钥对
         KeyPair pair = SecureUtil.generateKeyPair("RSA");
-        PrivateKey privateKey = pair.getPrivate();
-        PublicKey publicKey = pair.getPublic();
-        return new openapi.sdk.common.model.KeyPair(Base64Util.bytesToBase64(privateKey.getEncoded()), Base64Util.bytesToBase64(publicKey.getEncoded()));
+        String privateKey = Base64Util.bytesToBase64(pair.getPrivate().getEncoded());
+        String publicKey = Base64Util.bytesToBase64(pair.getPublic().getEncoded());
+        return new openapi.sdk.common.model.KeyPair(privateKey, publicKey);
     }
 }
