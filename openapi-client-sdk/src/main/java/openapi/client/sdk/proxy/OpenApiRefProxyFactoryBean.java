@@ -45,10 +45,9 @@ public class OpenApiRefProxyFactoryBean<T> implements FactoryBean<T> {
      * 获取一个OpenApiRef代理对象
      *
      * @return OpenApiRef所标注接口的代理对象
-     * @throws Exception
      */
     @Override
-    public T getObject() throws Exception {
+    public T getObject() {
         //检查配置
         checkConfig();
 
