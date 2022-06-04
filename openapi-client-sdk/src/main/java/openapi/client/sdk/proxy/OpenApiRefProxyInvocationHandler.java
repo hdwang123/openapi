@@ -51,7 +51,7 @@ public class OpenApiRefProxyInvocationHandler implements InvocationHandler {
      * @param method 被执行的方法
      * @param args   方法参数
      * @return 返回值
-     * @throws Throwable
+     * @throws Throwable 异常
      */
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
