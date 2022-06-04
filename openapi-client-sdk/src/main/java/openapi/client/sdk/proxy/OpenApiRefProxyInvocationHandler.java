@@ -37,7 +37,7 @@ public class OpenApiRefProxyInvocationHandler implements InvocationHandler {
      * 构造函数
      *
      * @param openApiClient openapi客户端
-     * @param config 开放api客户端配置
+     * @param config        开放api客户端配置
      */
     public OpenApiRefProxyInvocationHandler(OpenApiClient openApiClient, OpenApiConfig config) {
         this.openApiClient = openApiClient;

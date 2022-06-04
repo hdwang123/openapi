@@ -49,22 +49,11 @@ public class OpenApiRefProxyFactoryBean<T> implements FactoryBean<T> {
      */
     @Override
     public T getObject() throws Exception {
-        if (StrUtil.isBlank(config.getBaseUrl())) {
-            throw new BusinessException("openapi基础路径未配置");
-        }
-        if (StrUtil.isBlank(config.getSelfPrivateKey())) {
-            throw new BusinessException("本系统私钥未配置");
-        }
-        if (StrUtil.isBlank(config.getRemotePublicKey())) {
-            throw new BusinessException("远程系统的公钥未配置");
-        }
-        if (StrUtil.isBlank(config.getCallerId())) {
-            throw new BusinessException("调用者ID未配置");
-        }
+        //检查配置
+        checkConfig();
 
         //构建OpenApiClient
-        OpenApiRef openApiRef = interClass.getAnnotation(OpenApiRef.class);
-        String api = openApiRef.value();
+        String api = interClass.getAnnotation(OpenApiRef.class).value();
         if (StrUtil.isBlank(api)) {
             throw new BusinessException(interClass.getName() + "api名称不能为空");
         }
@@ -82,6 +71,7 @@ public class OpenApiRefProxyFactoryBean<T> implements FactoryBean<T> {
         return (T) Proxy.newProxyInstance(interClass.getClassLoader(), new Class[]{interClass}, invocationHandler);
     }
 
+
     /**
      * 获取代理对象的类型
      *
@@ -90,5 +80,23 @@ public class OpenApiRefProxyFactoryBean<T> implements FactoryBean<T> {
     @Override
     public Class<?> getObjectType() {
         return interClass;
+    }
+
+    /**
+     * 检查配置
+     */
+    private void checkConfig() {
+        if (StrUtil.isBlank(config.getBaseUrl())) {
+            throw new BusinessException("openapi基础路径未配置");
+        }
+        if (StrUtil.isBlank(config.getSelfPrivateKey())) {
+            throw new BusinessException("本系统私钥未配置");
+        }
+        if (StrUtil.isBlank(config.getRemotePublicKey())) {
+            throw new BusinessException("远程系统的公钥未配置");
+        }
+        if (StrUtil.isBlank(config.getCallerId())) {
+            throw new BusinessException("调用者ID未配置");
+        }
     }
 }

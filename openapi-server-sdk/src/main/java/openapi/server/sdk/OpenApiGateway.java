@@ -2,14 +2,10 @@ package openapi.server.sdk;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.*;
-import cn.hutool.crypto.SecureUtil;
-import cn.hutool.crypto.SmUtil;
-import cn.hutool.crypto.asymmetric.*;
-import cn.hutool.crypto.symmetric.AES;
-import cn.hutool.crypto.symmetric.SM4;
-import cn.hutool.json.JSONConfig;
 import cn.hutool.json.JSONUtil;
 import lombok.extern.slf4j.Slf4j;
+import openapi.sdk.common.handler.asymmetric.AsymmetricCryHandler;
+import openapi.sdk.common.handler.symmetric.SymmetricCryHandler;
 import openapi.sdk.common.model.*;
 import openapi.sdk.common.util.CommonUtil;
 import openapi.sdk.common.util.SymmetricCryUtil;
@@ -29,7 +25,6 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.annotation.PostConstruct;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
-import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 /**
@@ -53,7 +48,7 @@ public class OpenApiGateway {
      * key: api_method
      * value: ApiHandler
      */
-    private Map<String, ApiHandler> handlerMap = new HashMap<>();
+    private Map<String, ApiHandler> apiHandlerMap = new HashMap<>();
 
     @Autowired
     private ApplicationContext applicationContext;
@@ -71,6 +66,16 @@ public class OpenApiGateway {
     private boolean retEncrypt;
     private boolean enableSymmetricCry;
     private SymmetricCryEnum symmetricCryEnum;
+
+    /**
+     * 非对称加密处理器
+     */
+    private AsymmetricCryHandler asymmetricCryHandler;
+
+    /**
+     * 对称加密处理器
+     */
+    private SymmetricCryHandler symmetricCryHandler;
 
     /**
      * 初始化
@@ -95,7 +100,7 @@ public class OpenApiGateway {
     }
 
     private String getHandlersStr() {
-        Collection<ApiHandler> handlers = handlerMap.values();
+        Collection<ApiHandler> handlers = apiHandlerMap.values();
         String handlersStr = StrUtil.EMPTY;
         if (CollUtil.isEmpty(handlers)) {
             handlersStr = "未找到ApiHandler,请确保注解@OpenApi所声明的bean可被spring扫描到";
@@ -116,6 +121,8 @@ public class OpenApiGateway {
         this.retEncrypt = config.retEncrypt();
         this.enableSymmetricCry = config.enableSymmetricCry();
         this.symmetricCryEnum = config.getSymmetricCry();
+        this.asymmetricCryHandler = AsymmetricCryHandler.handlerMap.get(this.asymmetricCryEnum);
+        this.symmetricCryHandler = SymmetricCryHandler.handlerMap.get(this.symmetricCryEnum);
     }
 
     /**
@@ -148,7 +155,7 @@ public class OpenApiGateway {
                         apiHandler.setMethod(method);
                         apiHandler.setParamTypes(types);
                         apiHandler.setOpenApiMethod(openApiMethod);
-                        handlerMap.put(handlerKey, apiHandler);
+                        apiHandlerMap.put(handlerKey, apiHandler);
                     }
                 }
             }
@@ -198,7 +205,7 @@ public class OpenApiGateway {
      */
     private ApiHandler getApiHandler(InParams inParams) {
         String handlerKey = getHandlerKey(inParams.getApi(), inParams.getMethod());
-        ApiHandler apiHandler = handlerMap.get(handlerKey);
+        ApiHandler apiHandler = apiHandlerMap.get(handlerKey);
         if (apiHandler == null) {
             throw new BusinessException("找不到指定的opeapi处理器");
         }
@@ -258,18 +265,9 @@ public class OpenApiGateway {
      * @param inParams 入参
      */
     private void verifySign(InParams inParams) {
-        boolean verify;
         String callerPublicKey = config.getCallerPublicKey(inParams.getCallerId());
         String signContent = CommonUtil.getSignContent(inParams);
-        if (asymmetricCryEnum == AsymmetricCryEnum.RSA) {
-            Sign sign = SecureUtil.sign(SignAlgorithm.SHA256withRSA, null, callerPublicKey);
-            verify = sign.verify(signContent.getBytes(StandardCharsets.UTF_8), Base64Util.base64ToBytes(inParams.getSign()));
-        } else if (asymmetricCryEnum == AsymmetricCryEnum.SM2) {
-            SM2 sm2 = SmUtil.sm2(null, callerPublicKey);
-            verify = sm2.verifyHex(HexUtil.encodeHexStr(signContent), inParams.getSign());
-        } else {
-            throw new BusinessException("不支持的非对称加密算法");
-        }
+        boolean verify = this.asymmetricCryHandler.verifySign(callerPublicKey, signContent, inParams.getSign());
         if (!verify) {
             throw new BusinessException("验签失败");
         }
@@ -288,12 +286,12 @@ public class OpenApiGateway {
             boolean enableSymmetricCry = isEnableSymmetricCry(apiHandler);
             if (enableSymmetricCry) {
                 //启用对称加密模式
-                String key = asymmetricDeCry(inParams.getSymmetricCryKey());
+                String key = this.asymmetricCryHandler.deCry(selfPrivateKey, inParams.getSymmetricCryKey());
                 byte[] keyBytes = Base64Util.base64ToBytes(key);
-                decryptedBody = symmetricDeCry(inParams.getBody(), keyBytes);
+                decryptedBody = this.symmetricCryHandler.deCry(inParams.getBody(), keyBytes);
             } else {
                 //仅非对称加密模式
-                decryptedBody = asymmetricDeCry(inParams.getBody());
+                decryptedBody = this.asymmetricCryHandler.deCry(selfPrivateKey, inParams.getBody());
             }
         } catch (BusinessException be) {
             throw new BusinessException("解密失败：" + be.getMessage());
@@ -317,7 +315,6 @@ public class OpenApiGateway {
         }
         return enableSymmetricCry;
     }
-
 
     /**
      * 调用目标方法
@@ -388,11 +385,12 @@ public class OpenApiGateway {
                 //启用对称加密模式
                 byte[] keyBytes = SymmetricCryUtil.getKey(symmetricCryEnum);
                 String key = Base64Util.bytesToBase64(keyBytes);
-                outParams.setSymmetricCryKey(asymmetricCry(key, callerPublicKey));
-                retStr = symmetricCry(retStr, keyBytes);
+                String cryKey = this.asymmetricCryHandler.cry(callerPublicKey, key);
+                outParams.setSymmetricCryKey(cryKey);
+                retStr = this.symmetricCryHandler.cry(retStr, keyBytes);
             } else {
                 //仅采用非对称加密模式
-                retStr = asymmetricCry(retStr, callerPublicKey);
+                retStr = this.asymmetricCryHandler.cry(callerPublicKey, retStr);
             }
         } catch (BusinessException be) {
             throw new BusinessException("返回值加密异常:" + be.getMessage());
@@ -401,93 +399,6 @@ public class OpenApiGateway {
         }
         return retStr;
     }
-
-    /**
-     * 对称加密
-     *
-     * @param content  内容（普通字符串）
-     * @param keyBytes 密钥
-     * @return 加密后的内容（Base64字符串）
-     */
-    private String symmetricCry(String content, byte[] keyBytes) {
-        SymmetricCryEnum symmetricCryEnum = this.symmetricCryEnum;
-        if (symmetricCryEnum == SymmetricCryEnum.AES) {
-            AES aes = new AES(keyBytes);
-            content = aes.encryptBase64(content);
-        } else if (symmetricCryEnum == SymmetricCryEnum.SM4) {
-            SM4 sm4 = new SM4(keyBytes);
-            content = sm4.encryptBase64(content);
-        } else {
-            throw new RuntimeException("不支持的对称加密算法");
-        }
-        return content;
-    }
-
-    /**
-     * 对称解密
-     *
-     * @param content  内容 (Hex（16进制）或Base64表示的字符串)
-     * @param keyBytes 密钥
-     * @return 解密后的内容 (普通字符串)
-     */
-    private String symmetricDeCry(String content, byte[] keyBytes) {
-        SymmetricCryEnum symmetricCryEnum = this.symmetricCryEnum;
-        if (symmetricCryEnum == SymmetricCryEnum.AES) {
-            AES aes = new AES(keyBytes);
-            content = aes.decryptStr(content);
-        } else if (symmetricCryEnum == SymmetricCryEnum.SM4) {
-            SM4 sm4 = new SM4(keyBytes);
-            content = sm4.decryptStr(content);
-        } else {
-            throw new RuntimeException("不支持的对称加密算法");
-        }
-        return content;
-    }
-
-    /**
-     * 非对称加密
-     *
-     * @param content         内容（普通字符串）
-     * @param callerPublicKey 调用者公钥
-     * @return 加密后的内容（RSA:Base64字符串,SM2:ASCII字符串）
-     */
-    private String asymmetricCry(String content, String callerPublicKey) {
-        if (this.asymmetricCryEnum == AsymmetricCryEnum.RSA) {
-            RSA rsa = new RSA(null, callerPublicKey);
-            byte[] encrypt = rsa.encrypt(StrUtil.bytes(content, CharsetUtil.CHARSET_UTF_8), KeyType.PublicKey);
-            content = Base64Util.bytesToBase64(encrypt);
-        } else if (this.asymmetricCryEnum == AsymmetricCryEnum.SM2) {
-            SM2 sm2 = SmUtil.sm2(null, callerPublicKey);
-            content = sm2.encryptBcd(content, KeyType.PublicKey);
-        } else {
-            throw new BusinessException("不支持的非对称加密算法");
-        }
-        return content;
-    }
-
-    /**
-     * 非对称解密
-     *
-     * @param content 内容（RSA:Base64字符串,SM2:ASCII字符串）
-     * @return 解密后的内容（普通字符串）
-     */
-    private String asymmetricDeCry(String content) {
-        String decryptedBody;
-        String selfPrivateKey = this.selfPrivateKey;
-        if (asymmetricCryEnum == AsymmetricCryEnum.RSA) {
-            RSA rsa = new RSA(selfPrivateKey, null);
-            byte[] bodyBytes = Base64Util.base64ToBytes(content);
-            byte[] decrypt = rsa.decrypt(bodyBytes, KeyType.PrivateKey);
-            decryptedBody = new String(decrypt, StandardCharsets.UTF_8);
-        } else if (asymmetricCryEnum == AsymmetricCryEnum.SM2) {
-            SM2 sm2 = SmUtil.sm2(selfPrivateKey, null);
-            decryptedBody = StrUtil.utf8Str(sm2.decryptFromBcd(content, KeyType.PrivateKey));
-        } else {
-            throw new BusinessException("不支持的非对称加密算法");
-        }
-        return decryptedBody;
-    }
-
 
     /**
      * 获取api处理器Map的key
