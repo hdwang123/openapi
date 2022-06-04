@@ -242,4 +242,8 @@ public class UserApiTest2 {
 
 ### v1.2.0
 
-openapi-client-sdk新增服务引用方式调用openapi  
+openapi-client-sdk新增服务引用方式调用openapi
+
+### v1.2.1
+
+加解密方法重构：改成加解密处理器，方便以后算法扩展    
