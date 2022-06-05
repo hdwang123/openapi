@@ -18,14 +18,12 @@ import java.io.File;
 @OpenApi("fileApi")
 public class FileApi {
 
-    //路径：XXX\openapi-server\target\classes\test
     private static final String dir = FileApi.class.getResource("/test").getPath();
 
     @OpenApiMethod("upload")
     public void upload(FileInfo fileInfo) {
         File dest = new File(dir, "upload/" + fileInfo.getFileName());
         byte[] fileBytes = Base64Util.base64ToBytes(fileInfo.getFileContent());
-        //上传到路径：XXX\openapi-server\target\classes\test\upload
         FileUtil.writeBytes(fileBytes, dest);
     }
 

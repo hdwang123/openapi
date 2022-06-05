@@ -15,7 +15,6 @@ import java.io.File;
 @Component
 public class FileApiTest {
 
-    //路径：XXX\openapi-client\target\classes\test\
     private static final String dir = FileApiTest.class.getResource("/test").getPath();
 
     @Autowired
@@ -36,7 +35,6 @@ public class FileApiTest {
         FileInfo fileInfo = fileApi.download(1L);
         File dest = new File(dir, "download/" + fileInfo.getFileName());
         byte[] fileBytes = Base64Util.base64ToBytes(fileInfo.getFileContent());
-        //下载路径：XXX\openapi-client\target\classes\test\download
         FileUtil.writeBytes(fileBytes, dest);
     }
 }
