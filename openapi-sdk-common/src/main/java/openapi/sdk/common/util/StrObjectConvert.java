@@ -1,9 +1,8 @@
 package openapi.sdk.common.util;
 
+import cn.hutool.core.convert.Convert;
+import cn.hutool.core.util.ClassUtil;
 import cn.hutool.core.util.ObjectUtil;
-import cn.hutool.json.JSONConfig;
-import cn.hutool.json.JSONConverter;
-import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import openapi.sdk.common.model.BusinessException;
 
@@ -38,24 +37,15 @@ public class StrObjectConvert {
             isParameterizedType = true;
         }
         Object ins = null;
-        if (classTypeName.equals(Long.class.getName()) || classTypeName.equals(long.class.getName())) {
-            ins = Long.parseLong(str);
-        } else if (classTypeName.equals(Integer.class.getName()) || classTypeName.equals(int.class.getName())) {
-            ins = Integer.parseInt(str);
-        } else if (classTypeName.equals(Short.class.getName()) || classTypeName.equals(short.class.getName())) {
-            ins = Short.parseShort(str);
-        } else if (classTypeName.equals(Byte.class.getName()) || classTypeName.equals(byte.class.getName())) {
-            ins = Byte.parseByte(str);
-        } else if (classTypeName.equals(Float.class.getName()) || classTypeName.equals(float.class.getName())) {
-            ins = Float.parseFloat(str);
-        } else if (classTypeName.equals(Double.class.getName()) || classTypeName.equals(double.class.getName())) {
-            ins = Double.parseDouble(str);
-        } else if (classTypeName.equals(Character.class.getName()) || classTypeName.equals(char.class.getName())) {
-            ins = str.charAt(0);
-        } else if (classTypeName.equals(Boolean.class.getName()) || classTypeName.equals(boolean.class.getName())) {
-            ins = Boolean.parseBoolean(str);
-        } else if (classTypeName.equals(Void.class.getName()) || classTypeName.equals(void.class.getName())) {
-            ins = null;
+        if (isClassType && ClassUtil.isBasicType((Class) type)) {
+            //是基本类型（包括包装类）：Boolean, Character, Byte, Short, Integer, Long, Float, Double, Void
+            if (classTypeName.equals(Void.class.getName()) || classTypeName.equals(void.class.getName())) {
+                //void类型单独处理
+                ins = null;
+            } else {
+                //使用hutool类型转换工具将字符串转换为对象
+                ins = Convert.convert(type, str);
+            }
         } else if (classTypeName.equals(String.class.getName())) {
             ins = str;
         } else if (isClassType && ((Class) type).isArray()) {
