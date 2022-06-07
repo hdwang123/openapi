@@ -5,7 +5,6 @@ import lombok.extern.slf4j.Slf4j;
 import openapi.client.sdk.OpenApiClient;
 import openapi.client.sdk.OpenApiClientBuilder;
 import openapi.client.sdk.config.OpenApiConfig;
-import openapi.client.sdk.constant.ClientConstant;
 import openapi.client.sdk.model.OpenApiMethod;
 import openapi.client.sdk.model.OpenApiRef;
 import openapi.sdk.common.model.BusinessException;
@@ -75,13 +74,15 @@ public class OpenApiRefProxyInvocationHandler implements InvocationHandler {
                     String api = method.getDeclaringClass().getAnnotation(OpenApiRef.class).value();
                     boolean retDecrypt = this.retDecrypt(openApiMethod);
                     boolean enableSymmetricCry = this.enableSymmetricCry(openApiMethod);
+                    int httpConnectionTimeout = this.httpConnectionTimeout(openApiMethod);
+                    int httpReadTimeout = this.httpReadTimeout(openApiMethod);
                     apiClient = new OpenApiClientBuilder(config.getBaseUrl(), config.getSelfPrivateKey(), config.getRemotePublicKey(), config.getCallerId(), api)
                             .asymmetricCry(config.getAsymmetricCryEnum())
                             .retDecrypt(retDecrypt)
                             .enableSymmetricCry(enableSymmetricCry)
                             .symmetricCry(config.getSymmetricCryEnum())
-                            .httpConnectionTimeout(openApiMethod.httpConnectionTimeout())
-                            .httpReadTimeout(openApiMethod.httpReadTimeout())
+                            .httpConnectionTimeout(httpConnectionTimeout)
+                            .httpReadTimeout(httpReadTimeout)
                             .build();
                 }
                 //调用远程openapi
@@ -108,8 +109,8 @@ public class OpenApiRefProxyInvocationHandler implements InvocationHandler {
     private boolean methodConfigDif(OpenApiMethod openApiMethod) {
         boolean retDecryptDif = StrUtil.isNotBlank(openApiMethod.retDecrypt()) && Boolean.parseBoolean(openApiMethod.retDecrypt()) != config.isRetDecrypt();
         boolean enableSymmetricCryDif = StrUtil.isNotBlank(openApiMethod.enableSymmetricCry()) && Boolean.parseBoolean(openApiMethod.enableSymmetricCry()) != config.isEnableSymmetricCry();
-        boolean httpConnectionTimeoutDif = ClientConstant.HTTP_CONNECTION_TIMEOUT != openApiMethod.httpConnectionTimeout();
-        boolean httpReadTimeoutDif = ClientConstant.HTTP_READ_TIMEOUT != openApiMethod.httpReadTimeout();
+        boolean httpConnectionTimeoutDif = openApiMethod.httpConnectionTimeout() != -1 && openApiMethod.httpConnectionTimeout() != config.getHttpConnectionTimeout();
+        boolean httpReadTimeoutDif = openApiMethod.httpReadTimeout() != -1 && openApiMethod.httpReadTimeout() != config.getHttpReadTimeout();
         return retDecryptDif || enableSymmetricCryDif || httpConnectionTimeoutDif || httpReadTimeoutDif;
     }
 
@@ -139,5 +140,33 @@ public class OpenApiRefProxyInvocationHandler implements InvocationHandler {
             enableSymmetricCry = Boolean.parseBoolean(openApiMethod.enableSymmetricCry());
         }
         return enableSymmetricCry;
+    }
+
+    /**
+     * 获取HTTP连接超时时间
+     *
+     * @param openApiMethod API方法注解
+     * @return HTTP连接超时时间
+     */
+    private int httpConnectionTimeout(OpenApiMethod openApiMethod) {
+        int timeout = config.getHttpConnectionTimeout();
+        if (openApiMethod.httpConnectionTimeout() != -1) {
+            timeout = openApiMethod.httpConnectionTimeout();
+        }
+        return timeout;
+    }
+
+    /**
+     * 获取HTTP数据传输超时时间
+     *
+     * @param openApiMethod API方法注解
+     * @return HTTP数据传输超时时间
+     */
+    private int httpReadTimeout(OpenApiMethod openApiMethod) {
+        int timeout = config.getHttpReadTimeout();
+        if (openApiMethod.httpReadTimeout() != -1) {
+            timeout = openApiMethod.httpReadTimeout();
+        }
+        return timeout;
     }
 }

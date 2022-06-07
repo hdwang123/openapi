@@ -16,6 +16,8 @@ openapi:
       enableSymmetricCry: true
       symmetricCryEnum: AES
       callerId: "001"
+      httpConnectionTimeout: 3
+      httpReadTimeout: 6
 
 #对非对称加密密钥对
 keys:

@@ -2,6 +2,7 @@ package openapi.client.sdk.config;
 
 
 import lombok.Data;
+import openapi.client.sdk.constant.ClientConstant;
 import openapi.sdk.common.model.AsymmetricCryEnum;
 import openapi.sdk.common.model.SymmetricCryEnum;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -9,20 +10,25 @@ import org.springframework.stereotype.Component;
 
 /**
  * 开放api客户端配置类，由引入者添加配置
- *
- * 详细配置如下：
+ * <p>
+ * openapi配置示例：
+ * </p>
+ * <blockquote><pre>
  * openapi:
  *   client:
  *     config:
  *       openApiRefPath: openapi.example.client.openapiclient
  *       baseUrl: http://localhost:8080
- *       selfPrivateKey: ${your selfPrivateKey}
- *       remotePublicKey: ${your remotePublicKey}
+ *       selfPrivateKey: ${keys.local.rsa.privateKey}
+ *       remotePublicKey: ${keys.remote.rsa.publicKey}
  *       asymmetricCryEnum: RSA
  *       retDecrypt: true
  *       enableSymmetricCry: true
  *       symmetricCryEnum: AES
- *       callerId: 001
+ *       callerId: "001"
+ *       httpConnectionTimeout: 3
+ *       httpReadTimeout: 5
+ * </pre></blockquote>
  *
  * @author wanghuidong
  */
@@ -73,4 +79,14 @@ public class OpenApiConfig {
      * 调用者ID
      */
     private String callerId;
+
+    /**
+     * HTTP建立连接超时时间（单位秒）
+     */
+    private int httpConnectionTimeout = ClientConstant.HTTP_CONNECTION_TIMEOUT;
+
+    /**
+     * HTTP数据传输超时时间（单位秒）
+     */
+    private int httpReadTimeout = ClientConstant.HTTP_READ_TIMEOUT;
 }

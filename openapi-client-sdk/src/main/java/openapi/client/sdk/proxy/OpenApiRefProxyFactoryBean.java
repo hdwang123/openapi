@@ -61,6 +61,8 @@ public class OpenApiRefProxyFactoryBean<T> implements FactoryBean<T> {
                 .retDecrypt(config.isRetDecrypt())
                 .enableSymmetricCry(config.isEnableSymmetricCry())
                 .symmetricCry(config.getSymmetricCryEnum())
+                .httpConnectionTimeout(config.getHttpConnectionTimeout())
+                .httpReadTimeout(config.getHttpReadTimeout())
                 .build();
 
         //创建OpenApiRef代理调用处理器对象
