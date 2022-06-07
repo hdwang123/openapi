@@ -266,6 +266,7 @@ public class OpenApiGateway {
      */
     private void verifySign(InParams inParams) {
         String callerPublicKey = config.getCallerPublicKey(inParams.getCallerId());
+        log.debug("{}caller({}) publicKey:{}", logPrefix.get(), inParams.getCallerId(), callerPublicKey);
         String signContent = CommonUtil.getSignContent(inParams);
         boolean verify = this.asymmetricCryHandler.verifySign(callerPublicKey, signContent, inParams.getSign());
         if (!verify) {
@@ -378,6 +379,7 @@ public class OpenApiGateway {
         try {
             //获取调用者公钥
             String callerPublicKey = config.getCallerPublicKey(inParams.getCallerId());
+            log.debug("{}caller({}) publicKey:{}", logPrefix.get(), inParams.getCallerId(), callerPublicKey);
 
             //加密返回值
             boolean enableSymmetricCry = isEnableSymmetricCry(apiHandler);
