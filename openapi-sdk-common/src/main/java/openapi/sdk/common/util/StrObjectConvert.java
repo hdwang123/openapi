@@ -22,7 +22,10 @@ public class StrObjectConvert {
      * @return 对象
      */
     public static Object strToObj(String str, Type type) {
-        String classTypeName = type.getTypeName();
+        if (str == null) {
+            return null;
+        }
+        String typeName = type.getTypeName();
         boolean isClassType = false;
         if (type instanceof Class) {
             isClassType = true;
@@ -30,14 +33,14 @@ public class StrObjectConvert {
         Object ins = null;
         if (isClassType && ClassUtil.isBasicType((Class) type)) {
             //是基本类型（包括包装类）：Boolean, Character, Byte, Short, Integer, Long, Float, Double, Void
-            if (classTypeName.equals(Void.class.getName()) || classTypeName.equals(void.class.getName())) {
+            if (typeName.equals(Void.class.getName()) || typeName.equals(void.class.getName())) {
                 //void类型单独处理
                 ins = null;
             } else {
                 //使用hutool类型转换工具将字符串转换为对象
                 ins = Convert.convert(type, str);
             }
-        } else if (classTypeName.equals(String.class.getName())) {
+        } else if (typeName.equals(String.class.getName())) {
             ins = str;
         } else {
             //对象转换：可以将JSON字符串直接转换为任意对象（Bean、Map、集合、数组等）
@@ -54,10 +57,19 @@ public class StrObjectConvert {
      * @return 字符串
      */
     public static String objToStr(Object obj, Type type) {
+        if (obj == null) {
+            return null;
+        }
+        String typeName = type.getTypeName();
         String str = null;
         if (ObjectUtil.isBasicType(obj)) {
             //是基本类型（包括包装类）：Boolean, Character, Byte, Short, Integer, Long, Float, Double, Void
-            str = String.valueOf(obj);
+            if (typeName.equals(Void.class.getName()) || typeName.equals(void.class.getName())) {
+                //void类型单独处理
+                str = null;
+            } else {
+                str = String.valueOf(obj);
+            }
         } else if (type.getTypeName().equals(String.class.getName())) {
             //字符串类型，无需转换
             str = (String) obj;
