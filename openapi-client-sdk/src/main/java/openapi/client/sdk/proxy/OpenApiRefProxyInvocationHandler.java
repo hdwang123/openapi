@@ -73,10 +73,12 @@ public class OpenApiRefProxyInvocationHandler implements InvocationHandler {
                 boolean configDif = this.methodConfigDif(openApiMethod);
                 if (configDif) {
                     String api = method.getDeclaringClass().getAnnotation(OpenApiRef.class).value();
+                    boolean retDecrypt = this.retDecrypt(openApiMethod);
+                    boolean enableSymmetricCry = this.enableSymmetricCry(openApiMethod);
                     apiClient = new OpenApiClientBuilder(config.getBaseUrl(), config.getSelfPrivateKey(), config.getRemotePublicKey(), config.getCallerId(), api)
                             .asymmetricCry(config.getAsymmetricCryEnum())
-                            .retDecrypt(Boolean.parseBoolean(openApiMethod.retDecrypt()))
-                            .enableSymmetricCry(Boolean.parseBoolean(openApiMethod.enableSymmetricCry()))
+                            .retDecrypt(retDecrypt)
+                            .enableSymmetricCry(enableSymmetricCry)
                             .symmetricCry(config.getSymmetricCryEnum())
                             .httpConnectionTimeout(openApiMethod.httpConnectionTimeout())
                             .httpReadTimeout(openApiMethod.httpReadTimeout())
@@ -109,5 +111,33 @@ public class OpenApiRefProxyInvocationHandler implements InvocationHandler {
         boolean httpConnectionTimeoutDif = ClientConstant.HTTP_CONNECTION_TIMEOUT != openApiMethod.httpConnectionTimeout();
         boolean httpReadTimeoutDif = ClientConstant.HTTP_READ_TIMEOUT != openApiMethod.httpReadTimeout();
         return retDecryptDif || enableSymmetricCryDif || httpConnectionTimeoutDif || httpReadTimeoutDif;
+    }
+
+    /**
+     * 获取返回值是否需要解密
+     *
+     * @param openApiMethod API方法注解
+     * @return 返回值是否需要解密
+     */
+    private boolean retDecrypt(OpenApiMethod openApiMethod) {
+        boolean retDecrypt = config.isRetDecrypt();
+        if (StrUtil.isNotBlank(openApiMethod.retDecrypt())) {
+            retDecrypt = Boolean.parseBoolean(openApiMethod.retDecrypt());
+        }
+        return retDecrypt;
+    }
+
+    /**
+     * 获取是否采用对称加密模式
+     *
+     * @param openApiMethod API方法注解
+     * @return 是否采用对称加密模式
+     */
+    private boolean enableSymmetricCry(OpenApiMethod openApiMethod) {
+        boolean enableSymmetricCry = config.isEnableSymmetricCry();
+        if (StrUtil.isNotBlank(openApiMethod.enableSymmetricCry())) {
+            enableSymmetricCry = Boolean.parseBoolean(openApiMethod.enableSymmetricCry());
+        }
+        return enableSymmetricCry;
     }
 }
