@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import openapi.client.sdk.OpenApiClient;
 import openapi.client.sdk.OpenApiClientBuilder;
 import openapi.client.sdk.config.OpenApiConfig;
+import openapi.client.sdk.constant.ClientConstant;
 import openapi.client.sdk.model.OpenApiMethod;
 import openapi.client.sdk.model.OpenApiRef;
 import openapi.sdk.common.model.BusinessException;
@@ -68,18 +69,20 @@ public class OpenApiRefProxyInvocationHandler implements InvocationHandler {
                     throw new BusinessException(method.getName() + "api方法名称不能为空");
                 }
                 //方法级别的配置与默认配置不同，需要构建新的Client
-                boolean retDecryptDif = StrUtil.isNotBlank(openApiMethod.retDecrypt()) && Boolean.parseBoolean(openApiMethod.retDecrypt()) != config.isRetDecrypt();
-                boolean enableSymmetricCryDif = StrUtil.isNotBlank(openApiMethod.enableSymmetricCry()) && Boolean.parseBoolean(openApiMethod.enableSymmetricCry()) != config.isEnableSymmetricCry();
                 OpenApiClient apiClient = this.openApiClient;
-                if (retDecryptDif || enableSymmetricCryDif) {
+                boolean configDif = this.methodConfigDif(openApiMethod);
+                if (configDif) {
                     String api = method.getDeclaringClass().getAnnotation(OpenApiRef.class).value();
                     apiClient = new OpenApiClientBuilder(config.getBaseUrl(), config.getSelfPrivateKey(), config.getRemotePublicKey(), config.getCallerId(), api)
                             .asymmetricCry(config.getAsymmetricCryEnum())
                             .retDecrypt(Boolean.parseBoolean(openApiMethod.retDecrypt()))
                             .enableSymmetricCry(Boolean.parseBoolean(openApiMethod.enableSymmetricCry()))
                             .symmetricCry(config.getSymmetricCryEnum())
+                            .httpConnectionTimeout(openApiMethod.httpConnectionTimeout())
+                            .httpReadTimeout(openApiMethod.httpReadTimeout())
                             .build();
                 }
+                //调用远程openapi
                 OutParams outParams = apiClient.callOpenApi(methodName, args);
                 Class<?> returnClass = method.getReturnType();
                 if (OutParams.isSuccess(outParams)) {
@@ -94,4 +97,17 @@ public class OpenApiRefProxyInvocationHandler implements InvocationHandler {
         return null;
     }
 
+    /**
+     * 判断方法级别的配置与默认配置是否不同
+     *
+     * @param openApiMethod API方法注解
+     * @return API方法配置是否与默认不同
+     */
+    private boolean methodConfigDif(OpenApiMethod openApiMethod) {
+        boolean retDecryptDif = StrUtil.isNotBlank(openApiMethod.retDecrypt()) && Boolean.parseBoolean(openApiMethod.retDecrypt()) != config.isRetDecrypt();
+        boolean enableSymmetricCryDif = StrUtil.isNotBlank(openApiMethod.enableSymmetricCry()) && Boolean.parseBoolean(openApiMethod.enableSymmetricCry()) != config.isEnableSymmetricCry();
+        boolean httpConnectionTimeoutDif = ClientConstant.HTTP_CONNECTION_TIMEOUT != openApiMethod.httpConnectionTimeout();
+        boolean httpReadTimeoutDif = ClientConstant.HTTP_READ_TIMEOUT != openApiMethod.httpReadTimeout();
+        return retDecryptDif || enableSymmetricCryDif || httpConnectionTimeoutDif || httpReadTimeoutDif;
+    }
 }

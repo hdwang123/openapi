@@ -4,6 +4,7 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.*;
 import cn.hutool.json.JSONUtil;
 import lombok.extern.slf4j.Slf4j;
+import openapi.sdk.common.constant.ErrorCode;
 import openapi.sdk.common.handler.asymmetric.AsymmetricCryHandler;
 import openapi.sdk.common.handler.symmetric.SymmetricCryHandler;
 import openapi.sdk.common.model.*;
@@ -18,6 +19,8 @@ import openapi.sdk.common.util.StrObjectConvert;
 import openapi.server.sdk.config.OpenApiConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -25,6 +28,7 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.annotation.PostConstruct;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
+import java.nio.channels.Pipe;
 import java.util.*;
 
 /**
@@ -169,7 +173,7 @@ public class OpenApiGateway {
      * @param inParams 入参
      * @return 出参
      */
-    @PostMapping(Constant.OPENAPI_PATH)
+    @PostMapping(value = Constant.OPENAPI_PATH, consumes = {MediaType.APPLICATION_JSON_VALUE}, produces = {MediaType.APPLICATION_JSON_VALUE})
     public OutParams callMethod(@RequestBody InParams inParams) {
         //设置日志前缀
         logPrefix.set(String.format("uuid=%s:", inParams.getUuid()));
@@ -192,6 +196,9 @@ public class OpenApiGateway {
             log.error(logPrefix.get() + "系统异常：", ex);
             return outParams = OutParams.error("系统异常");
         } finally {
+            if (outParams == null) {
+                outParams = OutParams.error("系统异常");
+            }
             outParams.setUuid(inParams.getUuid());
             log.debug(logPrefix.get() + "调用完毕：" + outParams);
         }
@@ -253,7 +260,7 @@ public class OpenApiGateway {
                 throw new BusinessException("入参转换异常：" + be.getMessage());
             } catch (Exception ex) {
                 log.error(logPrefix.get() + "入参转换异常", ex);
-                throw new BusinessException("入参转换异常");
+                throw new BusinessException("入参转换异常:" + ex.getMessage());
             }
         }
         return params;

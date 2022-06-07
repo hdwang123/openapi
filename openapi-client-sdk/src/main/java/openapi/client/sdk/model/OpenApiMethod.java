@@ -1,5 +1,7 @@
 package openapi.client.sdk.model;
 
+import openapi.client.sdk.constant.ClientConstant;
+
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -36,4 +38,18 @@ public @interface OpenApiMethod {
      * @return 是否启用对称加密
      */
     String enableSymmetricCry() default "";
+
+    /**
+     * 设置HTTP建立连接超时时间（单位秒）
+     *
+     * @return 建立连接超时时间
+     */
+    int httpConnectionTimeout() default ClientConstant.HTTP_CONNECTION_TIMEOUT;
+
+    /**
+     * 设置HTTP数据传输超时时间（单位秒）
+     *
+     * @return 数据传输超时时间
+     */
+    int httpReadTimeout() default ClientConstant.HTTP_READ_TIMEOUT;
 }

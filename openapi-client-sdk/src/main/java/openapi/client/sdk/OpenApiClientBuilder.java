@@ -1,5 +1,6 @@
 package openapi.client.sdk;
 
+import openapi.client.sdk.constant.ClientConstant;
 import openapi.sdk.common.model.AsymmetricCryEnum;
 import openapi.sdk.common.model.SymmetricCryEnum;
 
@@ -55,6 +56,16 @@ public class OpenApiClientBuilder {
      * 接口名
      */
     private String api;
+
+    /**
+     * HTTP建立连接超时时间（单位秒）
+     */
+    private int httpConnectionTimeout = ClientConstant.HTTP_CONNECTION_TIMEOUT;
+
+    /**
+     * HTTP数据传输超时时间（单位秒）
+     */
+    private int httpReadTimeout = ClientConstant.HTTP_READ_TIMEOUT;
 
 
     /**
@@ -145,12 +156,36 @@ public class OpenApiClientBuilder {
     }
 
     /**
+     * 设置HTTP建立连接超时时间（单位秒）
+     *
+     * @param httpConnectionTimeout 连接超时时间（单位秒）
+     * @return builder对象
+     */
+    public OpenApiClientBuilder httpConnectionTimeout(int httpConnectionTimeout) {
+        this.httpConnectionTimeout = httpConnectionTimeout;
+        return this;
+    }
+
+    /**
+     * 设置HTTP数据传输超时时间（单位秒）
+     *
+     * @param httpReadTimeout HTTP数据传输超时时间（单位秒）
+     * @return builder对象
+     */
+    public OpenApiClientBuilder httpReadTimeout(int httpReadTimeout) {
+        this.httpReadTimeout = httpReadTimeout;
+        return this;
+    }
+
+    /**
      * 构建一个OpenClientApi对象
      *
      * @return OpenClientApi对象
      */
     public OpenApiClient build() {
-        OpenApiClient client = new OpenApiClient(baseUrl, selfPrivateKey, remotePublicKey, asymmetricCryEnum, retDecrypt, enableSymmetricCry, symmetricCryEnum, callerId, api);
+        OpenApiClient client = new OpenApiClient(baseUrl, selfPrivateKey, remotePublicKey, asymmetricCryEnum,
+                retDecrypt, enableSymmetricCry, symmetricCryEnum, callerId, api,
+                httpConnectionTimeout, httpReadTimeout);
         return client;
     }
 }

@@ -120,6 +120,7 @@ public class UserApiTest {
                 .retDecrypt(false)
                 .enableSymmetricCry(false)
                 .symmetricCry(SymmetricCryEnum.AES)
+                .httpReadTimeout(10)
                 .build();
         OutParams outParams = client.callOpenApi("getAllUsers");
         log.info("返回值：" + outParams);

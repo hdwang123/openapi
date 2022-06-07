@@ -15,9 +15,9 @@ import openapi.example.client.model.FileInfo;
 @OpenApiRef("fileApi")
 public interface FileApi {
 
-    @OpenApiMethod("upload")
+    @OpenApiMethod(value = "upload", httpReadTimeout = 60)
     void upload(FileInfo fileInfo);
 
-    @OpenApiMethod("download")
+    @OpenApiMethod(value = "download", httpConnectionTimeout = 5, httpReadTimeout = 20)
     FileInfo download(Long id);
 }

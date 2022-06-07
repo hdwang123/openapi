@@ -2,6 +2,7 @@ package openapi.sdk.common.model;
 
 import cn.hutool.json.JSONUtil;
 import lombok.Data;
+import openapi.sdk.common.constant.ErrorCode;
 
 /**
  * openapi出参
@@ -37,7 +38,7 @@ public class OutParams {
     private String symmetricCryKey;
 
     public OutParams setSuccess(String data) {
-        this.code = 200;
+        this.code = ErrorCode.SUCCESS;
         this.data = data;
         return this;
     }
@@ -49,7 +50,7 @@ public class OutParams {
      */
     public static OutParams success() {
         OutParams outParams = new OutParams();
-        outParams.code = 200;
+        outParams.code = ErrorCode.SUCCESS;
         return outParams;
     }
 
@@ -61,7 +62,7 @@ public class OutParams {
      */
     public static OutParams success(String data) {
         OutParams outParams = new OutParams();
-        outParams.code = 200;
+        outParams.code = ErrorCode.SUCCESS;
         outParams.data = data;
         return outParams;
     }
@@ -74,7 +75,21 @@ public class OutParams {
      */
     public static OutParams error(String message) {
         OutParams outParams = new OutParams();
-        outParams.code = -1;
+        outParams.code = ErrorCode.FAILED;
+        outParams.message = message;
+        return outParams;
+    }
+
+    /**
+     * 调用失败的结果
+     *
+     * @param code    错误代码
+     * @param message 错误消息
+     * @return 输出参数
+     */
+    public static OutParams error(int code, String message) {
+        OutParams outParams = new OutParams();
+        outParams.code = code;
         outParams.message = message;
         return outParams;
     }
@@ -86,7 +101,7 @@ public class OutParams {
      * @return 是否调用成功
      */
     public static boolean isSuccess(OutParams outParams) {
-        return outParams != null && outParams.code == 200;
+        return outParams != null && outParams.code != null && outParams.code == 200;
     }
 
 

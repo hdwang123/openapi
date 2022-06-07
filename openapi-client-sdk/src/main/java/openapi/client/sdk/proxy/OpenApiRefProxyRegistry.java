@@ -2,7 +2,7 @@ package openapi.client.sdk.proxy;
 
 import cn.hutool.core.util.StrUtil;
 import lombok.extern.slf4j.Slf4j;
-import openapi.client.sdk.constant.Constant;
+import openapi.client.sdk.constant.ClientConstant;
 import openapi.client.sdk.model.OpenApiRef;
 import openapi.sdk.common.model.BusinessException;
 import org.springframework.beans.BeansException;
@@ -34,7 +34,7 @@ import java.util.Set;
  */
 @Slf4j
 @Component
-@ConditionalOnProperty(Constant.OPENAPI_REF_PATH)
+@ConditionalOnProperty(ClientConstant.OPENAPI_REF_PATH)
 public class OpenApiRefProxyRegistry implements BeanDefinitionRegistryPostProcessor, ResourceLoaderAware, EnvironmentAware {
 
     /**
@@ -91,7 +91,7 @@ public class OpenApiRefProxyRegistry implements BeanDefinitionRegistryPostProces
      * @return 接口类
      */
     public Set<Class<?>> getTypesAnnotatedWith(Class<OpenApiRef> openApiRefClass) {
-        String scanPath = environment.getProperty(Constant.OPENAPI_REF_PATH);
+        String scanPath = environment.getProperty(ClientConstant.OPENAPI_REF_PATH);
         if (StrUtil.isBlank(scanPath)) {
             throw new BusinessException("OpenApiRef接口所在路径为空");
         }

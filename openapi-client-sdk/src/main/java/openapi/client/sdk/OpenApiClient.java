@@ -2,9 +2,12 @@ package openapi.client.sdk;
 
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.core.util.URLUtil;
-import cn.hutool.http.HttpUtil;
+import cn.hutool.http.ContentType;
+import cn.hutool.http.Header;
+import cn.hutool.http.HttpRequest;
 import cn.hutool.json.JSONUtil;
 import lombok.extern.slf4j.Slf4j;
+import openapi.client.sdk.constant.ClientConstant;
 import openapi.sdk.common.constant.Constant;
 import openapi.sdk.common.handler.asymmetric.AsymmetricCryHandler;
 import openapi.sdk.common.handler.symmetric.SymmetricCryHandler;
@@ -81,6 +84,16 @@ public class OpenApiClient {
     private SymmetricCryHandler symmetricCryHandler;
 
     /**
+     * HTTP建立连接超时时间（单位秒）
+     */
+    private int httpConnectionTimeout;
+
+    /**
+     * HTTP数据传输超时时间（单位秒）
+     */
+    private int httpReadTimeout;
+
+    /**
      * 日志前缀
      */
     private ThreadLocal<String> logPrefix = new ThreadLocal<>();
@@ -132,7 +145,8 @@ public class OpenApiClient {
      * @param enableSymmetricCry 是否启用对称加密(内容采用对称加密，对称加密密钥采用非对称加密)
      * @param symmetricCryEnum   对称加密算法
      */
-    public OpenApiClient(String baseUrl, String selfPrivateKey, String remotePublicKey, AsymmetricCryEnum asymmetricCryEnum, boolean retDecrypt, boolean enableSymmetricCry, SymmetricCryEnum symmetricCryEnum) {
+    public OpenApiClient(String baseUrl, String selfPrivateKey, String remotePublicKey, AsymmetricCryEnum asymmetricCryEnum,
+                         boolean retDecrypt, boolean enableSymmetricCry, SymmetricCryEnum symmetricCryEnum) {
         this(baseUrl, selfPrivateKey, remotePublicKey, asymmetricCryEnum, retDecrypt, enableSymmetricCry, symmetricCryEnum, null, null);
     }
 
@@ -149,7 +163,31 @@ public class OpenApiClient {
      * @param callerId           调用者ID
      * @param api                接口名称
      */
-    public OpenApiClient(String baseUrl, String selfPrivateKey, String remotePublicKey, AsymmetricCryEnum asymmetricCryEnum, boolean retDecrypt, boolean enableSymmetricCry, SymmetricCryEnum symmetricCryEnum, String callerId, String api) {
+    public OpenApiClient(String baseUrl, String selfPrivateKey, String remotePublicKey, AsymmetricCryEnum asymmetricCryEnum,
+                         boolean retDecrypt, boolean enableSymmetricCry, SymmetricCryEnum symmetricCryEnum,
+                         String callerId, String api) {
+        this(baseUrl, selfPrivateKey, remotePublicKey, asymmetricCryEnum, retDecrypt, enableSymmetricCry, symmetricCryEnum,
+                callerId, api, ClientConstant.HTTP_CONNECTION_TIMEOUT, ClientConstant.HTTP_READ_TIMEOUT);
+    }
+
+    /**
+     * openapi客户端
+     *
+     * @param baseUrl               openapi基础路径
+     * @param selfPrivateKey        本系统私钥
+     * @param remotePublicKey       远程系统的公钥
+     * @param asymmetricCryEnum     非对称加密算法
+     * @param retDecrypt            返回值是否需要解密
+     * @param enableSymmetricCry    是否启用对称加密(内容采用对称加密，对称加密密钥采用非对称加密)
+     * @param symmetricCryEnum      对称加密算法
+     * @param callerId              调用者ID
+     * @param api                   接口名称
+     * @param httpConnectionTimeout 设置HTTP建立连接超时时间（单位秒）
+     * @param httpReadTimeout       设置HTTP数据传输超时时间（单位秒）
+     */
+    public OpenApiClient(String baseUrl, String selfPrivateKey, String remotePublicKey, AsymmetricCryEnum asymmetricCryEnum,
+                         boolean retDecrypt, boolean enableSymmetricCry, SymmetricCryEnum symmetricCryEnum,
+                         String callerId, String api, int httpConnectionTimeout, int httpReadTimeout) {
         this.baseUrl = baseUrl;
         this.selfPrivateKey = selfPrivateKey;
         this.remotePublicKey = remotePublicKey;
@@ -159,6 +197,8 @@ public class OpenApiClient {
         this.symmetricCryEnum = symmetricCryEnum;
         this.callerId = callerId;
         this.api = api;
+        this.httpConnectionTimeout = httpConnectionTimeout;
+        this.httpReadTimeout = httpReadTimeout;
         this.asymmetricCryHandler = AsymmetricCryHandler.handlerMap.get(asymmetricCryEnum);
         this.symmetricCryHandler = SymmetricCryHandler.handlerMap.get(symmetricCryEnum);
 
@@ -354,7 +394,14 @@ public class OpenApiClient {
         String url = URLUtil.completeUrl(baseUrl, Constant.OPENAPI_PATH);
         String body = JSONUtil.toJsonStr(inParams);
         log.debug("{}调用openapi入参:{}", logPrefix.get(), inParams);
-        String ret = HttpUtil.post(url, body);
+        String ret = HttpRequest.post(url)
+                .setConnectionTimeout(httpConnectionTimeout * 1000)
+                .setReadTimeout(httpReadTimeout * 1000)
+                .contentType(ContentType.JSON.getValue())
+                .header(Header.ACCEPT, ContentType.JSON.getValue())
+                .body(body)
+                .execute()
+                .body();
         log.debug("{}调用openapi出参：{}", logPrefix.get(), ret);
         if (StrUtil.isBlank(ret)) {
             throw new BusinessException("返回值为空");
@@ -421,8 +468,12 @@ public class OpenApiClient {
 
     @Override
     public String toString() {
-        return String.format("\nopenApiClient hashCode:%x,\nbaseUrl:%s,\nselfPrivateKey:%s,\nremotePublicKey:%s,\nasymmetricCryEnum:%s,\nretDecrypt:%s;\nenableSymmetricCry:%s,\nsymmetricCryEnum:%s,\ncallerId:%s,\napi:%s",
-                this.hashCode(), baseUrl, selfPrivateKey, remotePublicKey, asymmetricCryEnum, retDecrypt, enableSymmetricCry, symmetricCryEnum, callerId, api);
+        return String.format("\nopenApiClient hashCode:%x,\nbaseUrl:%s,\nselfPrivateKey:%s,\nremotePublicKey:%s," +
+                        "\nasymmetricCryEnum:%s,\nretDecrypt:%s;\nenableSymmetricCry:%s,\nsymmetricCryEnum:%s," +
+                        "\ncallerId:%s,\napi:%s,\nhttpConnectionTimeout:%s,\nhttpReadTimeout:%s",
+                this.hashCode(), baseUrl, selfPrivateKey, remotePublicKey,
+                asymmetricCryEnum, retDecrypt, enableSymmetricCry, symmetricCryEnum,
+                callerId, api, httpConnectionTimeout, httpReadTimeout);
     }
 
 
