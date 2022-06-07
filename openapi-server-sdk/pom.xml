@@ -21,10 +21,10 @@
             <url>https://www.apache.org/licenses/LICENSE-2.0</url>
         </license>
         <!-- MIT许可证 -->
-        <license>
-            <name>MIT License</name>
-            <url>http://www.opensource.org/licenses/mit-license.php</url>
-        </license>
+<!--        <license>-->
+<!--            <name>MIT License</name>-->
+<!--            <url>http://www.opensource.org/licenses/mit-license.php</url>-->
+<!--        </license>-->
     </licenses>
 
     <!-- SCM信息 ->  -->
