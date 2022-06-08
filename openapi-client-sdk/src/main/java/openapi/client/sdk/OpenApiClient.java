@@ -203,11 +203,13 @@ public class OpenApiClient {
         this.symmetricCryHandler = SymmetricCryHandler.handlerMap.get(symmetricCryEnum);
 
         //初始化信息打印
-        log.info("OpenApiClient init:" + this);
-        if (this.enableSymmetricCry) {
-            log.debug("启用对称加密，采用非对称加密{}+对称加密{}模式", asymmetricCryEnum, symmetricCryEnum);
-        } else {
-            log.debug("未启用对称加密，仅采用非对称加密{}模式", asymmetricCryEnum);
+        if (log.isDebugEnabled()) {
+            log.debug("OpenApiClient init:{}", this);
+            if (this.enableSymmetricCry) {
+                log.debug("启用对称加密，采用非对称加密{}+对称加密{}模式", asymmetricCryEnum, symmetricCryEnum);
+            } else {
+                log.debug("未启用对称加密，仅采用非对称加密{}模式", asymmetricCryEnum);
+            }
         }
     }
 

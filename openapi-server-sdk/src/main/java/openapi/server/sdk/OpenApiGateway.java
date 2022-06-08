@@ -90,13 +90,15 @@ public class OpenApiGateway {
         initApiHandlers();
 
         //打印基本信息
-        String handlersStr = getHandlersStr();
-        log.debug("OpenApiGateway Init: \nSelfPrivateKey:{},\nAsymmetricCry:{},\nretEncrypt:{},\nenableSymmetricCry:{},\nSymmetricCry:{},\nApiHandlers:\n{}",
-                selfPrivateKey, asymmetricCryEnum, retEncrypt, enableSymmetricCry, symmetricCryEnum, handlersStr);
-        if (enableSymmetricCry) {
-            log.debug("启用对称加密，采用非对称加密{}+对称加密{}模式", asymmetricCryEnum, symmetricCryEnum);
-        } else {
-            log.debug("未启用对称加密，仅采用非对称加密{}模式", asymmetricCryEnum);
+        if (log.isDebugEnabled()) {
+            String handlersStr = getHandlersStr();
+            log.debug("OpenApiGateway Init: \nSelfPrivateKey:{},\nAsymmetricCry:{},\nretEncrypt:{},\nenableSymmetricCry:{},\nSymmetricCry:{},\nApiHandlers:\n{}",
+                    selfPrivateKey, asymmetricCryEnum, retEncrypt, enableSymmetricCry, symmetricCryEnum, handlersStr);
+            if (enableSymmetricCry) {
+                log.debug("启用对称加密，采用非对称加密{}+对称加密{}模式", asymmetricCryEnum, symmetricCryEnum);
+            } else {
+                log.debug("未启用对称加密，仅采用非对称加密{}模式", asymmetricCryEnum);
+            }
         }
     }
 
