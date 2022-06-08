@@ -413,6 +413,9 @@ public class OpenApiClient {
             //判断是否需要解密数据
             if (retDecrypt) {
                 decryptData(outParams);
+
+                //对称加密密钥清空
+                outParams.setSymmetricCryKey(null);
             }
         } else {
             throw new BusinessException("调用openapi异常:" + outParams.getMessage());
