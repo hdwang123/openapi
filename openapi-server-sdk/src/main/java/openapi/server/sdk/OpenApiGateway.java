@@ -94,14 +94,17 @@ public class OpenApiGateway {
             String handlersStr = getHandlersStr();
             log.debug("OpenApiGateway Init: \nSelfPrivateKey:{},\nAsymmetricCry:{},\nretEncrypt:{},\nenableSymmetricCry:{},\nSymmetricCry:{},\nApiHandlers:\n{}",
                     selfPrivateKey, asymmetricCryEnum, retEncrypt, enableSymmetricCry, symmetricCryEnum, handlersStr);
-            if (enableSymmetricCry) {
-                log.debug("启用对称加密，采用非对称加密{}+对称加密{}模式", asymmetricCryEnum, symmetricCryEnum);
-            } else {
-                log.debug("未启用对称加密，仅采用非对称加密{}模式", asymmetricCryEnum);
-            }
+            logCryMode(this.enableSymmetricCry);
         }
+        //重要日志改成info级别
+        log.info("OpenApiGateway init succeed. path={}", Constant.OPENAPI_PATH);
     }
 
+    /**
+     * 获取所有的openapi处理器的字符串表示
+     *
+     * @return openapi处理器列表
+     */
     private String getHandlersStr() {
         Collection<ApiHandler> handlers = apiHandlerMap.values();
         String handlersStr = StrUtil.EMPTY;
@@ -310,20 +313,6 @@ public class OpenApiGateway {
     }
 
     /**
-     * 判断是否启用对称加密
-     *
-     * @param apiHandler openapi处理器
-     * @return 是否启用对称加密
-     */
-    private boolean isEnableSymmetricCry(ApiHandler apiHandler) {
-        boolean enableSymmetricCry = this.enableSymmetricCry;
-        if (StrUtil.isNotBlank(apiHandler.getOpenApiMethod().enableSymmetricCry())) {
-            enableSymmetricCry = Boolean.parseBoolean(apiHandler.getOpenApiMethod().enableSymmetricCry());
-        }
-        return enableSymmetricCry;
-    }
-
-    /**
      * 调用目标方法
      *
      * @param apiHandler openapi处理器
@@ -356,20 +345,6 @@ public class OpenApiGateway {
             log.error(logPrefix.get() + "调用opeapi处理器异常", ex);
             throw new BusinessException("调用opeapi处理器异常");
         }
-    }
-
-    /**
-     * 判断返回值是否需要加密
-     *
-     * @param apiHandler openapi处理器
-     * @return 是否需要加密
-     */
-    private boolean isRetEncrypt(ApiHandler apiHandler) {
-        boolean retEncrypt = this.retEncrypt;
-        if (StrUtil.isNotBlank(apiHandler.getOpenApiMethod().retEncrypt())) {
-            retEncrypt = Boolean.parseBoolean(apiHandler.getOpenApiMethod().retEncrypt());
-        }
-        return retEncrypt;
     }
 
     /**
@@ -409,6 +384,36 @@ public class OpenApiGateway {
     }
 
     /**
+     * 判断是否启用对称加密
+     *
+     * @param apiHandler openapi处理器
+     * @return 是否启用对称加密
+     */
+    private boolean isEnableSymmetricCry(ApiHandler apiHandler) {
+        boolean enableSymmetricCry = this.enableSymmetricCry;
+        if (StrUtil.isNotBlank(apiHandler.getOpenApiMethod().enableSymmetricCry())) {
+            enableSymmetricCry = Boolean.parseBoolean(apiHandler.getOpenApiMethod().enableSymmetricCry());
+        }
+        logCryMode(enableSymmetricCry);
+        return enableSymmetricCry;
+    }
+
+    /**
+     * 判断返回值是否需要加密
+     *
+     * @param apiHandler openapi处理器
+     * @return 是否需要加密
+     */
+    private boolean isRetEncrypt(ApiHandler apiHandler) {
+        boolean retEncrypt = this.retEncrypt;
+        if (StrUtil.isNotBlank(apiHandler.getOpenApiMethod().retEncrypt())) {
+            retEncrypt = Boolean.parseBoolean(apiHandler.getOpenApiMethod().retEncrypt());
+        }
+        log.debug("{}返回值是否需要加密：{}", logPrefix.get(), retEncrypt);
+        return retEncrypt;
+    }
+
+    /**
      * 获取api处理器Map的key
      *
      * @param openApiName       开放api名称
@@ -419,5 +424,16 @@ public class OpenApiGateway {
         return openApiName + "_" + openApiMethodName;
     }
 
-
+    /**
+     * 记录加密模式
+     *
+     * @param enableSymmetricCry 是否启用对称加密
+     */
+    private void logCryMode(boolean enableSymmetricCry) {
+        if (enableSymmetricCry) {
+            log.debug("{}启用对称加密，采用非对称加密{}+对称加密{}模式", logPrefix.get(), asymmetricCryEnum, symmetricCryEnum);
+        } else {
+            log.debug("{}未启用对称加密，仅采用非对称加密{}模式", logPrefix.get(), asymmetricCryEnum);
+        }
+    }
 }

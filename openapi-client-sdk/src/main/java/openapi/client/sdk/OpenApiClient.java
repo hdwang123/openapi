@@ -1,7 +1,6 @@
 package openapi.client.sdk;
 
 import cn.hutool.core.util.StrUtil;
-import cn.hutool.core.util.URLUtil;
 import cn.hutool.http.ContentType;
 import cn.hutool.http.Header;
 import cn.hutool.http.HttpRequest;
@@ -205,12 +204,10 @@ public class OpenApiClient {
         //初始化信息打印
         if (log.isDebugEnabled()) {
             log.debug("OpenApiClient init:{}", this);
-            if (this.enableSymmetricCry) {
-                log.debug("启用对称加密，采用非对称加密{}+对称加密{}模式", asymmetricCryEnum, symmetricCryEnum);
-            } else {
-                log.debug("未启用对称加密，仅采用非对称加密{}模式", asymmetricCryEnum);
-            }
+            logCryModel(this.enableSymmetricCry);
         }
+        //重要日志改成info级别
+        log.info("OpenApiClient init succeed. hashcode={}", this.hashCode());
     }
 
     /**
@@ -349,7 +346,6 @@ public class OpenApiClient {
         inParams.setMultiParam(multiParam);
     }
 
-
     /**
      * 加密&加签
      *
@@ -393,7 +389,7 @@ public class OpenApiClient {
      * @return 结果
      */
     private OutParams doCall(InParams inParams) {
-        String url = URLUtil.completeUrl(baseUrl, Constant.OPENAPI_PATH);
+        String url = CommonUtil.completeUrl(baseUrl, Constant.OPENAPI_PATH);
         String body = JSONUtil.toJsonStr(inParams);
         log.debug("{}调用openapi入参:{}", logPrefix.get(), inParams);
         String ret = HttpRequest.post(url)
@@ -418,7 +414,7 @@ public class OpenApiClient {
                 outParams.setSymmetricCryKey(null);
             }
         } else {
-            throw new BusinessException("调用openapi异常:" + outParams.getMessage());
+            throw new BusinessException("调用openapi异常:" + outParams);
         }
         return outParams;
     }
@@ -471,6 +467,19 @@ public class OpenApiClient {
         }
     }
 
+    /**
+     * 记录加密模式
+     *
+     * @param enableSymmetricCry 是否启用对称加密
+     */
+    private void logCryModel(boolean enableSymmetricCry) {
+        if (enableSymmetricCry) {
+            log.debug("启用对称加密，采用非对称加密{}+对称加密{}模式", asymmetricCryEnum, symmetricCryEnum);
+        } else {
+            log.debug("未启用对称加密，仅采用非对称加密{}模式", asymmetricCryEnum);
+        }
+    }
+
     @Override
     public String toString() {
         return String.format("\nopenApiClient hashCode:%x,\nbaseUrl:%s,\nselfPrivateKey:%s,\nremotePublicKey:%s," +
@@ -480,6 +489,5 @@ public class OpenApiClient {
                 asymmetricCryEnum, retDecrypt, enableSymmetricCry, symmetricCryEnum,
                 callerId, api, httpConnectionTimeout, httpReadTimeout);
     }
-
 
 }
