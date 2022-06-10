@@ -23,8 +23,8 @@ cn.hutool.hutool-all
 
 ## Program flow chart
 
-<img src="https://github.com/hdwang123/openapi/blob/main/doc/openapi.png" />   
-<img src="https://github.com/hdwang123/openapi/blob/main/doc/openapi2.png" />   
+<img src="https://github.com/hdwang123/openapi/blob/main/doc/openapi-en.png" />   
+<img src="https://github.com/hdwang123/openapi/blob/main/doc/openapi2-en.png" />   
 
 ## Instructions
 
