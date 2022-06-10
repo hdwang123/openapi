@@ -1,5 +1,6 @@
 # openapi
-<a href = "https://github.com/hdwang123/openapi/blob/dev/README-en.md">
+
+<a href = "https://github.com/hdwang123/openapi/blob/main/README-en.md">
 ENGLISH README
 </a>
 

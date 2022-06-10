@@ -4,8 +4,11 @@
 
 ## background
 
-For the sake of security, the interface of external services often needs to perform corresponding security processing: data encryption transmission and identity authentication. There are two types of data encryption transmission: symmetric encryption and asymmetric encryption. For the sake of more security, it is better to use asymmetric encryption, and digital signature can be used for identity authentication.
-The purpose of developing this sdk is to quickly realize the safe opening of the api in the project.  
+For the sake of security, the interface of external services often needs to perform corresponding security processing:
+data encryption transmission and identity authentication. There are two types of data encryption transmission: symmetric
+encryption and asymmetric encryption. For the sake of more security, it is better to use asymmetric encryption, and
+digital signature can be used for identity authentication. The purpose of developing this sdk is to quickly realize the
+safe opening of the api in the project.
 
 ## frame based
 
@@ -17,9 +20,11 @@ cn.hutool.hutool-all
 
 ## function
 
-1. Responsible for opening the interface to the outside world (<font size=1>Provide services based on HTTP</font>)  
-2. Implement the encryption and decryption of interface parameters and return values (<font size=1>use asymmetric encryption: RSA/SM2, or symmetric encryption: AES/SM4</font>)  
-3. Implement the signature verification of the interface (<font size=1>The server will verify the client's signature to ensure that the caller's identity and data are not tampered with</font>)  
+1. Responsible for opening the interface to the outside world (<font size=1>Provide services based on HTTP</font>)
+2. Implement the encryption and decryption of interface parameters and return values (<font size=1>use asymmetric
+   encryption: RSA/SM2, or symmetric encryption: AES/SM4</font>)
+3. Implement the signature verification of the interface (<font size=1>The server will verify the client's signature to
+   ensure that the caller's identity and data are not tampered with</font>)
 
 ## Program flow chart
 
@@ -163,7 +168,8 @@ public class UserApiClient {
 
 ##### method two
 
-Use the annotation @OpenApiRef to define a service reference and inject it where needed 
+Use the annotation @OpenApiRef to define a service reference and inject it where needed
+
 1. Define the configuration
 
 ````
@@ -212,15 +218,18 @@ public class UserApiTest2 {
 
 ### v1.0.0
 
-The first version, supports asymmetric encryption and decryption (RSA or SM2) and interface signature verification function
+The first version, supports asymmetric encryption and decryption (RSA or SM2) and interface signature verification
+function
 
 ### v1.1.0
 
-A new symmetric encryption mode (AES or SM4) is added, that is, the content adopts symmetric encryption to improve the encryption and decryption speed, and the symmetric encryption key is transmitted after asymmetric encryption.
+A new symmetric encryption mode (AES or SM4) is added, that is, the content adopts symmetric encryption to improve the
+encryption and decryption speed, and the symmetric encryption key is transmitted after asymmetric encryption.
 
 ### v1.1.1
 
-1. Signature optimization, adding the request serial number to the signature content to ensure that the call of the no-parameter method is also verified.
+1. Signature optimization, adding the request serial number to the signature content to ensure that the call of the
+   no-parameter method is also verified.
 2. The method adds support for array type parameters
 3. Annotate the new properties of OpenApiMethod to support method-level configuration
 
@@ -248,7 +257,8 @@ openapi-client-sdk adds a new service reference method to call openapi
 
 ### v1.2.1
 
-Reconstruction of encryption and decryption method: change to encryption and decryption processor to facilitate future algorithm expansion
+Reconstruction of encryption and decryption method: change to encryption and decryption processor to facilitate future
+algorithm expansion
 
 ### v1.2.2
 
