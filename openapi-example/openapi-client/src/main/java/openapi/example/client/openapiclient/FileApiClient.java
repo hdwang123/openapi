@@ -12,7 +12,7 @@ import openapi.example.client.model.FileInfo;
  * 时间： 2022/6/5 20:32
  */
 @OpenApiRef("fileApi")
-public interface FileApi {
+public interface FileApiClient {
 
     @OpenApiMethod(value = "upload", httpReadTimeout = 60)
     void upload(FileInfo fileInfo);

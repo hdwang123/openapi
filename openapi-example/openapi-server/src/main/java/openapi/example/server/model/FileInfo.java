@@ -14,8 +14,8 @@ public class FileInfo {
     private String fileName;
 
     /**
-     * Base64字符串（由于hutool中JSONUtil对byte[]转换存在问题，故改用base64字符串传输）
+     * 文件内容
      */
-    private String fileContent;
+    private byte[] fileBytes;
 
 }
