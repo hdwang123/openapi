@@ -7,7 +7,9 @@ import java.lang.annotation.Target;
 
 /**
  * 开放api方法注解，标识一个开放api的方法
+ * <p>
  * 注：目前支持的参数类型有基本类型、字符串、数组、普通javabean、List等
+ * </p>
  *
  * @author wanghuidong
  */

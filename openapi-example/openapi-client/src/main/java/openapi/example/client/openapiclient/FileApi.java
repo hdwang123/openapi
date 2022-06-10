@@ -1,6 +1,5 @@
 package openapi.example.client.openapiclient;
 
-import cn.hutool.core.io.FileUtil;
 import openapi.client.sdk.model.OpenApiMethod;
 import openapi.client.sdk.model.OpenApiRef;
 import openapi.example.client.model.FileInfo;

@@ -62,22 +62,12 @@ public class OpenApiRefProxyRegistry implements BeanDefinitionRegistryPostProces
     @Override
     public void postProcessBeanDefinitionRegistry(BeanDefinitionRegistry registry) throws BeansException {
         // 扫描自定义注解，获取Class
-        Set<Class<?>> interClazzSet = this.getTypesAnnotatedWith(OpenApiRef.class);
+        Set<Class<?>> interClazzSet = this.getInterfacesAnnotatedWith(OpenApiRef.class);
 
         //将 class包装为BeanDefinition ，注册到Spring的Ioc容器中
-        for (Class<?> interClazz : interClazzSet) {
-            BeanDefinitionBuilder beanDefinitionBuilder = BeanDefinitionBuilder.genericBeanDefinition(interClazz);
-            GenericBeanDefinition definition = (GenericBeanDefinition) beanDefinitionBuilder.getRawBeanDefinition();
-            //设置构造方法的参数  对于Class<?>,既可以设置为Class,也可以传Class的完全类名
-            definition.getConstructorArgumentValues().addGenericArgumentValue(interClazz);
-
-            //Bean的类型，指定为某个代理接口的类型
-            definition.setBeanClass(OpenApiRefProxyFactoryBean.class);
-            //表示 根据代理接口的类型来自动装配
-            definition.setAutowireMode(AbstractBeanDefinition.AUTOWIRE_BY_TYPE);
-            registry.registerBeanDefinition(interClazz.getName(), definition);
-        }
+        registerOpenApiRefProxies(registry, interClazzSet);
     }
+
 
     @Override
     public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
@@ -90,7 +80,7 @@ public class OpenApiRefProxyRegistry implements BeanDefinitionRegistryPostProces
      * @param openApiRefClass 注解类
      * @return 接口类
      */
-    public Set<Class<?>> getTypesAnnotatedWith(Class<OpenApiRef> openApiRefClass) {
+    private Set<Class<?>> getInterfacesAnnotatedWith(Class<OpenApiRef> openApiRefClass) {
         String scanPath = environment.getProperty(ClientConstant.OPENAPI_REF_PATH);
         if (StrUtil.isBlank(scanPath)) {
             throw new BusinessException("OpenApiRef接口所在路径为空");
@@ -118,6 +108,31 @@ public class OpenApiRefProxyRegistry implements BeanDefinitionRegistryPostProces
         } catch (Exception ex) {
             log.error(String.format("扫描%s下的OpenApiRef接口信息异常", scanPath), ex);
             return classes;
+        }
+    }
+
+    /**
+     * 注册OpenApiRef代理对象到spring容器
+     *
+     * @param registry      bean注册器
+     * @param interClazzSet OpenApiRef接口类集合
+     */
+    private void registerOpenApiRefProxies(BeanDefinitionRegistry registry, Set<Class<?>> interClazzSet) {
+        for (Class<?> interClazz : interClazzSet) {
+            BeanDefinitionBuilder beanDefinitionBuilder = BeanDefinitionBuilder.genericBeanDefinition(interClazz);
+            GenericBeanDefinition definition = (GenericBeanDefinition) beanDefinitionBuilder.getRawBeanDefinition();
+
+            //设置构造方法的参数  对于Class<?>,既可以设置为Class,也可以传Class的完全类名
+            definition.getConstructorArgumentValues().addGenericArgumentValue(interClazz);
+
+            //Bean的类型，指定为某个代理接口的类型
+            definition.setBeanClass(OpenApiRefProxyFactoryBean.class);
+
+            //表示 根据代理接口的类型来自动装配
+            definition.setAutowireMode(AbstractBeanDefinition.AUTOWIRE_BY_TYPE);
+
+            //注册bean
+            registry.registerBeanDefinition(interClazz.getName(), definition);
         }
     }
 }

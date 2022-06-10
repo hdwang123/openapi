@@ -9,6 +9,10 @@ import java.lang.annotation.Target;
 /**
  * 开放api服务引用注解，用于引用远程openapi服务，需将此注解标识在接口上
  *
+ * <p>
+ * 注：服务引用若要生效，需要进行配置，请参考{@link openapi.client.sdk.config.OpenApiClientConfig}进行配置
+ * </p>
+ *
  * @author wanghuidong
  */
 @Retention(RetentionPolicy.RUNTIME)

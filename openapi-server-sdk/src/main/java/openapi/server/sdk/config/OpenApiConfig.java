@@ -5,7 +5,7 @@ import openapi.sdk.common.model.AsymmetricCryEnum;
 import openapi.sdk.common.model.SymmetricCryEnum;
 
 /**
- * 开放api配置类接口，由引入者去实现
+ * 开放api服务端配置类接口，由引入者去实现
  *
  * @author wanghuidong
  */

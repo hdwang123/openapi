@@ -4,7 +4,7 @@ import cn.hutool.core.util.StrUtil;
 import lombok.extern.slf4j.Slf4j;
 import openapi.client.sdk.OpenApiClient;
 import openapi.client.sdk.OpenApiClientBuilder;
-import openapi.client.sdk.config.OpenApiConfig;
+import openapi.client.sdk.config.OpenApiClientConfig;
 import openapi.client.sdk.model.OpenApiMethod;
 import openapi.client.sdk.model.OpenApiRef;
 import openapi.sdk.common.model.BusinessException;
@@ -31,7 +31,7 @@ public class OpenApiRefProxyInvocationHandler implements InvocationHandler {
     /**
      * 开放api客户端配置
      */
-    private OpenApiConfig config;
+    private OpenApiClientConfig config;
 
     /**
      * 构造函数
@@ -39,7 +39,7 @@ public class OpenApiRefProxyInvocationHandler implements InvocationHandler {
      * @param openApiClient openapi客户端
      * @param config        开放api客户端配置
      */
-    public OpenApiRefProxyInvocationHandler(OpenApiClient openApiClient, OpenApiConfig config) {
+    public OpenApiRefProxyInvocationHandler(OpenApiClient openApiClient, OpenApiClientConfig config) {
         this.openApiClient = openApiClient;
         this.config = config;
     }
@@ -108,10 +108,22 @@ public class OpenApiRefProxyInvocationHandler implements InvocationHandler {
      */
     private boolean methodConfigDif(OpenApiMethod openApiMethod) {
         boolean retDecryptDif = StrUtil.isNotBlank(openApiMethod.retDecrypt()) && Boolean.parseBoolean(openApiMethod.retDecrypt()) != config.isRetDecrypt();
+        if (retDecryptDif) {
+            return true;
+        }
         boolean enableSymmetricCryDif = StrUtil.isNotBlank(openApiMethod.enableSymmetricCry()) && Boolean.parseBoolean(openApiMethod.enableSymmetricCry()) != config.isEnableSymmetricCry();
+        if (enableSymmetricCryDif) {
+            return true;
+        }
         boolean httpConnectionTimeoutDif = openApiMethod.httpConnectionTimeout() != -1 && openApiMethod.httpConnectionTimeout() != config.getHttpConnectionTimeout();
+        if (httpConnectionTimeoutDif) {
+            return true;
+        }
         boolean httpReadTimeoutDif = openApiMethod.httpReadTimeout() != -1 && openApiMethod.httpReadTimeout() != config.getHttpReadTimeout();
-        return retDecryptDif || enableSymmetricCryDif || httpConnectionTimeoutDif || httpReadTimeoutDif;
+        if (httpReadTimeoutDif) {
+            return true;
+        }
+        return false;
     }
 
     /**

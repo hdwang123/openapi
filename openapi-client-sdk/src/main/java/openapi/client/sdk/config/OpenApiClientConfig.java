@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 /**
  * 开放api客户端配置类，由引入者添加配置
  * <p>
- * openapi配置示例：
+ * yml配置文件中添加openapi配置示例：
  * </p>
  * <blockquote><pre>
  * openapi:
@@ -35,7 +35,7 @@ import org.springframework.stereotype.Component;
 @Data
 @Component
 @ConfigurationProperties(prefix = "openapi.client.config")
-public class OpenApiConfig {
+public class OpenApiClientConfig {
     /**
      * 接口所在路径(包名)
      */

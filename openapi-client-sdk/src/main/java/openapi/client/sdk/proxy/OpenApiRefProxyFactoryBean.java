@@ -4,7 +4,7 @@ import cn.hutool.core.util.StrUtil;
 import lombok.extern.slf4j.Slf4j;
 import openapi.client.sdk.OpenApiClient;
 import openapi.client.sdk.OpenApiClientBuilder;
-import openapi.client.sdk.config.OpenApiConfig;
+import openapi.client.sdk.config.OpenApiClientConfig;
 import openapi.client.sdk.model.OpenApiRef;
 import openapi.sdk.common.model.BusinessException;
 import org.springframework.beans.factory.FactoryBean;
@@ -25,7 +25,7 @@ public class OpenApiRefProxyFactoryBean<T> implements FactoryBean<T> {
      * 开放api客户端配置
      */
     @Autowired
-    private OpenApiConfig config;
+    private OpenApiClientConfig config;
 
     /**
      * OpenApiRef标注的接口类
