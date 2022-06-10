@@ -1,6 +1,6 @@
 # openapi
 
-## Committed to providing an sdk that can quickly build an open API
+## strive to providing an sdk that can quickly build open API
 
 ## background
 
@@ -26,7 +26,7 @@ cn.hutool.hutool-all
 3. Implement the signature verification of the interface (<font size=1>The server will verify the client's signature to
    ensure that the caller's identity and data are not tampered with</font>)
 
-## Program flow chart
+## program flow chart
 
 <img src="https://github.com/hdwang123/openapi/blob/main/doc/openapi-en.png" />   
 <img src="https://github.com/hdwang123/openapi/blob/main/doc/openapi2-en.png" />   
@@ -263,4 +263,9 @@ algorithm expansion
 ### v1.2.2
 
 1. Optimize type conversion code
-2. Increase the HTTP timeout setting 
+2. Increase the HTTP timeout setting
+
+### v1.2.3
+
+1. Fix URL splicing bug
+2. Code optimization
