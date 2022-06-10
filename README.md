@@ -1,4 +1,7 @@
 # openapi
+<a href = "https://github.com/hdwang123/openapi/blob/dev/README-en.md">
+ENGLISH README
+</a>
 
 ## 致力于提供一个能够快速搭建开放api的sdk
 
