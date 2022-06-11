@@ -269,3 +269,7 @@ algorithm expansion
 
 1. Fix URL splicing bug
 2. Code optimization
+
+### v1.2.4
+
+Fix multi-parameter method parameter conversion bug    
