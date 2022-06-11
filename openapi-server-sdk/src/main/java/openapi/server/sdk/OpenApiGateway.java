@@ -241,13 +241,12 @@ public class OpenApiGateway {
                 Type[] paramTypes = apiHandler.getParamTypes();
                 if (inParams.isMultiParam()) {
                     //多参支持
-                    List<Object> list = JSONUtil.toList(decryptedBody, Object.class);
+                    List<String> list = JSONUtil.toList(decryptedBody, String.class);
                     if (list.size() != paramTypes.length) {
                         throw new BusinessException("参数个数不匹配");
                     }
                     for (int i = 0; i < list.size(); i++) {
-                        String str = StrObjectConvert.objToStr(list.get(i), paramTypes[i]);
-                        params.add(StrObjectConvert.strToObj(str, paramTypes[i]));
+                        params.add(StrObjectConvert.strToObj(list.get(i), paramTypes[i]));
                     }
                 } else {
                     if (paramTypes.length == 1) {

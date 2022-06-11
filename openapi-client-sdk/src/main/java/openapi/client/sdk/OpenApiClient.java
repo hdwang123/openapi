@@ -16,6 +16,8 @@ import openapi.sdk.common.util.CommonUtil;
 import openapi.sdk.common.util.StrObjectConvert;
 import openapi.sdk.common.util.SymmetricCryUtil;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -339,7 +341,12 @@ public class OpenApiClient {
             multiParam = false;
         } else {
             //多参函数
-            body = JSONUtil.toJsonStr(params);
+            List<String> paramStrList = new ArrayList<>();
+            for (int i = 0; i < params.length; i++) {
+                String paramStr = StrObjectConvert.objToStr(params[i], params[i].getClass());
+                paramStrList.add(paramStr);
+            }
+            body = JSONUtil.toJsonStr(paramStrList);
             multiParam = true;
         }
         inParams.setBody(body);
