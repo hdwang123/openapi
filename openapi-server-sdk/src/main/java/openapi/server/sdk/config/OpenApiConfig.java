@@ -1,8 +1,8 @@
 package openapi.server.sdk.config;
 
 
-import openapi.sdk.common.model.AsymmetricCryEnum;
-import openapi.sdk.common.model.SymmetricCryEnum;
+import openapi.sdk.common.enums.AsymmetricCryEnum;
+import openapi.sdk.common.enums.SymmetricCryEnum;
 
 /**
  * 开放api服务端配置类接口，由引入者去实现

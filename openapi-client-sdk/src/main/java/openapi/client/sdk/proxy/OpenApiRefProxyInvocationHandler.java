@@ -5,9 +5,9 @@ import lombok.extern.slf4j.Slf4j;
 import openapi.client.sdk.OpenApiClient;
 import openapi.client.sdk.OpenApiClientBuilder;
 import openapi.client.sdk.config.OpenApiClientConfig;
-import openapi.client.sdk.model.OpenApiMethod;
-import openapi.client.sdk.model.OpenApiRef;
-import openapi.sdk.common.model.BusinessException;
+import openapi.client.sdk.annotation.OpenApiMethod;
+import openapi.client.sdk.annotation.OpenApiRef;
+import openapi.sdk.common.exception.OpenApiClientException;
 import openapi.sdk.common.model.OutParams;
 import openapi.sdk.common.util.StrObjectConvert;
 
@@ -65,7 +65,7 @@ public class OpenApiRefProxyInvocationHandler implements InvocationHandler {
                 OpenApiMethod openApiMethod = method.getAnnotation(OpenApiMethod.class);
                 String methodName = openApiMethod.value();
                 if (StrUtil.isBlank(methodName)) {
-                    throw new BusinessException(method.getName() + "api方法名称不能为空");
+                    throw new OpenApiClientException(method.getName() + "api方法名称不能为空");
                 }
                 //方法级别的配置与默认配置不同，需要构建新的Client
                 OpenApiClient apiClient = this.openApiClient;
@@ -91,7 +91,7 @@ public class OpenApiRefProxyInvocationHandler implements InvocationHandler {
                 if (OutParams.isSuccess(outParams)) {
                     return StrObjectConvert.strToObj(outParams.getData(), returnClass);
                 } else {
-                    throw new BusinessException("返回失败：" + outParams.getMessage());
+                    throw new OpenApiClientException("返回失败：" + outParams.getMessage());
                 }
             } else {
                 log.warn("{}非OpenApiMethod,不进行代理", method.getName());

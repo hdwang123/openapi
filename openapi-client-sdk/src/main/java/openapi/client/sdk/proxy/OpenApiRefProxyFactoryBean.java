@@ -5,8 +5,8 @@ import lombok.extern.slf4j.Slf4j;
 import openapi.client.sdk.OpenApiClient;
 import openapi.client.sdk.OpenApiClientBuilder;
 import openapi.client.sdk.config.OpenApiClientConfig;
-import openapi.client.sdk.model.OpenApiRef;
-import openapi.sdk.common.model.BusinessException;
+import openapi.client.sdk.annotation.OpenApiRef;
+import openapi.sdk.common.exception.OpenApiClientException;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -54,7 +54,7 @@ public class OpenApiRefProxyFactoryBean<T> implements FactoryBean<T> {
         //构建OpenApiClient
         String api = interClass.getAnnotation(OpenApiRef.class).value();
         if (StrUtil.isBlank(api)) {
-            throw new BusinessException(interClass.getName() + "api名称不能为空");
+            throw new OpenApiClientException(interClass.getName() + "api名称不能为空");
         }
         OpenApiClient apiClient = new OpenApiClientBuilder(config.getBaseUrl(), config.getSelfPrivateKey(), config.getRemotePublicKey(), config.getCallerId(), api)
                 .asymmetricCry(config.getAsymmetricCryEnum())
@@ -88,16 +88,16 @@ public class OpenApiRefProxyFactoryBean<T> implements FactoryBean<T> {
      */
     private void checkConfig() {
         if (StrUtil.isBlank(config.getBaseUrl())) {
-            throw new BusinessException("openapi基础路径未配置");
+            throw new OpenApiClientException("openapi基础路径未配置");
         }
         if (StrUtil.isBlank(config.getSelfPrivateKey())) {
-            throw new BusinessException("本系统私钥未配置");
+            throw new OpenApiClientException("本系统私钥未配置");
         }
         if (StrUtil.isBlank(config.getRemotePublicKey())) {
-            throw new BusinessException("远程系统的公钥未配置");
+            throw new OpenApiClientException("远程系统的公钥未配置");
         }
         if (StrUtil.isBlank(config.getCallerId())) {
-            throw new BusinessException("调用者ID未配置");
+            throw new OpenApiClientException("调用者ID未配置");
         }
     }
 }

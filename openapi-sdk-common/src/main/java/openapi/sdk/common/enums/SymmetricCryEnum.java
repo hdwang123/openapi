@@ -1,4 +1,4 @@
-package openapi.sdk.common.model;
+package openapi.sdk.common.enums;
 
 /**
  * 对称加密算法

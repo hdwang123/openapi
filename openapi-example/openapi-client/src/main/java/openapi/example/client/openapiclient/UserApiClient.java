@@ -1,7 +1,7 @@
 package openapi.example.client.openapiclient;
 
-import openapi.client.sdk.model.OpenApiRef;
-import openapi.client.sdk.model.OpenApiMethod;
+import openapi.client.sdk.annotation.OpenApiRef;
+import openapi.client.sdk.annotation.OpenApiMethod;
 import openapi.example.client.model.User;
 
 import java.util.List;

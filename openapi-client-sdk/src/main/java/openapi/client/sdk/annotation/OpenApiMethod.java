@@ -1,4 +1,4 @@
-package openapi.client.sdk.model;
+package openapi.client.sdk.annotation;
 
 import openapi.client.sdk.config.OpenApiClientConfig;
 

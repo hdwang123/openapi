@@ -8,8 +8,11 @@ import cn.hutool.json.JSONUtil;
 import lombok.extern.slf4j.Slf4j;
 import openapi.client.sdk.constant.ClientConstant;
 import openapi.sdk.common.constant.Constant;
-import openapi.sdk.common.handler.asymmetric.AsymmetricCryHandler;
-import openapi.sdk.common.handler.symmetric.SymmetricCryHandler;
+import openapi.sdk.common.enums.AsymmetricCryEnum;
+import openapi.sdk.common.enums.SymmetricCryEnum;
+import openapi.sdk.common.exception.OpenApiClientException;
+import openapi.sdk.common.handler.AsymmetricCryHandler;
+import openapi.sdk.common.handler.SymmetricCryHandler;
 import openapi.sdk.common.model.*;
 import openapi.sdk.common.util.Base64Util;
 import openapi.sdk.common.util.CommonUtil;
@@ -409,7 +412,7 @@ public class OpenApiClient {
                 .body();
         log.debug("{}调用openapi出参：{}", logPrefix.get(), ret);
         if (StrUtil.isBlank(ret)) {
-            throw new BusinessException("返回值为空");
+            throw new OpenApiClientException("返回值为空");
         }
         OutParams outParams = JSONUtil.toBean(ret, OutParams.class);
         if (OutParams.isSuccess(outParams)) {
@@ -421,7 +424,7 @@ public class OpenApiClient {
                 outParams.setSymmetricCryKey(null);
             }
         } else {
-            throw new BusinessException("调用openapi异常:" + outParams);
+            throw new OpenApiClientException("调用openapi异常:" + outParams);
         }
         return outParams;
     }
@@ -445,13 +448,13 @@ public class OpenApiClient {
                 }
                 outParams.setData(decryptedData);
             }
-        } catch (BusinessException be) {
+        } catch (OpenApiClientException be) {
             String errorMsg = "解密失败：" + be.getMessage();
             log.error(logPrefix.get() + errorMsg, be);
-            throw new BusinessException(errorMsg);
+            throw new OpenApiClientException(errorMsg);
         } catch (Exception ex) {
             log.error(logPrefix.get() + "解密失败", ex);
-            throw new BusinessException("解密失败");
+            throw new OpenApiClientException("解密失败");
         }
     }
 
@@ -464,13 +467,13 @@ public class OpenApiClient {
      */
     private void checkInParams(String callerId, String api, String method) {
         if (StrUtil.isBlank(callerId)) {
-            throw new BusinessException("调用者ID不能为空");
+            throw new OpenApiClientException("调用者ID不能为空");
         }
         if (StrUtil.isBlank(api)) {
-            throw new BusinessException("API接口名不能为空");
+            throw new OpenApiClientException("API接口名不能为空");
         }
         if (StrUtil.isBlank(method)) {
-            throw new BusinessException("API方法名不能为空");
+            throw new OpenApiClientException("API方法名不能为空");
         }
     }
 

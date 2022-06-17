@@ -3,8 +3,8 @@ package openapi.client.sdk.proxy;
 import cn.hutool.core.util.StrUtil;
 import lombok.extern.slf4j.Slf4j;
 import openapi.client.sdk.constant.ClientConstant;
-import openapi.client.sdk.model.OpenApiRef;
-import openapi.sdk.common.model.BusinessException;
+import openapi.client.sdk.annotation.OpenApiRef;
+import openapi.sdk.common.exception.OpenApiClientException;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.support.*;
@@ -83,7 +83,7 @@ public class OpenApiRefProxyRegistry implements BeanDefinitionRegistryPostProces
     private Set<Class<?>> getInterfacesAnnotatedWith(Class<OpenApiRef> openApiRefClass) {
         String scanPath = environment.getProperty(ClientConstant.OPENAPI_REF_PATH);
         if (StrUtil.isBlank(scanPath)) {
-            throw new BusinessException("OpenApiRef接口所在路径为空");
+            throw new OpenApiClientException("OpenApiRef接口所在路径为空");
         }
         Set<Class<?>> classes = new HashSet<Class<?>>();
         try {

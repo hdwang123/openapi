@@ -7,6 +7,7 @@ import cn.hutool.crypto.asymmetric.KeyType;
 import cn.hutool.crypto.asymmetric.RSA;
 import cn.hutool.crypto.asymmetric.Sign;
 import cn.hutool.crypto.asymmetric.SignAlgorithm;
+import openapi.sdk.common.handler.AsymmetricCryHandler;
 import openapi.sdk.common.util.Base64Util;
 
 import java.nio.charset.StandardCharsets;

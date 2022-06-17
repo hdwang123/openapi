@@ -1,4 +1,4 @@
-package openapi.server.sdk.model;
+package openapi.server.sdk.annotation;
 
 import org.springframework.stereotype.Component;
 

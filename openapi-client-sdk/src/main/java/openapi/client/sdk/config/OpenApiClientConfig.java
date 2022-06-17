@@ -3,8 +3,8 @@ package openapi.client.sdk.config;
 
 import lombok.Data;
 import openapi.client.sdk.constant.ClientConstant;
-import openapi.sdk.common.model.AsymmetricCryEnum;
-import openapi.sdk.common.model.SymmetricCryEnum;
+import openapi.sdk.common.enums.AsymmetricCryEnum;
+import openapi.sdk.common.enums.SymmetricCryEnum;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 

@@ -1,6 +1,7 @@
 package openapi.server.sdk.model;
 
 import lombok.Data;
+import openapi.server.sdk.annotation.OpenApiMethod;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;

@@ -1,6 +1,7 @@
 package openapi.sdk.common.handler.symmetric;
 
 import cn.hutool.crypto.symmetric.SM4;
+import openapi.sdk.common.handler.SymmetricCryHandler;
 
 /**
  * SM4对称加密处理器

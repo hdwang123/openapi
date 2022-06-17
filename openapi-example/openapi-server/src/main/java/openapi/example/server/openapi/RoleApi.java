@@ -2,8 +2,8 @@ package openapi.example.server.openapi;
 
 import lombok.extern.slf4j.Slf4j;
 import openapi.example.server.model.Role;
-import openapi.server.sdk.model.OpenApi;
-import openapi.server.sdk.model.OpenApiMethod;
+import openapi.server.sdk.annotation.OpenApi;
+import openapi.server.sdk.annotation.OpenApiMethod;
 
 /**
  * 对外开放的接口：角色api

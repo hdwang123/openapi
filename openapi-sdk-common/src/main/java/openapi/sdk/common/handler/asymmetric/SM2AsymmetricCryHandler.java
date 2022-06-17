@@ -5,6 +5,7 @@ import cn.hutool.core.util.StrUtil;
 import cn.hutool.crypto.SmUtil;
 import cn.hutool.crypto.asymmetric.KeyType;
 import cn.hutool.crypto.asymmetric.SM2;
+import openapi.sdk.common.handler.AsymmetricCryHandler;
 
 /**
  * SM2非对称加密处理器

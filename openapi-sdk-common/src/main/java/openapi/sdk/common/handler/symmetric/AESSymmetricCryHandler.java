@@ -1,6 +1,7 @@
 package openapi.sdk.common.handler.symmetric;
 
 import cn.hutool.crypto.symmetric.AES;
+import openapi.sdk.common.handler.SymmetricCryHandler;
 
 /**
  * AES对称加密处理器

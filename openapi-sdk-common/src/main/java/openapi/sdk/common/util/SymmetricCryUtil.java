@@ -1,7 +1,7 @@
 package openapi.sdk.common.util;
 
 import cn.hutool.crypto.KeyUtil;
-import openapi.sdk.common.model.SymmetricCryEnum;
+import openapi.sdk.common.enums.SymmetricCryEnum;
 
 import javax.crypto.SecretKey;
 import java.security.SecureRandom;

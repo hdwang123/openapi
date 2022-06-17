@@ -1,7 +1,7 @@
 package openapi.sdk.common.util;
 
 import cn.hutool.core.util.StrUtil;
-import openapi.sdk.common.model.BusinessException;
+import openapi.sdk.common.exception.OpenApiException;
 import openapi.sdk.common.model.InParams;
 
 /**
@@ -33,7 +33,7 @@ public class CommonUtil {
      */
     public static String completeUrl(String baseUrl, String path) {
         if (StrUtil.isBlank(baseUrl)) {
-            throw new BusinessException("URL基础路径不能为空");
+            throw new OpenApiException("URL基础路径不能为空");
         }
         String separator = "/";
         if (baseUrl.endsWith(separator)) {

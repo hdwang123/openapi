@@ -1,8 +1,8 @@
 package openapi.client.sdk;
 
 import openapi.client.sdk.constant.ClientConstant;
-import openapi.sdk.common.model.AsymmetricCryEnum;
-import openapi.sdk.common.model.SymmetricCryEnum;
+import openapi.sdk.common.enums.AsymmetricCryEnum;
+import openapi.sdk.common.enums.SymmetricCryEnum;
 
 /**
  * OpenApiClient构造器

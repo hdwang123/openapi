@@ -3,8 +3,8 @@ package openapi.example.server.openapi;
 import cn.hutool.json.JSONUtil;
 import lombok.extern.slf4j.Slf4j;
 import openapi.example.server.model.User;
-import openapi.server.sdk.model.OpenApiMethod;
-import openapi.server.sdk.model.OpenApi;
+import openapi.server.sdk.annotation.OpenApiMethod;
+import openapi.server.sdk.annotation.OpenApi;
 
 import java.util.ArrayList;
 import java.util.List;

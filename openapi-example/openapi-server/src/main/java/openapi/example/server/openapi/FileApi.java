@@ -2,8 +2,8 @@ package openapi.example.server.openapi;
 
 import cn.hutool.core.io.FileUtil;
 import openapi.example.server.model.FileInfo;
-import openapi.server.sdk.model.OpenApi;
-import openapi.server.sdk.model.OpenApiMethod;
+import openapi.server.sdk.annotation.OpenApi;
+import openapi.server.sdk.annotation.OpenApiMethod;
 
 import java.io.File;
 

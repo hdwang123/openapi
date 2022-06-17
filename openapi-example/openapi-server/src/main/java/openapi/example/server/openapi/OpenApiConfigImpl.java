@@ -1,7 +1,7 @@
 package openapi.example.server.openapi;
 
-import openapi.sdk.common.model.AsymmetricCryEnum;
-import openapi.sdk.common.model.SymmetricCryEnum;
+import openapi.sdk.common.enums.AsymmetricCryEnum;
+import openapi.sdk.common.enums.SymmetricCryEnum;
 import openapi.server.sdk.config.OpenApiConfig;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;

@@ -4,14 +4,17 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.*;
 import cn.hutool.json.JSONUtil;
 import lombok.extern.slf4j.Slf4j;
-import openapi.sdk.common.handler.asymmetric.AsymmetricCryHandler;
-import openapi.sdk.common.handler.symmetric.SymmetricCryHandler;
+import openapi.sdk.common.enums.AsymmetricCryEnum;
+import openapi.sdk.common.enums.SymmetricCryEnum;
+import openapi.sdk.common.exception.OpenApiServerException;
+import openapi.sdk.common.handler.AsymmetricCryHandler;
+import openapi.sdk.common.handler.SymmetricCryHandler;
 import openapi.sdk.common.model.*;
 import openapi.sdk.common.util.CommonUtil;
 import openapi.sdk.common.util.SymmetricCryUtil;
 import openapi.server.sdk.model.ApiHandler;
-import openapi.server.sdk.model.OpenApi;
-import openapi.server.sdk.model.OpenApiMethod;
+import openapi.server.sdk.annotation.OpenApi;
+import openapi.server.sdk.annotation.OpenApiMethod;
 import openapi.sdk.common.constant.Constant;
 import openapi.sdk.common.util.Base64Util;
 import openapi.sdk.common.util.StrObjectConvert;
@@ -191,7 +194,7 @@ public class OpenApiGateway {
 
             //调用目标方法
             return outParams = doCall(apiHandler, params, inParams);
-        } catch (BusinessException be) {
+        } catch (OpenApiServerException be) {
             log.error(logPrefix.get() + be.getMessage());
             return outParams = OutParams.error(be.getMessage());
         } catch (Exception ex) {
@@ -216,7 +219,7 @@ public class OpenApiGateway {
         String handlerKey = getHandlerKey(inParams.getApi(), inParams.getMethod());
         ApiHandler apiHandler = apiHandlerMap.get(handlerKey);
         if (apiHandler == null) {
-            throw new BusinessException("找不到指定的opeapi处理器");
+            throw new OpenApiServerException("找不到指定的opeapi处理器");
         }
         return apiHandler;
     }
@@ -243,7 +246,7 @@ public class OpenApiGateway {
                     //多参支持
                     List<String> list = JSONUtil.toList(decryptedBody, String.class);
                     if (list.size() != paramTypes.length) {
-                        throw new BusinessException("参数个数不匹配");
+                        throw new OpenApiServerException("参数个数不匹配");
                     }
                     for (int i = 0; i < list.size(); i++) {
                         params.add(StrObjectConvert.strToObj(list.get(i), paramTypes[i]));
@@ -257,11 +260,11 @@ public class OpenApiGateway {
                         //无参
                     }
                 }
-            } catch (BusinessException be) {
-                throw new BusinessException("入参转换异常：" + be.getMessage());
+            } catch (OpenApiServerException be) {
+                throw new OpenApiServerException("入参转换异常：" + be.getMessage());
             } catch (Exception ex) {
                 log.error(logPrefix.get() + "入参转换异常", ex);
-                throw new BusinessException("入参转换异常:" + ex.getMessage());
+                throw new OpenApiServerException("入参转换异常:" + ex.getMessage());
             }
         }
         return params;
@@ -278,7 +281,7 @@ public class OpenApiGateway {
         String signContent = CommonUtil.getSignContent(inParams);
         boolean verify = this.asymmetricCryHandler.verifySign(callerPublicKey, signContent, inParams.getSign());
         if (!verify) {
-            throw new BusinessException("验签失败");
+            throw new OpenApiServerException("验签失败");
         }
     }
 
@@ -302,11 +305,11 @@ public class OpenApiGateway {
                 //仅非对称加密模式
                 decryptedBody = this.asymmetricCryHandler.deCry(selfPrivateKey, inParams.getBody());
             }
-        } catch (BusinessException be) {
-            throw new BusinessException("解密失败：" + be.getMessage());
+        } catch (OpenApiServerException be) {
+            throw new OpenApiServerException("解密失败：" + be.getMessage());
         } catch (Exception ex) {
             log.error(logPrefix.get() + "解密失败", ex);
-            throw new BusinessException("解密失败");
+            throw new OpenApiServerException("解密失败");
         }
         return decryptedBody;
     }
@@ -338,11 +341,11 @@ public class OpenApiGateway {
                 }
             }
             return outParams.setSuccess(retStr);
-        } catch (BusinessException be) {
-            throw new BusinessException("调用opeapi处理器异常:" + be.getMessage());
+        } catch (OpenApiServerException be) {
+            throw new OpenApiServerException("调用opeapi处理器异常:" + be.getMessage());
         } catch (Exception ex) {
             log.error(logPrefix.get() + "调用opeapi处理器异常", ex);
-            throw new BusinessException("调用opeapi处理器异常");
+            throw new OpenApiServerException("调用opeapi处理器异常");
         }
     }
 
@@ -374,10 +377,10 @@ public class OpenApiGateway {
                 //仅采用非对称加密模式
                 retStr = this.asymmetricCryHandler.cry(callerPublicKey, retStr);
             }
-        } catch (BusinessException be) {
-            throw new BusinessException("返回值加密异常:" + be.getMessage());
+        } catch (OpenApiServerException be) {
+            throw new OpenApiServerException("返回值加密异常:" + be.getMessage());
         } catch (Exception ex) {
-            throw new BusinessException("返回值加密异常", ex);
+            throw new OpenApiServerException("返回值加密异常", ex);
         }
         return retStr;
     }
