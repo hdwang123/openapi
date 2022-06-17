@@ -41,7 +41,7 @@ cn.hutool.hutool-all
 <dependency>
     <groupId>io.github.hdwang123</groupId>
     <artifactId>openapi-server-sdk</artifactId>
-    <version>1.2.4</version>
+    <version>1.2.5</version>
 </dependency>
 ````
 
@@ -117,7 +117,7 @@ public class UserApi {
 <dependency>
     <groupId>io.github.hdwang123</groupId>
     <artifactId>openapi-client-sdk</artifactId>
-    <version>1.2.4</version>
+    <version>1.2.5</version>
 </dependency>
 ````
 
@@ -273,3 +273,7 @@ algorithm expansion
 ### v1.2.4
 
 Fix multi-parameter method parameter conversion bug    
+
+### v1.2.5
+
+rename exception class and package    

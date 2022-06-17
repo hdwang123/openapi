@@ -7,7 +7,7 @@
     <groupId>io.github.hdwang123</groupId>
     <artifactId>openapi</artifactId>
     <packaging>pom</packaging>
-    <version>1.2.5-SNAPSHOT</version>
+    <version>1.2.5</version>
     <description>一个能够让您快速搭建开放api的sdk,包括openapi-client-sdk/openapi-server-sdk</description>
     <url>https://github.com/hdwang123/openapi</url>
     <!-- 许可证信息 -->
@@ -18,10 +18,10 @@
             <url>https://www.apache.org/licenses/LICENSE-2.0</url>
         </license>
         <!-- MIT许可证 -->
-<!--        <license>-->
-<!--            <name>MIT License</name>-->
-<!--            <url>http://www.opensource.org/licenses/mit-license.php</url>-->
-<!--        </license>-->
+        <!--        <license>-->
+        <!--            <name>MIT License</name>-->
+        <!--            <url>http://www.opensource.org/licenses/mit-license.php</url>-->
+        <!--        </license>-->
     </licenses>
 
     <!-- SCM信息 ->  -->
