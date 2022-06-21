@@ -19,6 +19,7 @@ import openapi.sdk.common.constant.Constant;
 import openapi.sdk.common.util.Base64Util;
 import openapi.sdk.common.util.StrObjectConvert;
 import openapi.server.sdk.config.OpenApiConfig;
+import openapi.server.sdk.model.Context;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.http.MediaType;
@@ -28,6 +29,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.PostConstruct;
 import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
 import java.lang.reflect.Type;
 import java.util.*;
 
@@ -53,6 +55,9 @@ public class OpenApiGateway {
      * value: ApiHandler
      */
     private Map<String, ApiHandler> apiHandlerMap = new HashMap<>();
+
+    @Autowired
+    private Context context;
 
     @Autowired
     private ApplicationContext applicationContext;
@@ -140,6 +145,7 @@ public class OpenApiGateway {
     private void initApiHandlers() {
         Map<String, Object> beanMap = applicationContext.getBeansWithAnnotation(OpenApi.class);
         for (Map.Entry<String, Object> entry : beanMap.entrySet()) {
+            String beanName = entry.getKey();
             Object bean = entry.getValue();
             Class c = bean.getClass();
             //获取开放api名称
@@ -157,18 +163,25 @@ public class OpenApiGateway {
                         //获取方法参数类型
                         Type[] types = method.getGenericParameterTypes();
 
+                        //获取方法参数
+                        Parameter[] parameters = method.getParameters();
+
                         //保存处理器到Map中
                         String handlerKey = getHandlerKey(openApiName, openApiMethodName);
                         ApiHandler apiHandler = new ApiHandler();
+                        apiHandler.setBeanName(beanName);
                         apiHandler.setBean(bean);
                         apiHandler.setMethod(method);
                         apiHandler.setParamTypes(types);
+                        apiHandler.setParameters(parameters);
                         apiHandler.setOpenApiMethod(openApiMethod);
                         apiHandlerMap.put(handlerKey, apiHandler);
                     }
                 }
             }
         }
+        //将openapi处理器保存到上下文对象中去
+        context.setApiHandlers(this.apiHandlerMap.values());
     }
 
 

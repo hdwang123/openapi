@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>OpenApi接口文档</title>
+    <link rel="stylesheet" href="css/element-ui.css">
+
+    <style type="text/css">
+        .api-card .el-card__header{
+            background-color:#409EFF
+        }
+
+        .method-card .el-card__header{
+            background-color:#60BEFF
+        }
+
+        .ret-type{
+            color: #909399
+        }
+
+    </style>
+
+    <script src="js/jquery-3.6.0.min.js"></script>
+    <script src="js/vue.min.js"></script>
+    <script src="js/element-ui.js"></script>
+</head>
+<body>
+<h1 align="center">OpenApi接口文档</h1>
+
+<div id="api-info">
+    <!-- api卡片 -->
+    <el-card class="box-card api-card" v-for="api in apiList">
+        <div slot="header" class="clearfix">
+            <span>接口：{{ api.name }}</span>
+        </div>
+        <!-- method卡片 -->
+        <el-card class="box-card method-card" v-for="method in api.methodList">
+            <div slot="header" class="clearfix">
+                <span>方法：{{ method.name }}</span>
+            </div>
+            <el-table
+                    :data="method.paramList"
+                    style="width: 100%">
+                <el-table-column
+                        prop="name"
+                        label="参数名"
+                        width="200">
+                </el-table-column>
+                <el-table-column
+                        prop="type"
+                        label="参数类型"
+                        width="500">
+                </el-table-column>
+                <el-table-column
+                        prop="describe"
+                        label="描述">
+                </el-table-column>
+            </el-table>
+
+            <div class="ret-type">返回值类型：{{method.retType}}</div>
+        </el-card>
+    </el-card>
+</div>
+</div>
+
+
+</body>
+<script type="text/javascript">
+var pageUrl = window.location.href;
+var jsonUrl = pageUrl.substring(0,pageUrl.lastIndexOf('.'));
+//获取接口数据
+ $.ajax({
+    url:jsonUrl,
+    success:function(result){
+        //渲染到网页上
+        var jsonData = JSON.parse(result);
+        var app4 = new Vue({
+          el: '#api-info',
+          data: {
+            apiList: jsonData
+          }
+        })
+  }});
+
+
+</script>
+</html>

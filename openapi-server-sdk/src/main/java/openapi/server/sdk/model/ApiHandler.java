@@ -4,6 +4,7 @@ import lombok.Data;
 import openapi.server.sdk.annotation.OpenApiMethod;
 
 import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
 import java.lang.reflect.Type;
 import java.util.Arrays;
 
@@ -14,6 +15,11 @@ import java.util.Arrays;
  */
 @Data
 public class ApiHandler {
+
+    /**
+     * openapi处理对象名称
+     */
+    private String beanName;
 
     /**
      * openapi处理对象
@@ -29,6 +35,11 @@ public class ApiHandler {
      * 方法参数类型(Class类型信息不完整，无法提取List里元素的类型)
      */
     private Type[] paramTypes;
+
+    /**
+     * 方法参数（包括参数名、修饰符等）
+     */
+    private Parameter[] parameters;
 
     /**
      * 方法的注解
