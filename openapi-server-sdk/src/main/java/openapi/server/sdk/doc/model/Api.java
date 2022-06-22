@@ -15,6 +15,11 @@ import java.util.List;
 public class Api {
 
     /**
+     * 开放api名称
+     */
+    private String openApiName;
+
+    /**
      * 接口名
      */
     private String name;
@@ -37,5 +42,5 @@ public class Api {
     /**
      * 接口里的方法
      */
-    private List<Method> methodList = new ArrayList<>();
+    private List<Method> methods = new ArrayList<>();
 }

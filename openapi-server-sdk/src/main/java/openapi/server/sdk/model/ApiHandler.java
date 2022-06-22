@@ -17,6 +17,16 @@ import java.util.Arrays;
 public class ApiHandler {
 
     /**
+     * 开放api名称
+     */
+    private String openApiName;
+
+    /**
+     * 开放api方法名称
+     */
+    private String openApiMethodName;
+
+    /**
      * openapi处理对象名称
      */
     private String beanName;

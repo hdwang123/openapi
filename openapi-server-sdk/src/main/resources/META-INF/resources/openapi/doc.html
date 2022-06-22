@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>OpenApi接口文档</title>
+    <link rel="stylesheet" href="lib/element-ui/index.css">
+
+    <style type="text/css">
+        .api-collapse .el-collapse-item__header{
+            background-color:#409EFF;
+            padding: 8px 10px;
+        }
+
+        .api-collapse .el-collapse-item__content{
+            padding: 20px;
+        }
+
+        .method-card .el-card__header{
+            background-color:#60BEFF;
+        }
+
+        .ret-val{
+            color: #606266;
+        }
+
+
+
+
+    </style>
+
+    <script src="lib/jquery/jquery-3.6.0.min.js"></script>
+    <script src="lib/vue/vue.min.js"></script>
+    <script src="lib/element-ui/index.js"></script>
+</head>
+<body>
+<h1 align="center">OpenApi接口文档</h1>
+
+<!-- API接口文档渲染到此处 -->
+<div id="api" style="display:none">
+    <!-- api折叠面板 -->
+    <el-collapse class="api-collapse">
+        <!-- api折叠面板元素 -->
+        <el-collapse-item v-for="api in apis">
+            <!-- api折叠面板元素标题 -->
+            <template slot="title">
+                <div>开放接口名称：{{ api.openApiName }}</div>
+            </template>
+
+            <!-- api折叠面板元素内容： method卡片 -->
+            <el-card class="box-card method-card" v-for="method in api.methods">
+                <!-- 方法卡片标题 -->
+                <div slot="header" class="clearfix">
+                    <span>开放方法名称：{{ method.openApiMethodName }}</span>
+                </div>
+                <!-- 方法参数表格 -->
+                <el-table
+                        :data="method.params"
+                        style="width: 100%">
+                    <el-table-column
+                            prop="name"
+                            label="参数名"
+                            width="150">
+                    </el-table-column>
+                    <el-table-column
+                            prop="type"
+                            label="参数类型"
+                            width="300">
+                    </el-table-column>
+                    <el-table-column
+                            prop="properties"
+                            label="参数属性"
+                            width="400">
+                        <template slot-scope="scope">
+                            <!-- 随便你自定义，通过（scope.row）拿到当前行数据-->
+                            <el-tree v-if="scope.row.properties!=null && scope.row.properties.length>0" :data="convertProperties(scope.row.properties)" :props="treeProps"></el-tree>
+                        </template>
+                    </el-table-column>
+                    <el-table-column
+                            prop="describe"
+                            label="描述">
+                    </el-table-column>
+                </el-table>
+
+                <!-- 方法返回值 -->
+                <div class="ret-val">
+                    <div>返回值类型：{{method.retVal.retType}}</div>
+                    <div v-if="method.retVal.properties != null && method.retVal.properties.length>0">
+                        <div>返回值属性：</div>
+                        <el-tree  :data="convertProperties(method.retVal.properties)" :props="treeProps"></el-tree>
+                    </div>
+                </div>
+            </el-card>
+        </el-collapse-item>
+    </el-collapse>
+</div>
+
+</body>
+<script type="text/javascript">
+var pageUrl = window.location.href;
+var jsonUrl = pageUrl.substring(0,pageUrl.lastIndexOf('.'));
+//获取接口数据
+ $.ajax({
+    url:jsonUrl,
+    success:function(result){
+        //渲染到网页上
+        var jsonData = JSON.parse(result);
+        var app4 = new Vue({
+          el: '#api',
+          data: {
+            apis: jsonData,
+            treeProps: {
+              children: 'properties',
+              label: 'label'
+            }
+          },
+          mounted: function(){
+            $('#api').show();
+          },
+          methods: {
+            formatProperties: function(properties){
+                return JSON.stringify(properties, null, 2);
+            },
+            convertProperties: function(properties){
+                var props = [];
+                if(properties != null && properties.length > 0 ) {
+                    for(var i=0; i< properties.length; i++){
+                        var property = properties[i];
+                        var prop = {};
+
+                        //拼接需要展示的数据:属性名+属性类型
+                        prop.label = property.name + ' : ' + property.type;
+
+                        //递归转换属性的属性
+                        prop.properties = this.convertProperties(property.properties);
+
+                        props.push(prop);
+                    }
+                }
+                return props;
+            }
+          }
+        })
+
+  }});
+
+
+
+
+
+
+
+
+</script>
+</html>

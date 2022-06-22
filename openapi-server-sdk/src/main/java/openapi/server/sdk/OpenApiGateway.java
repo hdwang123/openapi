@@ -169,6 +169,8 @@ public class OpenApiGateway {
                         //保存处理器到Map中
                         String handlerKey = getHandlerKey(openApiName, openApiMethodName);
                         ApiHandler apiHandler = new ApiHandler();
+                        apiHandler.setOpenApiName(openApiName);
+                        apiHandler.setOpenApiMethodName(openApiMethodName);
                         apiHandler.setBeanName(beanName);
                         apiHandler.setBean(bean);
                         apiHandler.setMethod(method);

@@ -15,6 +15,11 @@ import java.util.List;
 public class Method {
 
     /**
+     * 开放api方法名称
+     */
+    private String openApiMethodName;
+
+    /**
      * 方法名
      */
     private String name;
@@ -32,10 +37,10 @@ public class Method {
     /**
      * 方法参数
      */
-    private List<Param> paramList = new ArrayList<>();
+    private List<Param> params = new ArrayList<>();
 
     /**
-     * 返回值类型
+     * 返回值
      */
-    private String retType;
+    private RetVal retVal;
 }

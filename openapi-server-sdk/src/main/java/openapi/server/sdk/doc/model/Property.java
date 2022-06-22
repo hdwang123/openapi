@@ -5,37 +5,36 @@ import lombok.Data;
 import java.util.List;
 
 /**
- * API方法参数信息
+ * 对象属性信息
  *
  * @author wanghuidong
- * 时间： 2022/6/21 21:42
+ * 时间： 2022/6/22 10:58
  */
 @Data
-public class Param {
+public class Property {
 
     /**
-     * 参数类型
+     * 属性类型
      */
     private String type;
 
     /**
-     * 参数名
+     * 属性名
      */
     private String name;
 
     /**
-     * 参数中文名
+     * 属性中文名
      */
     private String cnName;
 
     /**
-     * 参数描述
+     * 属性描述
      */
     private String describe;
 
     /**
-     * 参数对象里的属性
+     * 属性里的属性
      */
     private List<Property> properties;
-
 }
