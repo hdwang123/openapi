@@ -68,13 +68,4 @@
         </dependency>
 
     </dependencies>
-
-<!--    <build>-->
-<!--        <resources>-->
-<!--            <resource>-->
-<!--                <directory>${project.basedir}/src/main/resources</directory>-->
-<!--                <targetPath>META-INF/resources/</targetPath>-->
-<!--            </resource>-->
-<!--        </resources>-->
-<!--    </build>-->
 </project>
