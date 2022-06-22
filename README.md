@@ -106,6 +106,12 @@ public class UserApi {
 }
 ````
 
+#### 4.查看开放API接口文档
+
+网址：http://localhost:8080/openapi/doc.html  
+实际项目中替换http://localhost:8080为实际路径  
+<img src="https://github.com/hdwang123/openapi/blob/main/doc/openapi-doc.png" />
+
 ### 客户端
 
 #### 1.引入openapi-client-sdk
@@ -268,4 +274,8 @@ openapi-client-sdk新增服务引用方式调用openapi
 
 ### v1.2.5
 
-修改异常类和包名    
+修改异常类和包名
+
+### v1.3.0
+
+新增接口文档  

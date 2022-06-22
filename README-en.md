@@ -109,6 +109,13 @@ public class UserApi {
 }
 ````
 
+#### 4.see openapi doc
+
+url：http://localhost:8080/openapi/doc.html  
+Replace http://localhost:8080 with the actual path in the actual project   
+<img src="https://github.com/hdwang123/openapi/blob/main/doc/openapi-doc.png" />
+
+
 ### Client
 
 #### 1.import openapi-client-sdk
@@ -272,8 +279,13 @@ algorithm expansion
 
 ### v1.2.4
 
-Fix multi-parameter method parameter conversion bug    
+Fix multi-parameter method parameter conversion bug
 
 ### v1.2.5
 
-rename exception class and package    
+rename exception class and package
+
+### v1.3.0
+
+add openapi doc  
+
