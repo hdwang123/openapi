@@ -2,6 +2,8 @@ package openapi.example.server.model;
 
 import lombok.Data;
 
+import java.util.List;
+
 /**
  * 用户信息
  *
@@ -14,8 +16,8 @@ public class User {
     private String name;
     private String phone;
     private String email;
-
-    private Role role;
+    private Address address;
+    private List<Role> role;
 
     public User() {
 

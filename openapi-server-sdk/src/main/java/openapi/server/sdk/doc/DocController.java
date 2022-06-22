@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Parameter;
+import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.*;
 
@@ -31,11 +32,10 @@ public class DocController {
     /**
      * 忽略添加属性的类型
      */
-    private static final List<String> ignoreAddPropertyTypes = Arrays.asList(
-            String.class.getName(),
-            List.class.getName(),
-            Collection.class.getName(),
-            Map.class.getName()
+    private static final List<Class> ignoreAddPropertyTypes = Arrays.asList(
+            String.class,
+            Collection.class,
+            Map.class
     );
 
     /**
@@ -117,13 +117,16 @@ public class DocController {
                 //基本类型直接返回
                 return null;
             }
-            if (ignoreAddPropertyTypes.contains(type.getTypeName())) {
-                //忽略的类型直接返回
-                return null;
+            for (Class ignoreType : ignoreAddPropertyTypes) {
+                //忽略的类型(及其子类)直接返回
+                if (ignoreType.isAssignableFrom((Class) type)) {
+                    return null;
+                }
             }
             if (((Class) type).isArray()) {
-                //数组类型直接返回
-                return null;
+                //数组类型则获取元素的属性
+                Class elementType = ((Class) type).getComponentType();
+                return getProperties(elementType);
             }
 
             properties = new ArrayList<>();
@@ -135,6 +138,15 @@ public class DocController {
                 //递归设置属性
                 property.setProperties(getProperties(field.getGenericType()));
                 properties.add(property);
+            }
+        } else if (type instanceof ParameterizedType) {
+            ParameterizedType parameterizedType = (ParameterizedType) type;
+            Class rawType = (Class) parameterizedType.getRawType();
+            //判断是集合类（Collection/List/Set等）
+            if (Collection.class.isAssignableFrom(rawType)) {
+                //取第一个泛型参数(集合元素)的属性
+                Type componentType = parameterizedType.getActualTypeArguments()[0];
+                return getProperties(componentType);
             }
         }
         return properties;
