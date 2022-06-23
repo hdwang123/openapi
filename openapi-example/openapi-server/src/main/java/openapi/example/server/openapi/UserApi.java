@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import openapi.example.server.model.User;
 import openapi.server.sdk.annotation.OpenApiMethod;
 import openapi.server.sdk.annotation.OpenApi;
+import openapi.server.sdk.doc.annotation.OpenApiDoc;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,11 +16,13 @@ import java.util.List;
  * @author wanghuidong
  */
 @Slf4j
+@OpenApiDoc(cnName = "用户API", describe = "用户对外服务接口")
 @OpenApi("userApi")
 public class UserApi {
 
+    @OpenApiDoc(cnName = "查询用户", describe = "根据用户ID查询用户", retCnName = "用户", retDescribe = "用户信息")
     @OpenApiMethod("getUserById")
-    public User getUserById(Long id) {
+    public User getUserById(@OpenApiDoc(cnName = "用户ID") Long id) {
         log.info("getUserById：id=" + id);
         User user = new User();
         user.setId(1L);
@@ -27,12 +30,14 @@ public class UserApi {
         return user;
     }
 
+    @OpenApiDoc(cnName = "保存用户", describe = "保存用户信息", retCnName = "是否保存成功", retDescribe = "保存用户是否成功")
     @OpenApiMethod("saveUser")
-    public Boolean saveUser(User user) {
+    public Boolean saveUser(@OpenApiDoc(cnName = "用户", describe = "用户信息") User user) {
         log.info("saveUser:" + JSONUtil.toJsonStr(user));
         return true;
     }
 
+    @OpenApiDoc(ignore = true)
     @OpenApiMethod("batchSaveUser")
     public void batchSaveUser(List<User> users) {
         log.info("batchSaveUser:" + JSONUtil.toJsonStr(users));
@@ -91,8 +96,11 @@ public class UserApi {
         return user;
     }
 
+    @OpenApiDoc(cnName = "添加用户", describe = "添加多个用户信息",retCnName = "返回添加的第一个用户")
     @OpenApiMethod("addUsers")
-    public User addUser(Long id, String name, List<User> users) {
+    public User addUser(@OpenApiDoc(cnName = "用户ID") Long id,
+                        @OpenApiDoc(cnName = "用户名") String name,
+                        @OpenApiDoc(cnName = "用户列表", describe = "多个用户信息") List<User> users) {
         List<User> list = new ArrayList<>();
         User user = new User(id, name);
         list.add(user);

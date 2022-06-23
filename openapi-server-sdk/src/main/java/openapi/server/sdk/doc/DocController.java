@@ -4,10 +4,12 @@ import cn.hutool.core.util.ClassUtil;
 import cn.hutool.core.util.ReflectUtil;
 import cn.hutool.json.JSONUtil;
 import openapi.sdk.common.constant.Constant;
+import openapi.server.sdk.doc.annotation.OpenApiDoc;
 import openapi.server.sdk.doc.model.*;
 import openapi.server.sdk.model.ApiHandler;
 import openapi.server.sdk.model.Context;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -43,7 +45,7 @@ public class DocController {
      *
      * @return 接口文档数据
      */
-    @GetMapping(value = Constant.DOC_PATH)
+    @GetMapping(value = Constant.DOC_PATH, produces = {MediaType.APPLICATION_JSON_VALUE})
     public String doc() {
         Map<String, Api> apiMap = new HashMap<>();
         for (ApiHandler apiHandler : context.getApiHandlers()) {
@@ -51,19 +53,46 @@ public class DocController {
 
             Api api = apiMap.get(beanName);
             if (api == null) {
-                Class apiClass = apiHandler.getBean().getClass();
-
-                api = new Api();
-                api.setOpenApiName(apiHandler.getOpenApiName());
-                api.setName(apiClass.getSimpleName());
-                api.setFullName(apiClass.getName());
+                api = getApi(apiHandler);
+                if (api == null) {
+                    continue;
+                }
                 apiMap.put(beanName, api);
             }
             Method method = getMethod(apiHandler);
-            api.getMethods().add(method);
+            if (method != null) {
+                api.getMethods().add(method);
+            }
         }
         Collection<Api> apiList = apiMap.values();
         return JSONUtil.toJsonStr(apiList);
+    }
+
+    /**
+     * 获取API信息
+     *
+     * @param apiHandler openapi处理器
+     * @return API信息
+     */
+    private Api getApi(ApiHandler apiHandler) {
+        Api api;
+        Class apiClass = apiHandler.getBean().getClass();
+
+        api = new Api();
+        api.setOpenApiName(apiHandler.getOpenApiName());
+        api.setName(apiClass.getSimpleName());
+        api.setFullName(apiClass.getName());
+
+        if (apiClass.isAnnotationPresent(OpenApiDoc.class)) {
+            OpenApiDoc apiDoc = (OpenApiDoc) apiClass.getAnnotation(OpenApiDoc.class);
+            api.setCnName(apiDoc.cnName());
+            api.setDescribe(apiDoc.describe());
+            if (apiDoc.ignore()) {
+                //取消文档的生成
+                api = null;
+            }
+        }
+        return api;
     }
 
     /**
@@ -75,9 +104,20 @@ public class DocController {
     private Method getMethod(ApiHandler apiHandler) {
         Method method = new Method();
         method.setOpenApiMethodName(apiHandler.getOpenApiMethodName());
-        method.setName(apiHandler.getMethod().getName());
+        java.lang.reflect.Method m = apiHandler.getMethod();
+        method.setName(m.getName());
 
-        RetVal retVal = getRetVal(apiHandler.getMethod().getGenericReturnType());
+        if (m.isAnnotationPresent(OpenApiDoc.class)) {
+            OpenApiDoc apiDoc = m.getAnnotation(OpenApiDoc.class);
+            method.setCnName(apiDoc.cnName());
+            method.setDescribe(apiDoc.describe());
+            if (apiDoc.ignore()) {
+                //取消文档的生成
+                return null;
+            }
+        }
+
+        RetVal retVal = getRetVal(apiHandler);
         method.setRetVal(retVal);
 
         for (int i = 0; i < apiHandler.getParamTypes().length; i++) {
@@ -87,6 +127,12 @@ public class DocController {
             param.setType(type.getTypeName());
             param.setName(parameter.getName());
             param.setProperties(getProperties(type));
+
+            if (parameter.isAnnotationPresent(OpenApiDoc.class)) {
+                OpenApiDoc apiDoc = parameter.getAnnotation(OpenApiDoc.class);
+                param.setCnName(apiDoc.cnName());
+                param.setDescribe(apiDoc.describe());
+            }
             method.getParams().add(param);
         }
         return method;
@@ -95,13 +141,21 @@ public class DocController {
     /**
      * 获取返回值信息
      *
-     * @param type 返回值类型
+     * @param apiHandler openapi处理器
      * @return 返回值信息
      */
-    private RetVal getRetVal(Type type) {
+    private RetVal getRetVal(ApiHandler apiHandler) {
+        java.lang.reflect.Method method = apiHandler.getMethod();
+        Type type = method.getGenericReturnType();
         RetVal retVal = new RetVal();
         retVal.setRetType(type.getTypeName());
         retVal.setProperties(getProperties(type));
+
+        if (method.isAnnotationPresent(OpenApiDoc.class)) {
+            OpenApiDoc apiDoc = method.getAnnotation(OpenApiDoc.class);
+            retVal.setCnName(apiDoc.retCnName());
+            retVal.setDescribe(apiDoc.retDescribe());
+        }
         return retVal;
     }
 
@@ -137,6 +191,17 @@ public class DocController {
                 property.setType(field.getGenericType().getTypeName());
                 //递归设置属性
                 property.setProperties(getProperties(field.getGenericType()));
+
+                if (field.isAnnotationPresent(OpenApiDoc.class)) {
+                    OpenApiDoc apiDoc = field.getAnnotation(OpenApiDoc.class);
+                    property.setCnName(apiDoc.cnName());
+                    property.setDescribe(apiDoc.describe());
+                    if (apiDoc.ignore()) {
+                        //取消文档的生成
+                        continue;
+                    }
+                }
+
                 properties.add(property);
             }
         } else if (type instanceof ParameterizedType) {

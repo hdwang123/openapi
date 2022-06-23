@@ -18,6 +18,16 @@ public class RetVal {
      */
     private String retType;
 
+    /**
+     * 返回值中文名
+     */
+    private String cnName;
+
+    /**
+     * 返回值描述
+     */
+    private String describe;
+
 
     /**
      * 返回值里的属性
