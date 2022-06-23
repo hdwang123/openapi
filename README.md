@@ -40,7 +40,7 @@ cn.hutool.hutool-all
 <dependency>
     <groupId>io.github.hdwang123</groupId>
     <artifactId>openapi-server-sdk</artifactId>
-    <version>1.2.5</version>
+    <version>1.3.1</version>
 </dependency>
 ````
 
@@ -120,7 +120,7 @@ public class UserApi {
 <dependency>
     <groupId>io.github.hdwang123</groupId>
     <artifactId>openapi-client-sdk</artifactId>
-    <version>1.2.5</version>
+    <version>1.3.1</version>
 </dependency>
 ````
 
@@ -278,4 +278,8 @@ openapi-client-sdk新增服务引用方式调用openapi
 
 ### v1.3.0
 
-新增接口文档  
+新增接口文档
+
+### v1.3.1
+
+完善接口文档   

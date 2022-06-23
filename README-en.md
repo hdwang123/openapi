@@ -41,7 +41,7 @@ cn.hutool.hutool-all
 <dependency>
     <groupId>io.github.hdwang123</groupId>
     <artifactId>openapi-server-sdk</artifactId>
-    <version>1.2.5</version>
+    <version>1.3.1</version>
 </dependency>
 ````
 
@@ -115,7 +115,6 @@ url：http://localhost:8080/openapi/doc.html
 Replace http://localhost:8080 with the actual path in the actual project   
 <img src="https://github.com/hdwang123/openapi/blob/main/doc/openapi-doc.png" />
 
-
 ### Client
 
 #### 1.import openapi-client-sdk
@@ -124,7 +123,7 @@ Replace http://localhost:8080 with the actual path in the actual project
 <dependency>
     <groupId>io.github.hdwang123</groupId>
     <artifactId>openapi-client-sdk</artifactId>
-    <version>1.2.5</version>
+    <version>1.3.1</version>
 </dependency>
 ````
 
@@ -287,5 +286,8 @@ rename exception class and package
 
 ### v1.3.0
 
-add openapi doc  
+add openapi doc
 
+### v1.3.1
+
+Improve interface documentation    
