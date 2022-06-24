@@ -1,5 +1,6 @@
 package openapi.example.client.openapiclient;
 
+import cn.hutool.json.JSONUtil;
 import lombok.extern.slf4j.Slf4j;
 import openapi.example.client.model.Role;
 import openapi.example.client.model.User;
@@ -8,6 +9,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author wanghuidong
@@ -22,7 +24,7 @@ public class UserApiTest2 {
     @Autowired
     RoleApiClient roleApiClient;
 
-    public void getRoleById(){
+    public void getRoleById() {
         Role role = roleApiClient.getRoleById(1000L);
         log.info("返回值：" + role);
     }
@@ -88,6 +90,11 @@ public class UserApiTest2 {
     public void getAllUsers() {
         List<User> users = userApiClient.getAllUsers();
         log.info("返回值：" + users);
+    }
+
+    public void getAllUsersMap() {
+        Map<Long, User> userMap = userApiClient.getAllUsersMap();
+        log.info("返回值：" + JSONUtil.toJsonStr(userMap));
     }
 
     public void addUser() {

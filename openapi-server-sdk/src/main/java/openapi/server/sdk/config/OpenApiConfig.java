@@ -60,4 +60,14 @@ public interface OpenApiConfig {
     default SymmetricCryEnum getSymmetricCry() {
         return SymmetricCryEnum.AES;
     }
+
+    /**
+     * 配置是否启用接口文档
+     *
+     * @return 是否启用接口文档
+     */
+    default boolean enableDoc() {
+        //默认启用
+        return true;
+    }
 }

@@ -24,8 +24,16 @@ public class User {
     private String phone;
     private String email;
     private Address address;
-    private List<Role> role;
+    private List<Role> roleList;
 
+//    @OpenApiDoc(cnName = "测试DOC功能")
+//    private Role[] roleArray;
+//
+//    @OpenApiDoc(cnName = "测试DOC功能")
+//    private List<List<Role>> roleLists;
+//
+//    @OpenApiDoc(cnName = "测试DOC功能")
+//    private Role[][] roleArrays;
 
     @OpenApiDoc(ignore = true)
     private String password;

@@ -5,6 +5,7 @@ import openapi.client.sdk.annotation.OpenApiMethod;
 import openapi.example.client.model.User;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author wanghuidong
@@ -36,6 +37,9 @@ public interface UserApiClient {
 
     @OpenApiMethod(value = "getAllUsers", retDecrypt = "false", enableSymmetricCry = "false")
     List<User> getAllUsers();
+
+    @OpenApiMethod(value = "getAllUsersMap")
+    Map<Long, User> getAllUsersMap();
 
     @OpenApiMethod("addUser")
     User addUser(String name, String phone, String email);

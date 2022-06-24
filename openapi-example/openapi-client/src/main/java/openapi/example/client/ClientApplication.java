@@ -2,14 +2,12 @@ package openapi.example.client;
 
 import lombok.extern.slf4j.Slf4j;
 import openapi.example.client.openapiclient.FileApiTest;
-import openapi.example.client.openapiclient.UserApiClient;
 import openapi.example.client.openapiclient.UserApiTest;
 import openapi.example.client.openapiclient.UserApiTest2;
 import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.ConfigurableApplicationContext;
-import org.springframework.context.annotation.ComponentScan;
 
 /**
  * 项目启动
@@ -44,6 +42,7 @@ public class ClientApplication {
         test2.listUsers2();
         test2.listUsers3();
         test2.getAllUsers();
+        test2.getAllUsersMap();
         test2.addUser();
         test2.addUsers();
 

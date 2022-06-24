@@ -15,12 +15,21 @@
             padding: 20px;
         }
 
-        .method-card .el-card__header{
+        .method-collapse .el-collapse-item__header{
             background-color:#60BEFF;
+             padding: 8px 10px;
+        }
+
+        .method-collapse .el-collapse-item__content{
+            padding: 20px;
         }
 
         .ret-val{
             color: #606266;
+        }
+
+        .el-tree{
+            overflow-x: scroll;
         }
 
     </style>
@@ -45,90 +54,93 @@
                 </div>
             </template>
 
-            <!-- api折叠面板元素内容： method卡片 -->
-            <el-card class="box-card method-card" v-for="method in api.methods">
-                <!-- 方法卡片标题 -->
-                <div slot="header" class="clearfix">
-                    <div :title="method.describe">
-                        {{method.cnName ? (method.openApiMethodName + ' : ' + method.cnName) :
-                        method.openApiMethodName}}
-                    </div>
-                </div>
-                <!-- 方法参数表格 -->
-                <el-table
-                        :data="method.params"
-                        style="width: 100%">
-                    <el-table-column
-                            prop="name"
-                            label="参数名"
-                            width="150">
-                    </el-table-column>
-                    <el-table-column
-                            prop="cnName"
-                            label="参数中文名"
-                            width="150">
-                    </el-table-column>
-                    <el-table-column
-                            prop="type"
-                            label="参数类型"
-                            width="300">
-                    </el-table-column>
-                    <el-table-column
-                            prop="properties"
-                            label="参数对象属性"
-                            width="400">
-                        <template slot-scope="scope">
-                            <!-- 随便你自定义，通过（scope.row）拿到当前行数据-->
-                            <el-tree v-if="scope.row.properties!=null && scope.row.properties.length>0"
-                                     :data="convertProperties(scope.row.properties)" :props="treeProps">
+            <!-- api折叠面板元素内容： method折叠面板 -->
+            <el-collapse class="method-collapse">
+                <!-- method折叠面板元素 -->
+                <el-collapse-item v-for="method in api.methods">
+                    <!--  method折叠面板元素标题 -->
+                    <template slot="title">
+                        <div :title="method.describe">
+                            {{method.cnName ? (method.openApiMethodName + ' : ' + method.cnName) :
+                            method.openApiMethodName}}
+                        </div>
+                    </template>
+
+                    <!-- 方法参数表格 -->
+                    <el-table
+                            :data="method.params"
+                            style="width: 100%">
+                        <el-table-column
+                                prop="name"
+                                label="参数名"
+                                width="150">
+                        </el-table-column>
+                        <el-table-column
+                                prop="cnName"
+                                label="参数中文名"
+                                width="150">
+                        </el-table-column>
+                        <el-table-column
+                                prop="type"
+                                label="参数类型"
+                                width="200">
+                        </el-table-column>
+                        <el-table-column
+                                prop="properties"
+                                label="参数对象属性"
+                                width="400">
+                            <template slot-scope="scope">
+                                <!-- 随便你自定义，通过（scope.row）拿到当前行数据-->
+                                <el-tree v-if="scope.row.properties!=null && scope.row.properties.length>0"
+                                         :data="convertProperties(scope.row.properties)" :props="treeProps">
                                 <span class="custom-tree-node" slot-scope="{ node, data }">
                                     <span :title="data.describe">{{ node.label }}</span>
                                  </span>
-                            </el-tree>
-                        </template>
-                    </el-table-column>
-                    <el-table-column
-                            prop="describe"
-                            label="描述">
-                    </el-table-column>
-                </el-table>
+                                </el-tree>
+                            </template>
+                        </el-table-column>
+                        <el-table-column
+                                prop="describe"
+                                label="描述">
+                        </el-table-column>
+                    </el-table>
 
-                <!-- 方法返回值 -->
-                <el-table
-                        :data="[method.retVal]"
-                        style="width: 100%">
-                    <el-table-column
-                            prop="cnName"
-                            label="返回值名称"
-                            width="150">
-                    </el-table-column>
-                    <el-table-column
-                            prop="retType"
-                            label="返回值类型"
-                            width="300">
-                    </el-table-column>
-                    <el-table-column
-                            prop="properties"
-                            label="返回值对象属性"
-                            width="400">
-                        <template slot-scope="scope">
-                            <!-- 随便你自定义，通过（scope.row）拿到当前行数据-->
-                            <el-tree v-if="scope.row.properties!=null && scope.row.properties.length>0"
-                                     :data="convertProperties(scope.row.properties)" :props="treeProps">
+                    <!-- 方法返回值 -->
+                    <el-table
+                            :data="[method.retVal]"
+                            style="width: 100%">
+                        <el-table-column
+                                prop="cnName"
+                                label="返回值名称"
+                                width="150">
+                        </el-table-column>
+                        <el-table-column
+                                prop="retType"
+                                label="返回值类型"
+                                width="200">
+                        </el-table-column>
+                        <el-table-column
+                                prop="properties"
+                                label="返回值对象属性"
+                                width="400">
+                            <template slot-scope="scope">
+                                <!-- 随便你自定义，通过（scope.row）拿到当前行数据-->
+                                <el-tree v-if="scope.row.properties!=null && scope.row.properties.length>0"
+                                         :data="convertProperties(scope.row.properties)" :props="treeProps">
                                  <span class="custom-tree-node" slot-scope="{ node, data }">
                                     <span :title="data.describe">{{ node.label }}</span>
                                  </span>
-                            </el-tree>
-                        </template>
-                    </el-table-column>
-                    <el-table-column
-                            prop="describe"
-                            label="描述">
-                    </el-table-column>
-                </el-table>
-            </el-card>
-        </el-collapse-item>
-    </el-collapse>
+                                </el-tree>
+                            </template>
+                        </el-table-column>
+                        <el-table-column
+                                prop="describe"
+                                label="描述">
+                        </el-table-column>
+                    </el-table>
+                    </el-card>
+                </el-collapse-item>
+            </el-collapse>
 </div>
 
 </body>
@@ -181,6 +193,8 @@ var jsonUrl = pageUrl.substring(0,pageUrl.lastIndexOf('.'));
         })
 
   }});
+
+
 
 </script>
 </html>
