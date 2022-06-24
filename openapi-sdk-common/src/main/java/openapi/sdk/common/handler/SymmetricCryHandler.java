@@ -4,7 +4,7 @@ import openapi.sdk.common.enums.SymmetricCryEnum;
 import openapi.sdk.common.handler.symmetric.AESSymmetricCryHandler;
 import openapi.sdk.common.handler.symmetric.SM4SymmetricCryHandler;
 
-import java.util.HashMap;
+import java.util.EnumMap;
 import java.util.Map;
 
 /**
@@ -18,7 +18,7 @@ public interface SymmetricCryHandler {
     /**
      * 定义所有的对称加密处理器
      */
-    Map<SymmetricCryEnum, SymmetricCryHandler> handlerMap = new HashMap() {{
+    Map<SymmetricCryEnum, SymmetricCryHandler> handlerMap = new EnumMap<SymmetricCryEnum, SymmetricCryHandler>(SymmetricCryEnum.class) {{
         put(SymmetricCryEnum.AES, new AESSymmetricCryHandler());
         put(SymmetricCryEnum.SM4, new SM4SymmetricCryHandler());
     }};

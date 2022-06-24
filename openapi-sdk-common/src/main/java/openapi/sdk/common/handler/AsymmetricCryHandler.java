@@ -4,7 +4,7 @@ import openapi.sdk.common.enums.AsymmetricCryEnum;
 import openapi.sdk.common.handler.asymmetric.RSAAsymmetricCryHandler;
 import openapi.sdk.common.handler.asymmetric.SM2AsymmetricCryHandler;
 
-import java.util.HashMap;
+import java.util.EnumMap;
 import java.util.Map;
 
 /**
@@ -18,7 +18,7 @@ public interface AsymmetricCryHandler {
     /**
      * 定义所有的非对称加密处理器
      */
-    Map<AsymmetricCryEnum, AsymmetricCryHandler> handlerMap = new HashMap() {{
+    Map<AsymmetricCryEnum, AsymmetricCryHandler> handlerMap = new EnumMap(AsymmetricCryEnum.class) {{
         put(AsymmetricCryEnum.RSA, new RSAAsymmetricCryHandler());
         put(AsymmetricCryEnum.SM2, new SM2AsymmetricCryHandler());
     }};
