@@ -6,6 +6,9 @@
     <link rel="stylesheet" href="lib/element-ui/index.css">
 
     <style type="text/css">
+        .el-collapse-item__header{
+            font-size:20px;
+        }
         .api-collapse .el-collapse-item__header{
             background-color:#409EFF;
             padding: 8px 10px;
@@ -32,6 +35,21 @@
             overflow-x: scroll;
         }
 
+        .tip-count{
+            padding-left: 10px;
+            font-size: 12px;
+            color: grey;
+        }
+
+        .describe-txt{
+            font-size: 16px;
+            color: grey;
+            margin-bottom: 20px;
+        }
+
+
+
+
     </style>
 
     <script src="lib/jquery/jquery-3.6.0.min.js"></script>
@@ -43,28 +61,36 @@
 
 <!-- API接口文档渲染到此处 -->
 <div id="api" style="display:none">
+    <div class="tip-count">API个数：{{ apis.length }}, 方法个数：{{ countMethod(apis) }}</div>
     <!-- api折叠面板 -->
     <el-collapse class="api-collapse">
         <!-- api折叠面板元素 -->
         <el-collapse-item v-for="api in apis">
             <!-- api折叠面板元素标题 -->
             <template slot="title">
-                <div :title="api.describe">
+                <div>
                     {{ api.cnName ? (api.openApiName + ' : ' + api.cnName) : api.openApiName }}
+                    <span class="tip-count">方法个数：{{ api.methods.length }}</span>
                 </div>
             </template>
 
-            <!-- api折叠面板元素内容： method折叠面板 -->
+            <!-- api描述 -->
+            <div class="describe-txt">{{ api.describe }}</div>
+
+            <!-- 方法折叠面包 -->
             <el-collapse class="method-collapse">
                 <!-- method折叠面板元素 -->
                 <el-collapse-item v-for="method in api.methods">
                     <!--  method折叠面板元素标题 -->
                     <template slot="title">
-                        <div :title="method.describe">
+                        <div>
                             {{method.cnName ? (method.openApiMethodName + ' : ' + method.cnName) :
                             method.openApiMethodName}}
                         </div>
                     </template>
+
+                    <!-- 方法描述 -->
+                    <div class="describe-txt">{{ method.describe }}</div>
 
                     <!-- 方法参数表格 -->
                     <el-table
@@ -166,6 +192,16 @@ var jsonUrl = pageUrl.substring(0,pageUrl.lastIndexOf('.'));
             $('#api').show();
           },
           methods: {
+            countMethod: function(apis){
+                var count = 0;
+                for(var i=0;i<apis.length;i++){
+                    var methods = apis[i].methods;
+                    for(var j=0;j<methods.length;j++){
+                        count++;
+                    }
+                }
+                return count;
+            },
             convertProperties: function(properties){
                 var props = [];
                 if(properties != null && properties.length > 0 ) {
@@ -193,6 +229,7 @@ var jsonUrl = pageUrl.substring(0,pageUrl.lastIndexOf('.'));
         })
 
   }});
+
 
 
 
