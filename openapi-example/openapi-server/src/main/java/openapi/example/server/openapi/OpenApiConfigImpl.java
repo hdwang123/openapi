@@ -53,4 +53,10 @@ public class OpenApiConfigImpl implements OpenApiConfig {
     public SymmetricCryEnum getSymmetricCry() {
         return SymmetricCryEnum.AES;
     }
+
+    @Override
+    public boolean enableDoc() {
+        //是否启用接口文档功能
+        return true;
+    }
 }
