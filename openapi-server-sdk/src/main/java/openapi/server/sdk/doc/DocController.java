@@ -190,18 +190,25 @@ public class DocController {
     private List<Property> getProperties(Type type) {
         List<Property> properties = null;
         if (type instanceof Class) {
+            //基本类型直接返回
             if (ClassUtil.isBasicType((Class) type)) {
-                //基本类型直接返回
                 return null;
             }
+
+            //枚举类型、接口类型等直接返回
+            if (((Class<?>) type).isEnum() || ((Class<?>) type).isInterface() || ((Class<?>) type).isAnnotation()) {
+                return null;
+            }
+
+            //忽略的类型(及其子类)直接返回
             for (Class ignoreType : ignoreAddPropertyTypes) {
-                //忽略的类型(及其子类)直接返回
                 if (ignoreType.isAssignableFrom((Class) type)) {
                     return null;
                 }
             }
+
+            //数组类型则获取元素的属性
             if (((Class) type).isArray()) {
-                //数组类型则获取元素的属性
                 Class elementType = ((Class) type).getComponentType();
                 return getProperties(elementType);
             }

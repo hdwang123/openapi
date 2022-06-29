@@ -42,6 +42,9 @@ public class StrObjectConvert {
             }
         } else if (typeName.equals(String.class.getName())) {
             ins = str;
+        } else if (isClassType && ((Class) type).isEnum()) {
+            //枚举类型
+            ins = Enum.valueOf((Class) type, str);
         } else {
             //对象转换：可以将JSON字符串直接转换为任意对象（Bean、Map、集合、数组等）
             ins = JSONUtil.toBean(str, type, false);
@@ -73,6 +76,9 @@ public class StrObjectConvert {
         } else if (type.getTypeName().equals(String.class.getName())) {
             //字符串类型，无需转换
             str = (String) obj;
+        } else if (obj.getClass().isEnum()) {
+            //枚举类型，转为为字符串
+            str = obj.toString();
         } else {
             //对象转换：可以将任意对象（Bean、Map、集合、数组等）直接转换为JSON字符串
             str = JSONUtil.toJsonStr(obj);

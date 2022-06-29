@@ -11,6 +11,7 @@ public class User {
 
     private Long id;
     private String name;
+    private Gender gender;
     private String phone;
     private String email;
 }

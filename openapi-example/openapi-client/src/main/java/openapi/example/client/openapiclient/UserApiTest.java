@@ -2,6 +2,7 @@ package openapi.example.client.openapiclient;
 
 import lombok.extern.slf4j.Slf4j;
 import openapi.client.sdk.OpenApiClientBuilder;
+import openapi.example.client.model.Gender;
 import openapi.example.client.model.User;
 import openapi.client.sdk.OpenApiClient;
 import openapi.sdk.common.enums.AsymmetricCryEnum;
@@ -124,7 +125,7 @@ public class UserApiTest {
 
     public void addUser() {
         //为了精确调用到想要的重载方法，这里将第一个参数转成了Object对象
-        OutParams outParams = apiClient.callOpenApi("addUser", (Object) "展昭", "13312341234", "1331234@qq.com");
+        OutParams outParams = apiClient.callOpenApi("addUser", (Object) "展昭", "13312341234", "1331234@qq.com", Gender.MALE);
         log.info("返回值：" + outParams);
     }
 

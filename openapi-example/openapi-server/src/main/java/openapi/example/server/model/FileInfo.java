@@ -11,11 +11,14 @@ import lombok.Data;
 @Data
 public class FileInfo {
 
+    /**
+     * 文件名
+     */
     private String fileName;
 
     /**
-     * 文件内容
+     * 文件内容base64表示
      */
-    private byte[] fileBytes;
+    private String fileBase64;
 
 }

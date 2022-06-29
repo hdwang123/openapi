@@ -2,6 +2,7 @@ package openapi.example.client.openapiclient;
 
 import cn.hutool.core.io.FileUtil;
 import openapi.example.client.model.FileInfo;
+import openapi.sdk.common.util.Base64Util;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -24,7 +25,7 @@ public class FileApiTest {
         File src = new File(dir, "001.txt");
         byte[] fileBytes = FileUtil.readBytes(src);
         FileInfo fileInfo = new FileInfo();
-        fileInfo.setFileBytes(fileBytes);
+        fileInfo.setFileBase64(Base64Util.bytesToBase64(fileBytes));
         fileInfo.setFileName(src.getName());
         fileApiClient.upload(fileInfo);
     }
@@ -33,7 +34,7 @@ public class FileApiTest {
     public void downloadTest() {
         FileInfo fileInfo = fileApiClient.download(1L);
         File dest = new File(dir, "download/" + fileInfo.getFileName());
-        byte[] fileBytes = fileInfo.getFileBytes();
+        byte[] fileBytes = Base64Util.base64ToBytes(fileInfo.getFileBase64());
         FileUtil.writeBytes(fileBytes, dest);
     }
 }

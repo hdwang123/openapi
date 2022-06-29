@@ -2,6 +2,7 @@ package openapi.example.client.openapiclient;
 
 import openapi.client.sdk.annotation.OpenApiRef;
 import openapi.client.sdk.annotation.OpenApiMethod;
+import openapi.example.client.model.Gender;
 import openapi.example.client.model.User;
 
 import java.util.List;
@@ -42,7 +43,7 @@ public interface UserApiClient {
     Map<Long, User> getAllUsersMap();
 
     @OpenApiMethod("addUser")
-    User addUser(String name, String phone, String email);
+    User addUser(String name, String phone, String email, Gender gender);
 
     @OpenApiMethod("addUsers")
     User addUser(Long id, String name, List<User> users);

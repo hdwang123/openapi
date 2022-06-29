@@ -2,6 +2,7 @@ package openapi.example.server.openapi;
 
 import cn.hutool.json.JSONUtil;
 import lombok.extern.slf4j.Slf4j;
+import openapi.example.server.model.Gender;
 import openapi.example.server.model.User;
 import openapi.server.sdk.annotation.OpenApi;
 import openapi.server.sdk.annotation.OpenApiMethod;
@@ -104,11 +105,15 @@ public class UserApi {
     }
 
     @OpenApiMethod("addUser")
-    public User addUser(String name, String phone, String email) {
+    public User addUser(@OpenApiDoc(cnName = "用户名") String name,
+                        @OpenApiDoc(cnName = "手机号") String phone,
+                        @OpenApiDoc(cnName = "邮箱") String email,
+                        @OpenApiDoc(cnName = "性别") Gender gender) {
         User user = new User();
         user.setName(name);
         user.setPhone(phone);
         user.setEmail(email);
+        user.setGender(gender);
         log.info("addUser:user={}", JSONUtil.toJsonStr(user));
         return user;
     }

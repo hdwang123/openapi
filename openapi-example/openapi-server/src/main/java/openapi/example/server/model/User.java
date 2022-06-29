@@ -20,11 +20,16 @@ public class User {
     @OpenApiDoc(cnName = "用户名称")
     private String name;
 
+    @OpenApiDoc(cnName = "性别", describe = "枚举类型（值：MALE,FEMALE）")
+    private Gender gender;
+
     @OpenApiDoc(cnName = "手机号")
     private String phone;
+
     private String email;
     private Address address;
     private List<Role> roleList;
+
 
 //    @OpenApiDoc(cnName = "测试DOC功能")
 //    private Role[] roleArray;
