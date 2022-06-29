@@ -35,6 +35,9 @@ public class User {
 //    @OpenApiDoc(cnName = "测试DOC功能")
 //    private Role[][] roleArrays;
 
+//    @OpenApiDoc(cnName = "测试DOC功能")
+//    private List<Role>[] roleListArray;
+
     @OpenApiDoc(ignore = true)
     private String password;
 

@@ -8,6 +8,7 @@ import openapi.sdk.common.constant.Constant;
 import openapi.server.sdk.config.OpenApiConfig;
 import openapi.server.sdk.doc.annotation.OpenApiDoc;
 import openapi.server.sdk.doc.model.*;
+import openapi.server.sdk.doc.model.Method;
 import openapi.server.sdk.model.ApiHandler;
 import openapi.server.sdk.model.Context;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,10 +16,7 @@ import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Parameter;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
+import java.lang.reflect.*;
 import java.util.*;
 
 /**
@@ -186,6 +184,7 @@ public class DocController {
     /**
      * 获取指定类型里的属性信息
      *
+     * @param type 类型（包括Class,ParameterizedType,GenericArrayType,TypeVariable,WildcardType）
      * @return 属性信息
      */
     private List<Property> getProperties(Type type) {
@@ -241,6 +240,10 @@ public class DocController {
             if (Map.class.isAssignableFrom(rawType)) {
                 properties = getMapProperties(parameterizedType);
             }
+        } else if (type instanceof GenericArrayType) {
+            //是泛型数组 or 类型参数数组
+            Type elementType = ((GenericArrayType) type).getGenericComponentType();
+            return getProperties(elementType);
         }
         return properties;
     }
