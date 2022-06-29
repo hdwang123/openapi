@@ -40,7 +40,7 @@ cn.hutool.hutool-all
 <dependency>
     <groupId>io.github.hdwang123</groupId>
     <artifactId>openapi-server-sdk</artifactId>
-    <version>1.3.2</version>
+    <version>1.3.3</version>
 </dependency>
 ````
 
@@ -109,7 +109,7 @@ public class UserApi {
 #### 4.查看开放API接口文档
 
 网址：http://localhost:8080/openapi/doc.html  
-实际项目中替换http://localhost:8080为实际路径  
+实际项目中替换 http://localhost:8080 为实际路径  
 <img src="https://github.com/hdwang123/openapi/blob/main/doc/openapi-doc.png" />
 
 ### 客户端
@@ -120,7 +120,7 @@ public class UserApi {
 <dependency>
     <groupId>io.github.hdwang123</groupId>
     <artifactId>openapi-client-sdk</artifactId>
-    <version>1.3.2</version>
+    <version>1.3.3</version>
 </dependency>
 ````
 

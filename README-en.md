@@ -41,7 +41,7 @@ cn.hutool.hutool-all
 <dependency>
     <groupId>io.github.hdwang123</groupId>
     <artifactId>openapi-server-sdk</artifactId>
-    <version>1.3.2</version>
+    <version>1.3.3</version>
 </dependency>
 ````
 
@@ -123,7 +123,7 @@ Replace http://localhost:8080 with the actual path in the actual project
 <dependency>
     <groupId>io.github.hdwang123</groupId>
     <artifactId>openapi-client-sdk</artifactId>
-    <version>1.3.2</version>
+    <version>1.3.3</version>
 </dependency>
 ````
 
