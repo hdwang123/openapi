@@ -37,13 +37,14 @@ cn.hutool.hutool-all
 
 #### 1.import openapi-server-sdk
 
-````
+```xml
+
 <dependency>
     <groupId>io.github.hdwang123</groupId>
     <artifactId>openapi-server-sdk</artifactId>
     <version>1.3.3</version>
 </dependency>
-````
+```
 
 #### 2.implement interface OpenApiConfig to config
 
@@ -51,7 +52,8 @@ cn.hutool.hutool-all
 Note: There is no configuration implementation class by default, an error will be reported when starting the project, and an OpenApiConfig implementation class must be manually configured.
 </font>
 
-````
+```java
+
 @Component
 public class OpenApiConfigImpl implements OpenApiConfig {
 
@@ -85,7 +87,7 @@ public class OpenApiConfigImpl implements OpenApiConfig {
         return true;
     }
 }
-````
+```
 
 #### 3.Custom open API
 
@@ -93,7 +95,8 @@ public class OpenApiConfigImpl implements OpenApiConfig {
 Note: The class identified by @OpenApi must be in the scan path of the spring package before it can be injected into the container.
 </font>
 
-````
+```java
+
 @Slf4j
 @OpenApi("userApi")
 public class UserApi {
@@ -107,7 +110,7 @@ public class UserApi {
         return user;
     }
 }
-````
+```
 
 #### 4.see openapi doc
 
@@ -119,13 +122,14 @@ Replace http://localhost:8080 with the actual path in the actual project
 
 #### 1.import openapi-client-sdk
 
-````
+```xml
+
 <dependency>
     <groupId>io.github.hdwang123</groupId>
     <artifactId>openapi-client-sdk</artifactId>
     <version>1.3.3</version>
 </dependency>
-````
+```
 
 #### 2.call openapi
 
@@ -133,7 +137,8 @@ Replace http://localhost:8080 with the actual path in the actual project
 
 Call OpenApiClient directly
 
-````
+```java
+
 @Slf4j
 @Component
 public class UserApiClient {
@@ -170,7 +175,7 @@ public class UserApiClient {
         log.info("ret：" + outParams);
     }
 }
-````
+```
 
 ##### method two
 
@@ -178,7 +183,7 @@ Use the annotation @OpenApiRef to define a service reference and inject it where
 
 1. Define the configuration
 
-````
+```yaml
 openapi:
   client:
     config:
@@ -191,22 +196,24 @@ openapi:
       enableSymmetricCry: true
       symmetricCryEnum: AES
       callerId: "001"
-````
+```
 
 2. Define the service reference
 
-````
+```java
+
 @OpenApiRef(value = "userApi")
 public interface UserApiClient {
 
     @OpenApiMethod("getUserById")
     User getUserById(Long id);
 }
-````
+```
 
 3. Inject the service reference to call the remote openapi service
 
-````
+```java
+
 @Component
 public class UserApiTest2 {
 
@@ -218,4 +225,4 @@ public class UserApiTest2 {
         log.info("ret：" + user);
     }
 }    
-````
+```

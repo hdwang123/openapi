@@ -36,20 +36,22 @@ cn.hutool.hutool-all
 
 #### 1.引入openapi-server-sdk
 
-````
+```xml
+
 <dependency>
     <groupId>io.github.hdwang123</groupId>
     <artifactId>openapi-server-sdk</artifactId>
     <version>1.3.3</version>
 </dependency>
-````
+```
 
 #### 2.实现OpenApiConfig接口进行配置
 
 <font size=1 color=#ff6600>注：默认没有任何配置实现类，启动项目会报错，必须手动配置一个OpenApiConfig实现类
 </font>
 
-````
+```java
+
 @Component
 public class OpenApiConfigImpl implements OpenApiConfig {
 
@@ -83,14 +85,15 @@ public class OpenApiConfigImpl implements OpenApiConfig {
         return true;
     }
 }
-````
+```
 
 #### 3.自定义开放API
 
 <font size=1  color=#ff6600>注：被@OpenApi标识的类必须处于spring包的扫描路径下，方可注入容器中
 </font>
 
-````
+```java
+
 @Slf4j
 @OpenApi("userApi")
 public class UserApi {
@@ -104,7 +107,7 @@ public class UserApi {
         return user;
     }
 }
-````
+```
 
 #### 4.查看开放API接口文档
 
@@ -116,13 +119,14 @@ public class UserApi {
 
 #### 1.引入openapi-client-sdk
 
-````
+```xml
+
 <dependency>
     <groupId>io.github.hdwang123</groupId>
     <artifactId>openapi-client-sdk</artifactId>
     <version>1.3.3</version>
 </dependency>
-````
+```
 
 #### 2.调用openapi
 
@@ -130,7 +134,8 @@ public class UserApi {
 
 直接调用OpenApiClient
 
-````
+```java
+
 @Slf4j
 @Component
 public class UserApiClient {
@@ -167,14 +172,14 @@ public class UserApiClient {
         log.info("返回值：" + outParams);
     }
 }
-````
+```
 
 ##### 方式二
 
 使用注解@OpenApiRef定义服务引用，在需要的地方注入即可  
 1.定义配置
 
-````
+```yaml
 openapi:
   client:
     config:
@@ -187,22 +192,24 @@ openapi:
       enableSymmetricCry: true
       symmetricCryEnum: AES
       callerId: "001"
-````
+```
 
 2.定义服务引用
 
-````
+```java
+
 @OpenApiRef(value = "userApi")
 public interface UserApiClient {
 
     @OpenApiMethod("getUserById")
     User getUserById(Long id);
 }
-````
+```
 
 3.注入服务引用调用远程openapi服务
 
-````
+```java
+
 @Component
 public class UserApiTest2 {
 
@@ -214,4 +221,4 @@ public class UserApiTest2 {
         log.info("返回值：" + user);
     }
 }    
-````
+```
