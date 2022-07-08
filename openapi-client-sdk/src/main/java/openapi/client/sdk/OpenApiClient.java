@@ -2,7 +2,6 @@ package openapi.client.sdk;
 
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.http.ContentType;
-import cn.hutool.http.Header;
 import cn.hutool.http.HttpRequest;
 import cn.hutool.json.JSONUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -13,11 +12,9 @@ import openapi.sdk.common.enums.SymmetricCryEnum;
 import openapi.sdk.common.exception.OpenApiClientException;
 import openapi.sdk.common.handler.AsymmetricCryHandler;
 import openapi.sdk.common.handler.SymmetricCryHandler;
-import openapi.sdk.common.model.*;
-import openapi.sdk.common.util.Base64Util;
-import openapi.sdk.common.util.CommonUtil;
-import openapi.sdk.common.util.StrObjectConvert;
-import openapi.sdk.common.util.SymmetricCryUtil;
+import openapi.sdk.common.model.InParams;
+import openapi.sdk.common.model.OutParams;
+import openapi.sdk.common.util.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -401,20 +398,21 @@ public class OpenApiClient {
     private OutParams doCall(InParams inParams) {
         String url = CommonUtil.completeUrl(baseUrl, Constant.OPENAPI_PATH);
         String body = JSONUtil.toJsonStr(inParams);
+        byte[] bodyBytes = CompressUtil.compressText(body);
         log.debug("{}调用openapi入参:{}", logPrefix.get(), inParams);
-        String ret = HttpRequest.post(url)
+        byte[] retBytes = HttpRequest.post(url)
                 .setConnectionTimeout(httpConnectionTimeout * 1000)
                 .setReadTimeout(httpReadTimeout * 1000)
-                .contentType(ContentType.JSON.getValue())
-                .header(Header.ACCEPT, ContentType.JSON.getValue())
-                .body(body)
+                .contentType(ContentType.OCTET_STREAM.getValue())
+                .body(bodyBytes)
                 .execute()
-                .body();
-        log.debug("{}调用openapi出参：{}", logPrefix.get(), ret);
-        if (StrUtil.isBlank(ret)) {
+                .bodyBytes();
+        String retStr = CompressUtil.decompressToText(retBytes);
+        log.debug("{}调用openapi出参：{}", logPrefix.get(), TruncateUtil.truncate(retStr));
+        if (StrUtil.isBlank(retStr)) {
             throw new OpenApiClientException("返回值为空");
         }
-        OutParams outParams = JSONUtil.toBean(ret, OutParams.class);
+        OutParams outParams = JSONUtil.toBean(retStr, OutParams.class);
         if (OutParams.isSuccess(outParams)) {
             //判断是否需要解密数据
             if (retDecrypt) {

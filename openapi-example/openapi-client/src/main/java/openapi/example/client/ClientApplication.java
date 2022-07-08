@@ -20,6 +20,7 @@ public class ClientApplication {
 
     public static void main(String[] args) {
         ConfigurableApplicationContext context = new SpringApplicationBuilder().sources(ClientApplication.class).web(WebApplicationType.NONE).run(args);
+        long startTime = System.nanoTime();
         UserApiTest test = context.getBean(UserApiTest.class);
         test.getUserById();
         test.saveUser();
@@ -49,5 +50,8 @@ public class ClientApplication {
         FileApiTest fileApiTest = context.getBean(FileApiTest.class);
         fileApiTest.uploadTest();
         fileApiTest.downloadTest();
+
+        long endTime = System.nanoTime();
+        log.debug("耗时：{}ms", (endTime-startTime)/100_0000);
     }
 }

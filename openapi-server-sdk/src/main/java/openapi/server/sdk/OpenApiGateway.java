@@ -1,33 +1,35 @@
 package openapi.server.sdk;
 
 import cn.hutool.core.collection.CollUtil;
-import cn.hutool.core.util.*;
+import cn.hutool.core.io.IoUtil;
+import cn.hutool.core.util.ArrayUtil;
+import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONUtil;
 import lombok.extern.slf4j.Slf4j;
+import openapi.sdk.common.constant.Constant;
 import openapi.sdk.common.enums.AsymmetricCryEnum;
 import openapi.sdk.common.enums.SymmetricCryEnum;
 import openapi.sdk.common.exception.OpenApiServerException;
 import openapi.sdk.common.handler.AsymmetricCryHandler;
 import openapi.sdk.common.handler.SymmetricCryHandler;
-import openapi.sdk.common.model.*;
-import openapi.sdk.common.util.CommonUtil;
-import openapi.sdk.common.util.SymmetricCryUtil;
-import openapi.server.sdk.model.ApiHandler;
+import openapi.sdk.common.model.InParams;
+import openapi.sdk.common.model.OutParams;
+import openapi.sdk.common.util.*;
 import openapi.server.sdk.annotation.OpenApi;
 import openapi.server.sdk.annotation.OpenApiMethod;
-import openapi.sdk.common.constant.Constant;
-import openapi.sdk.common.util.Base64Util;
-import openapi.sdk.common.util.StrObjectConvert;
 import openapi.server.sdk.config.OpenApiConfig;
+import openapi.server.sdk.model.ApiHandler;
 import openapi.server.sdk.model.Context;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.PostConstruct;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.lang.reflect.Type;
@@ -190,15 +192,23 @@ public class OpenApiGateway {
     /**
      * 调用具体的方法
      *
-     * @param inParams 入参
+     * @param request  请求对象
+     * @param response 响应对象
      * @return 出参
      */
-    @PostMapping(value = Constant.OPENAPI_PATH, consumes = {MediaType.APPLICATION_JSON_VALUE}, produces = {MediaType.APPLICATION_JSON_VALUE})
-    public OutParams callMethod(@RequestBody InParams inParams) {
-        //设置日志前缀
-        logPrefix.set(String.format("uuid=%s:", inParams.getUuid()));
+    @PostMapping(value = Constant.OPENAPI_PATH,
+            consumes = {MediaType.APPLICATION_OCTET_STREAM_VALUE},
+            produces = {MediaType.APPLICATION_OCTET_STREAM_VALUE}
+    )
+    public void callMethod(HttpServletRequest request, HttpServletResponse response) {
         OutParams outParams = null;
+        InParams inParams = null;
         try {
+            //获取入参
+            inParams = getInParams(request);
+
+            //设置日志前缀
+            logPrefix.set(String.format("uuid=%s:", inParams.getUuid()));
             log.debug("{}接收到请求：{}", logPrefix.get(), inParams);
 
             //获取openapi处理器
@@ -208,21 +218,63 @@ public class OpenApiGateway {
             List<Object> params = getParam(inParams, apiHandler);
 
             //调用目标方法
-            return outParams = doCall(apiHandler, params, inParams);
+            outParams = doCall(apiHandler, params, inParams);
         } catch (OpenApiServerException be) {
             log.error(logPrefix.get() + be.getMessage());
-            return outParams = OutParams.error(be.getMessage());
+            outParams = OutParams.error(be.getMessage());
         } catch (Exception ex) {
             log.error(logPrefix.get() + "系统异常：", ex);
-            return outParams = OutParams.error("系统异常");
+            outParams = OutParams.error("系统异常");
         } finally {
             if (outParams == null) {
                 outParams = OutParams.error("系统异常");
             }
             outParams.setUuid(inParams.getUuid());
+
+            //写返回值到响应
+            writeOutParams(response, outParams);
+
             log.debug(logPrefix.get() + "调用完毕：" + outParams);
         }
     }
+
+    /**
+     * 获取入参
+     *
+     * @param request 请求对象
+     * @return 入参
+     */
+    private InParams getInParams(HttpServletRequest request) {
+        InParams inParams = null;
+        try {
+            InputStream inputStream = request.getInputStream();
+            byte[] inputBytes = IoUtil.readBytes(inputStream);
+            String inputStr = CompressUtil.decompressToText(inputBytes);
+            inParams = JSONUtil.toBean(inputStr, InParams.class);
+        } catch (Exception ex) {
+            log.error("从请求流读取数据异常", ex);
+            throw new OpenApiServerException("从请求流读取数据异常:" + ex.getMessage());
+        }
+        return inParams;
+    }
+
+    /**
+     * 写返回值到响应
+     *
+     * @param response  HTTP响应对象
+     * @param outParams 返回值
+     */
+    private void writeOutParams(HttpServletResponse response, OutParams outParams) {
+        try {
+            String outStr = JSONUtil.toJsonStr(outParams);
+            byte[] outBytes = CompressUtil.compressText(outStr);
+            response.setContentType(MediaType.APPLICATION_OCTET_STREAM_VALUE);
+            IoUtil.write(response.getOutputStream(), true, outBytes);
+        } catch (Exception ex) {
+            log.error("写返回值到响应流异常", ex);
+        }
+    }
+
 
     /**
      * 获取openapi处理器
@@ -341,9 +393,10 @@ public class OpenApiGateway {
         try {
             OutParams outParams = new OutParams();
             Object[] params = paramList.stream().toArray();
-            log.debug("{}调用API:{},入参：{}", logPrefix.get(), apiHandler, params);
+
+            log.debug("{}调用API:{},入参：{}", logPrefix.get(), apiHandler, TruncateUtil.truncate(params));
             Object ret = apiHandler.getMethod().invoke(apiHandler.getBean(), params);
-            log.debug("{}调用API:{},出参：{}", logPrefix.get(), apiHandler, ret);
+            log.debug("{}调用API:{},出参：{}", logPrefix.get(), apiHandler, TruncateUtil.truncate(ret));
             String retStr = StrUtil.EMPTY;
             if (ret != null) {
                 retStr = StrObjectConvert.objToStr(ret, ret.getClass());

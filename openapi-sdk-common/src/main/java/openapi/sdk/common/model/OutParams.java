@@ -1,8 +1,11 @@
 package openapi.sdk.common.model;
 
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.json.JSONUtil;
 import lombok.Data;
+import openapi.sdk.common.constant.Constant;
 import openapi.sdk.common.constant.ErrorCode;
+import openapi.sdk.common.util.TruncateUtil;
 
 /**
  * openapi出参
@@ -107,6 +110,13 @@ public class OutParams {
 
     @Override
     public String toString() {
+        if (this.getData() != null && this.getData().length() > Constant.MAX_LOG_LENGTH) {
+            //数据超过指定长度则截断，防止打印日志卡死
+            OutParams outParams = new OutParams();
+            BeanUtil.copyProperties(this, outParams);
+            outParams.setData(TruncateUtil.truncate(outParams.getData()));
+            return JSONUtil.toJsonStr(outParams);
+        }
         return JSONUtil.toJsonStr(this);
     }
 
