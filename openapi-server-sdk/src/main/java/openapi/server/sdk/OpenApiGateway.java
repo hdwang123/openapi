@@ -286,7 +286,7 @@ public class OpenApiGateway {
             }
             IoUtil.write(response.getOutputStream(), true, outParams.getDataBytes());
         } catch (Exception ex) {
-            log.error("写返回值到响应流异常", ex);
+            log.error(logPrefix.get() + "写返回值到响应流异常", ex);
         }
     }
 
