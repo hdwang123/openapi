@@ -195,7 +195,6 @@ public class OpenApiGateway {
      *
      * @param request  请求对象
      * @param response 响应对象
-     * @return 出参
      */
     @PostMapping(value = Constant.OPENAPI_PATH,
             consumes = {MediaType.APPLICATION_OCTET_STREAM_VALUE},
