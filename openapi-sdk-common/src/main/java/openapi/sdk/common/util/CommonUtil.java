@@ -1,5 +1,6 @@
 package openapi.sdk.common.util;
 
+import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.StrUtil;
 import openapi.sdk.common.exception.OpenApiException;
 import openapi.sdk.common.model.InParams;
@@ -18,10 +19,11 @@ public class CommonUtil {
      * @param inParams 入参
      * @return 签名的内容
      */
-    public static String getSignContent(InParams inParams) {
+    public static byte[] getSignContent(InParams inParams) {
         //使用数据+uuid作为签名的内容，保证无参函数调用也能经过签名的验证
-        String body = StrUtil.isBlank(inParams.getBody()) ? StrUtil.EMPTY : inParams.getBody();
-        return body + inParams.getUuid();
+        byte[] bodyBytes = inParams.getBodyBytes();
+        byte[] signContent = ArrayUtil.addAll(bodyBytes, inParams.getUuid().getBytes());
+        return signContent;
     }
 
     /**

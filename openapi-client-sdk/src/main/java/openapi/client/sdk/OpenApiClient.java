@@ -1,12 +1,15 @@
 package openapi.client.sdk;
 
+import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.http.ContentType;
 import cn.hutool.http.HttpRequest;
+import cn.hutool.http.HttpResponse;
 import cn.hutool.json.JSONUtil;
 import lombok.extern.slf4j.Slf4j;
 import openapi.client.sdk.constant.ClientConstant;
 import openapi.sdk.common.constant.Constant;
+import openapi.sdk.common.constant.Header;
 import openapi.sdk.common.enums.AsymmetricCryEnum;
 import openapi.sdk.common.enums.SymmetricCryEnum;
 import openapi.sdk.common.exception.OpenApiClientException;
@@ -16,9 +19,7 @@ import openapi.sdk.common.model.InParams;
 import openapi.sdk.common.model.OutParams;
 import openapi.sdk.common.util.*;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * 对外开放api客户端
@@ -350,6 +351,7 @@ public class OpenApiClient {
             multiParam = true;
         }
         inParams.setBody(body);
+        inParams.setBodyBytes(CompressUtil.compressText(body));
         inParams.setMultiParam(multiParam);
     }
 
@@ -360,8 +362,9 @@ public class OpenApiClient {
      */
     private void encryptAndSign(InParams inParams) {
         //加密
-        String body = inParams.getBody();
-        if (StrUtil.isNotBlank(body)) {
+        long startTime = System.nanoTime();
+        byte[] bodyBytes = inParams.getBodyBytes();
+        if (ArrayUtil.isNotEmpty(bodyBytes)) {
             if (this.enableSymmetricCry) {
                 //启用对称加密，则内容采用对称加密，需先生成对称密钥，密钥采用非对称加密后传输
                 //生成对称密钥key
@@ -375,18 +378,22 @@ public class OpenApiClient {
                 inParams.setSymmetricCryKey(cryKey);
 
                 //对内容进行对称加密
-                body = this.symmetricCryHandler.cry(body, keyBytes);
+                bodyBytes = this.symmetricCryHandler.cry(bodyBytes, keyBytes);
             } else {
                 //仅采用非对称加密
-                body = this.asymmetricCryHandler.cry(remotePublicKey, body);
+                bodyBytes = this.asymmetricCryHandler.cry(remotePublicKey, bodyBytes);
             }
-            inParams.setBody(body);
+            inParams.setBodyBytes(bodyBytes);
+//            inParams.setBody(Base64Util.bytesToBase64(bodyBytes));
         }
+        this.logCostTime("加密", startTime);
 
         //加签
-        String signContent = CommonUtil.getSignContent(inParams);
+        startTime = System.nanoTime();
+        byte[] signContent = CommonUtil.getSignContent(inParams);
         String sign = this.asymmetricCryHandler.sign(selfPrivateKey, signContent);
         inParams.setSign(sign);
+        this.logCostTime("加签", startTime);
     }
 
     /**
@@ -396,35 +403,74 @@ public class OpenApiClient {
      * @return 结果
      */
     private OutParams doCall(InParams inParams) {
+        long startTime = System.nanoTime();
         String url = CommonUtil.completeUrl(baseUrl, Constant.OPENAPI_PATH);
-        String body = JSONUtil.toJsonStr(inParams);
-        byte[] bodyBytes = CompressUtil.compressText(body);
+        Map<String, String> headers = this.getHeaders(inParams);
+        byte[] bodyBytes = inParams.getBodyBytes();
         log.debug("{}调用openapi入参:{}", logPrefix.get(), inParams);
-        byte[] retBytes = HttpRequest.post(url)
+        HttpResponse response = HttpRequest.post(url)
                 .setConnectionTimeout(httpConnectionTimeout * 1000)
                 .setReadTimeout(httpReadTimeout * 1000)
+                .addHeaders(headers)
                 .contentType(ContentType.OCTET_STREAM.getValue())
                 .body(bodyBytes)
-                .execute()
-                .bodyBytes();
-        String retStr = CompressUtil.decompressToText(retBytes);
-        log.debug("{}调用openapi出参：{}", logPrefix.get(), TruncateUtil.truncate(retStr));
-        if (StrUtil.isBlank(retStr)) {
-            throw new OpenApiClientException("返回值为空");
-        }
-        OutParams outParams = JSONUtil.toBean(retStr, OutParams.class);
+                .execute();
+        OutParams outParams = getOutParams(response);
+        log.debug("{}调用openapi出参：{}", logPrefix.get(), outParams);
+        this.logCostTime("调用openapi", startTime);
+
         if (OutParams.isSuccess(outParams)) {
             //判断是否需要解密数据
             if (retDecrypt) {
+                //解密数据
                 decryptData(outParams);
 
                 //对称加密密钥清空
                 outParams.setSymmetricCryKey(null);
             }
+
+            //返回值字节数组转成字符串
+            if (ArrayUtil.isNotEmpty(outParams.getDataBytes())) {
+                outParams.setData(CompressUtil.decompressToText(outParams.getDataBytes()));
+            }
         } else {
             throw new OpenApiClientException("调用openapi异常:" + outParams);
         }
         return outParams;
+    }
+
+    /**
+     * 获取出参
+     *
+     * @param response HTTP响应
+     * @return 出参
+     */
+    private OutParams getOutParams(HttpResponse response) {
+        OutParams outParams = new OutParams();
+        outParams.setUuid(response.header(Header.Response.UUID));
+        outParams.setCode(Integer.valueOf(response.header(Header.Response.CODE)));
+        outParams.setMessage(response.header(Header.Response.MESSAGE));
+        outParams.setSymmetricCryKey(response.header(Header.Response.SYMMETRIC_CRY_KEY));
+        outParams.setDataBytes(response.bodyBytes());
+        return outParams;
+    }
+
+    /**
+     * 构建请求头信息
+     *
+     * @param inParams 入参
+     * @return 请求头
+     */
+    private Map<String, String> getHeaders(InParams inParams) {
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Header.Request.UUID, inParams.getUuid());
+        headers.put(Header.Request.CALLER_ID, inParams.getCallerId());
+        headers.put(Header.Request.API, inParams.getApi());
+        headers.put(Header.Request.METHOD, inParams.getMethod());
+        headers.put(Header.Request.SIGN, inParams.getSign());
+        headers.put(Header.Request.SYMMETRIC_CRY_KEY, inParams.getSymmetricCryKey());
+        headers.put(Header.Request.MULTI_PARAM, String.valueOf(inParams.isMultiParam()));
+        return headers;
     }
 
     /**
@@ -434,18 +480,20 @@ public class OpenApiClient {
      */
     private void decryptData(OutParams outParams) {
         try {
-            String data = outParams.getData();
-            if (StrUtil.isNotBlank(data)) {
-                String decryptedData = null;
+            long startTime = System.nanoTime();
+            byte[] dataBytes = outParams.getDataBytes();
+            if (ArrayUtil.isNotEmpty(dataBytes)) {
+                byte[] decryptedDataBytes = null;
                 if (enableSymmetricCry) {
                     String key = this.asymmetricCryHandler.deCry(selfPrivateKey, outParams.getSymmetricCryKey());
                     byte[] keyBytes = Base64Util.base64ToBytes(key);
-                    decryptedData = this.symmetricCryHandler.deCry(data, keyBytes);
+                    decryptedDataBytes = this.symmetricCryHandler.deCry(dataBytes, keyBytes);
                 } else {
-                    decryptedData = this.asymmetricCryHandler.deCry(selfPrivateKey, data);
+                    decryptedDataBytes = this.asymmetricCryHandler.deCry(selfPrivateKey, dataBytes);
                 }
-                outParams.setData(decryptedData);
+                outParams.setDataBytes(decryptedDataBytes);
             }
+            this.logCostTime("解密", startTime);
         } catch (OpenApiClientException be) {
             String errorMsg = "解密失败：" + be.getMessage();
             log.error(logPrefix.get() + errorMsg, be);
@@ -488,6 +536,16 @@ public class OpenApiClient {
         }
     }
 
+    /**
+     * 记录操作的耗时
+     *
+     * @param operate   操作
+     * @param startTime 操作开始时间
+     */
+    private void logCostTime(String operate, long startTime) {
+        log.debug("{}{}耗时:{}ms", logPrefix.get(), operate, (System.nanoTime() - startTime) / 100_0000);
+    }
+
     @Override
     public String toString() {
         return String.format("\nopenApiClient hashCode:%x,\nbaseUrl:%s,\nselfPrivateKey:%s,\nremotePublicKey:%s," +
@@ -497,5 +555,6 @@ public class OpenApiClient {
                 asymmetricCryEnum, retDecrypt, enableSymmetricCry, symmetricCryEnum,
                 callerId, api, httpConnectionTimeout, httpReadTimeout);
     }
+
 
 }

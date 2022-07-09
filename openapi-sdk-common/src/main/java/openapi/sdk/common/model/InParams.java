@@ -3,7 +3,6 @@ package openapi.sdk.common.model;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.json.JSONUtil;
 import lombok.Data;
-import openapi.sdk.common.constant.Constant;
 import openapi.sdk.common.util.TruncateUtil;
 
 /**
@@ -35,9 +34,19 @@ public class InParams {
     private String method;
 
     /**
-     * 请求体内容（传入内容明文，由sdk生成内容密文）
+     * 请求体内容（传入内容明文）
      */
     private String body;
+
+    /**
+     * 请求体内容（字节数组形式，由sdk生成的内容密文也保存至此）
+     */
+    private byte[] bodyBytes;
+
+    /**
+     * 用于日志打印
+     */
+    private String bodyBytesStr;
 
     /**
      * 签名（由sdk根据内容密文生成）
@@ -56,14 +65,12 @@ public class InParams {
 
     @Override
     public String toString() {
-        if (this.getBody() != null && this.getBody().length() > Constant.MAX_LOG_LENGTH) {
-            //数据超过指定长度则截断，防止打印日志卡死
-            InParams inParams = new InParams();
-            BeanUtil.copyProperties(this, inParams);
-            inParams.setBody(TruncateUtil.truncate(inParams.getBody()));
-            return JSONUtil.toJsonStr(inParams);
-        }
-        return JSONUtil.toJsonStr(this);
+        InParams inParams = new InParams();
+        BeanUtil.copyProperties(this, inParams);
+        inParams.setBody(TruncateUtil.truncate(inParams.getBody()));
+        inParams.setBodyBytesStr(TruncateUtil.truncate(inParams.getBodyBytes()));
+        inParams.setBodyBytes(null);
+        return JSONUtil.toJsonStr(inParams);
     }
 
 }

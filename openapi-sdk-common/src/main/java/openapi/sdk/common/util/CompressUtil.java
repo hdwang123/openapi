@@ -24,6 +24,16 @@ public class CompressUtil {
     }
 
     /**
+     * 压缩
+     *
+     * @param bytes 字节数组
+     * @return 压缩后的字节数组
+     */
+    public static byte[] compress(byte[] bytes) {
+        return ZipUtil.gzip(bytes);
+    }
+
+    /**
      * 解压到文本
      *
      * @param compressedBytes 压缩的字节数组

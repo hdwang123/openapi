@@ -1,7 +1,5 @@
 package openapi.sdk.common.handler.asymmetric;
 
-import cn.hutool.core.util.CharsetUtil;
-import cn.hutool.core.util.StrUtil;
 import cn.hutool.crypto.SecureUtil;
 import cn.hutool.crypto.asymmetric.KeyType;
 import cn.hutool.crypto.asymmetric.RSA;
@@ -21,31 +19,52 @@ import java.nio.charset.StandardCharsets;
 public class RSAAsymmetricCryHandler implements AsymmetricCryHandler {
     @Override
     public String sign(String privateKey, String content) {
-        Sign sign = SecureUtil.sign(SignAlgorithm.SHA256withRSA, privateKey, null);
-        //签名
         byte[] data = content.getBytes(StandardCharsets.UTF_8);
-        byte[] signed = sign.sign(data);
+        return this.sign(privateKey, data);
+    }
+
+    @Override
+    public String sign(String privateKey, byte[] content) {
+        Sign sign = SecureUtil.sign(SignAlgorithm.SHA256withRSA, privateKey, null);
+        byte[] signed = sign.sign(content);
         return Base64Util.bytesToBase64(signed);
     }
 
     @Override
     public boolean verifySign(String publicKey, String content, String sign) {
+        byte[] data = content.getBytes(StandardCharsets.UTF_8);
+        return this.verifySign(publicKey, data, sign);
+    }
+
+    @Override
+    public boolean verifySign(String publicKey, byte[] content, String sign) {
         Sign signObj = SecureUtil.sign(SignAlgorithm.SHA256withRSA, null, publicKey);
-        return signObj.verify(content.getBytes(StandardCharsets.UTF_8), Base64Util.base64ToBytes(sign));
+        return signObj.verify(content, Base64Util.base64ToBytes(sign));
     }
 
     @Override
     public String cry(String publicKey, String content) {
-        RSA rsa = new RSA(null, publicKey);
-        byte[] encrypt = rsa.encrypt(StrUtil.bytes(content, CharsetUtil.CHARSET_UTF_8), KeyType.PublicKey);
+        byte[] data = content.getBytes(StandardCharsets.UTF_8);
+        byte[] encrypt = this.cry(publicKey, data);
         return Base64Util.bytesToBase64(encrypt);
     }
 
     @Override
+    public byte[] cry(String publicKey, byte[] content) {
+        RSA rsa = new RSA(null, publicKey);
+        return rsa.encrypt(content, KeyType.PublicKey);
+    }
+
+    @Override
     public String deCry(String privateKey, String content) {
-        RSA rsa = new RSA(privateKey, null);
         byte[] dataBytes = Base64Util.base64ToBytes(content);
-        byte[] decrypt = rsa.decrypt(dataBytes, KeyType.PrivateKey);
+        byte[] decrypt = this.deCry(privateKey, dataBytes);
         return new String(decrypt, StandardCharsets.UTF_8);
+    }
+
+    @Override
+    public byte[] deCry(String privateKey, byte[] content) {
+        RSA rsa = new RSA(privateKey, null);
+        return rsa.decrypt(content, KeyType.PrivateKey);
     }
 }

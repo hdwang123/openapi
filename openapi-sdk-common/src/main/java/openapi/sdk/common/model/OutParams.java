@@ -3,7 +3,6 @@ package openapi.sdk.common.model;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.json.JSONUtil;
 import lombok.Data;
-import openapi.sdk.common.constant.Constant;
 import openapi.sdk.common.constant.ErrorCode;
 import openapi.sdk.common.util.TruncateUtil;
 
@@ -36,15 +35,19 @@ public class OutParams {
     private String data;
 
     /**
+     * 返回值（字节数组形式，由sdk生成的内容密文也保存至此）
+     */
+    private byte[] dataBytes;
+
+    /**
+     * 用于日志打印
+     */
+    private String dataBytesStr;
+
+    /**
      * 对称加密Key(由sdk生成)
      */
     private String symmetricCryKey;
-
-    public OutParams setSuccess(String data) {
-        this.code = ErrorCode.SUCCESS;
-        this.data = data;
-        return this;
-    }
 
     /**
      * 调用成功的结果
@@ -110,14 +113,12 @@ public class OutParams {
 
     @Override
     public String toString() {
-        if (this.getData() != null && this.getData().length() > Constant.MAX_LOG_LENGTH) {
-            //数据超过指定长度则截断，防止打印日志卡死
-            OutParams outParams = new OutParams();
-            BeanUtil.copyProperties(this, outParams);
-            outParams.setData(TruncateUtil.truncate(outParams.getData()));
-            return JSONUtil.toJsonStr(outParams);
-        }
-        return JSONUtil.toJsonStr(this);
+        OutParams outParams = new OutParams();
+        BeanUtil.copyProperties(this, outParams);
+        outParams.setData(TruncateUtil.truncate(outParams.getData()));
+        outParams.setDataBytesStr(TruncateUtil.truncate(outParams.getDataBytes()));
+        outParams.setDataBytes(null);
+        return JSONUtil.toJsonStr(outParams);
     }
 
 }

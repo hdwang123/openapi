@@ -1,6 +1,7 @@
 package openapi.sdk.common.util;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.convert.Convert;
 import cn.hutool.core.util.ArrayUtil;
 import openapi.sdk.common.constant.Constant;
 
@@ -44,6 +45,20 @@ public class TruncateUtil {
     public static String truncate(Object obj) {
         if (obj != null) {
             return truncate(obj.toString());
+        }
+        return null;
+    }
+
+    /**
+     * 截短字节数组字符串
+     *
+     * @param bytes 字节数组
+     * @return 截短后的字符串
+     */
+    public static String truncate(byte[] bytes) {
+        if (ArrayUtil.isNotEmpty(bytes)) {
+            //16进制表示，易读性比base64好
+            return truncate(Convert.toHex(bytes));
         }
         return null;
     }

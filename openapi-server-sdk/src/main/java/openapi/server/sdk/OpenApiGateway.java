@@ -7,6 +7,7 @@ import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONUtil;
 import lombok.extern.slf4j.Slf4j;
 import openapi.sdk.common.constant.Constant;
+import openapi.sdk.common.constant.Header;
 import openapi.sdk.common.enums.AsymmetricCryEnum;
 import openapi.sdk.common.enums.SymmetricCryEnum;
 import openapi.sdk.common.exception.OpenApiServerException;
@@ -206,9 +207,6 @@ public class OpenApiGateway {
         try {
             //获取入参
             inParams = getInParams(request);
-
-            //设置日志前缀
-            logPrefix.set(String.format("uuid=%s:", inParams.getUuid()));
             log.debug("{}接收到请求：{}", logPrefix.get(), inParams);
 
             //获取openapi处理器
@@ -245,14 +243,27 @@ public class OpenApiGateway {
      * @return 入参
      */
     private InParams getInParams(HttpServletRequest request) {
-        InParams inParams = null;
+        InParams inParams = new InParams();
         try {
+            //获取请求头
+            inParams.setUuid(request.getHeader(Header.Request.UUID));
+
+            //设置日志前缀
+            logPrefix.set(String.format("uuid=%s:", inParams.getUuid()));
+
+            inParams.setCallerId(request.getHeader(Header.Request.CALLER_ID));
+            inParams.setApi(request.getHeader(Header.Request.API));
+            inParams.setMethod(request.getHeader(Header.Request.METHOD));
+            inParams.setSign(request.getHeader(Header.Request.SIGN));
+            inParams.setSymmetricCryKey(request.getHeader(Header.Request.SYMMETRIC_CRY_KEY));
+            inParams.setMultiParam(Boolean.parseBoolean(request.getHeader(Header.Request.MULTI_PARAM)));
+
+            //获取请求体
             InputStream inputStream = request.getInputStream();
             byte[] inputBytes = IoUtil.readBytes(inputStream);
-            String inputStr = CompressUtil.decompressToText(inputBytes);
-            inParams = JSONUtil.toBean(inputStr, InParams.class);
+            inParams.setBodyBytes(inputBytes);
         } catch (Exception ex) {
-            log.error("从请求流读取数据异常", ex);
+            log.error(logPrefix.get() + "从请求流读取数据异常", ex);
             throw new OpenApiServerException("从请求流读取数据异常:" + ex.getMessage());
         }
         return inParams;
@@ -266,10 +277,15 @@ public class OpenApiGateway {
      */
     private void writeOutParams(HttpServletResponse response, OutParams outParams) {
         try {
-            String outStr = JSONUtil.toJsonStr(outParams);
-            byte[] outBytes = CompressUtil.compressText(outStr);
             response.setContentType(MediaType.APPLICATION_OCTET_STREAM_VALUE);
-            IoUtil.write(response.getOutputStream(), true, outBytes);
+            response.addHeader(Header.Response.UUID, outParams.getUuid());
+            response.addHeader(Header.Response.CODE, String.valueOf(outParams.getCode()));
+            response.addHeader(Header.Response.MESSAGE, outParams.getMessage());
+            response.addHeader(Header.Response.SYMMETRIC_CRY_KEY, outParams.getSymmetricCryKey());
+            if (ArrayUtil.isEmpty(outParams.getDataBytes())) {
+                return;
+            }
+            IoUtil.write(response.getOutputStream(), true, outParams.getDataBytes());
         } catch (Exception ex) {
             log.error("写返回值到响应流异常", ex);
         }
@@ -304,7 +320,7 @@ public class OpenApiGateway {
         verifySign(inParams);
 
         //解密
-        if (StrUtil.isNotBlank(inParams.getBody())) {
+        if (ArrayUtil.isNotEmpty(inParams.getBodyBytes())) {
             String decryptedBody = decryptBody(inParams, apiHandler);
 
             try {
@@ -343,10 +359,12 @@ public class OpenApiGateway {
      * @param inParams 入参
      */
     private void verifySign(InParams inParams) {
+        long startTime = System.nanoTime();
         String callerPublicKey = config.getCallerPublicKey(inParams.getCallerId());
         log.debug("{}caller({}) publicKey:{}", logPrefix.get(), inParams.getCallerId(), callerPublicKey);
-        String signContent = CommonUtil.getSignContent(inParams);
+        byte[] signContent = CommonUtil.getSignContent(inParams);
         boolean verify = this.asymmetricCryHandler.verifySign(callerPublicKey, signContent, inParams.getSign());
+        this.logCostTime("验签", startTime);
         if (!verify) {
             throw new OpenApiServerException("验签失败");
         }
@@ -360,17 +378,18 @@ public class OpenApiGateway {
      * @return 解密后的入参体
      */
     private String decryptBody(InParams inParams, ApiHandler apiHandler) {
-        String decryptedBody = null;
+        long startTime = System.nanoTime();
+        byte[] decryptedBody = null;
         try {
             boolean enableSymmetricCry = isEnableSymmetricCry(apiHandler);
             if (enableSymmetricCry) {
                 //启用对称加密模式
                 String key = this.asymmetricCryHandler.deCry(selfPrivateKey, inParams.getSymmetricCryKey());
                 byte[] keyBytes = Base64Util.base64ToBytes(key);
-                decryptedBody = this.symmetricCryHandler.deCry(inParams.getBody(), keyBytes);
+                decryptedBody = this.symmetricCryHandler.deCry(inParams.getBodyBytes(), keyBytes);
             } else {
                 //仅非对称加密模式
-                decryptedBody = this.asymmetricCryHandler.deCry(selfPrivateKey, inParams.getBody());
+                decryptedBody = this.asymmetricCryHandler.deCry(selfPrivateKey, inParams.getBodyBytes());
             }
         } catch (OpenApiServerException be) {
             throw new OpenApiServerException("解密失败：" + be.getMessage());
@@ -378,7 +397,8 @@ public class OpenApiGateway {
             log.error(logPrefix.get() + "解密失败", ex);
             throw new OpenApiServerException("解密失败");
         }
-        return decryptedBody;
+        this.logCostTime("解密", startTime);
+        return CompressUtil.decompressToText(decryptedBody);
     }
 
     /**
@@ -391,24 +411,34 @@ public class OpenApiGateway {
      */
     private OutParams doCall(ApiHandler apiHandler, List<Object> paramList, InParams inParams) {
         try {
-            OutParams outParams = new OutParams();
+            OutParams outParams = OutParams.success();
+
+            long startTime = System.nanoTime();
             Object[] params = paramList.stream().toArray();
 
             log.debug("{}调用API:{},入参：{}", logPrefix.get(), apiHandler, TruncateUtil.truncate(params));
             Object ret = apiHandler.getMethod().invoke(apiHandler.getBean(), params);
             log.debug("{}调用API:{},出参：{}", logPrefix.get(), apiHandler, TruncateUtil.truncate(ret));
+            this.logCostTime("调用API", startTime);
+
             String retStr = StrUtil.EMPTY;
             if (ret != null) {
                 retStr = StrObjectConvert.objToStr(ret, ret.getClass());
             }
+            outParams.setData(retStr);
+            byte[] retBytes = null;
             if (StrUtil.isNotBlank(retStr)) {
+                //转成Byte[]
+                retBytes = CompressUtil.compressText(retStr);
+
                 //判断返回值是否需要加密
                 boolean retEncrypt = isRetEncrypt(apiHandler);
                 if (retEncrypt) {
-                    retStr = encryptRet(inParams, retStr, outParams, apiHandler);
+                    retBytes = encryptRet(inParams, retBytes, outParams, apiHandler);
                 }
             }
-            return outParams.setSuccess(retStr);
+            outParams.setDataBytes(retBytes);
+            return outParams;
         } catch (OpenApiServerException be) {
             throw new OpenApiServerException("调用opeapi处理器异常:" + be.getMessage());
         } catch (Exception ex) {
@@ -421,13 +451,14 @@ public class OpenApiGateway {
      * 加密返回值
      *
      * @param inParams   openapi入参
-     * @param retStr     返回值
+     * @param retBytes   返回值（字节数组表示）
      * @param outParams  openapi出参
      * @param apiHandler openapi处理器
      * @return 加密后的返回值
      */
-    private String encryptRet(InParams inParams, String retStr, OutParams outParams, ApiHandler apiHandler) {
+    private byte[] encryptRet(InParams inParams, byte[] retBytes, OutParams outParams, ApiHandler apiHandler) {
         try {
+            long startTime = System.nanoTime();
             //获取调用者公钥
             String callerPublicKey = config.getCallerPublicKey(inParams.getCallerId());
             log.debug("{}caller({}) publicKey:{}", logPrefix.get(), inParams.getCallerId(), callerPublicKey);
@@ -440,17 +471,18 @@ public class OpenApiGateway {
                 String key = Base64Util.bytesToBase64(keyBytes);
                 String cryKey = this.asymmetricCryHandler.cry(callerPublicKey, key);
                 outParams.setSymmetricCryKey(cryKey);
-                retStr = this.symmetricCryHandler.cry(retStr, keyBytes);
+                retBytes = this.symmetricCryHandler.cry(retBytes, keyBytes);
             } else {
                 //仅采用非对称加密模式
-                retStr = this.asymmetricCryHandler.cry(callerPublicKey, retStr);
+                retBytes = this.asymmetricCryHandler.cry(callerPublicKey, retBytes);
             }
+            this.logCostTime("加密", startTime);
         } catch (OpenApiServerException be) {
             throw new OpenApiServerException("返回值加密异常:" + be.getMessage());
         } catch (Exception ex) {
             throw new OpenApiServerException("返回值加密异常", ex);
         }
-        return retStr;
+        return retBytes;
     }
 
     /**
@@ -505,5 +537,15 @@ public class OpenApiGateway {
         } else {
             log.debug("{}未启用对称加密，仅采用非对称加密{}模式", logPrefix.get(), asymmetricCryEnum);
         }
+    }
+
+    /**
+     * 记录操作的耗时
+     *
+     * @param operate   操作
+     * @param startTime 操作开始时间
+     */
+    private void logCostTime(String operate, long startTime) {
+        log.debug("{}{}耗时:{}ms", logPrefix.get(), operate, (System.nanoTime() - startTime) / 100_0000);
     }
 }

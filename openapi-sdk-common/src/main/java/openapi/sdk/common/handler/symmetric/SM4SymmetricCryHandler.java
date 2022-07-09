@@ -17,8 +17,20 @@ public class SM4SymmetricCryHandler implements SymmetricCryHandler {
     }
 
     @Override
+    public byte[] cry(byte[] content, byte[] keyBytes) {
+        SM4 sm4 = new SM4(keyBytes);
+        return sm4.encrypt(content);
+    }
+
+    @Override
     public String deCry(String content, byte[] keyBytes) {
         SM4 sm4 = new SM4(keyBytes);
         return sm4.decryptStr(content);
+    }
+
+    @Override
+    public byte[] deCry(byte[] content, byte[] keyBytes) {
+        SM4 sm4 = new SM4(keyBytes);
+        return sm4.decrypt(content);
     }
 }
