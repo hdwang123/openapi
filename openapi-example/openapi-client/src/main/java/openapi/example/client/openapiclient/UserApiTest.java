@@ -31,7 +31,8 @@ public class UserApiTest {
     @Value("${keys.remote.rsa.publicKey}")
     private String remotePublicKey;
 
-    String baseUrl = "http://localhost:8080";
+    @Value("${openapi.client.config.baseUrl}")
+    private String baseUrl;
 
     /**
      * 定义OpenApiClient

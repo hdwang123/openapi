@@ -67,6 +67,15 @@ public class OpenApiClientBuilder {
      */
     private int httpReadTimeout = ClientConstant.HTTP_READ_TIMEOUT;
 
+    /**
+     * HTTP请求代理域名
+     */
+    private String httpProxyHost;
+
+    /**
+     * HTTP请求代理端口
+     */
+    private Integer httpProxyPort;
 
     /**
      * 构造器
@@ -178,14 +187,39 @@ public class OpenApiClientBuilder {
     }
 
     /**
+     * 设置HTTP请求代理域名
+     *
+     * @param httpProxyHost HTTP请求代理域名
+     * @return builder对象
+     */
+    public OpenApiClientBuilder httpProxyHost(String httpProxyHost) {
+        this.httpProxyHost = httpProxyHost;
+        return this;
+    }
+
+    /**
+     * 设置HTTP请求代理端口
+     *
+     * @param httpProxyPort HTTP请求代理端口
+     * @return builder对象
+     */
+    public OpenApiClientBuilder httpProxyPort(Integer httpProxyPort) {
+        this.httpProxyPort = httpProxyPort;
+        return this;
+    }
+
+    /**
      * 构建一个OpenClientApi对象
      *
      * @return OpenClientApi对象
      */
     public OpenApiClient build() {
         OpenApiClient client = new OpenApiClient(baseUrl, selfPrivateKey, remotePublicKey, asymmetricCryEnum,
-                retDecrypt, enableSymmetricCry, symmetricCryEnum, callerId, api,
-                httpConnectionTimeout, httpReadTimeout);
+                retDecrypt, enableSymmetricCry, symmetricCryEnum, callerId, api);
+        client.setHttpConnectionTimeout(this.httpConnectionTimeout);
+        client.setHttpReadTimeout(this.httpReadTimeout);
+        client.setHttpProxyHost(this.httpProxyHost);
+        client.setHttpProxyPort(this.httpProxyPort);
         return client;
     }
 }

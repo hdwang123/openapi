@@ -28,6 +28,8 @@ import org.springframework.stereotype.Component;
  *       callerId: "001"
  *       httpConnectionTimeout: 3
  *       httpReadTimeout: 5
+ *       httpProxyHost: 127.0.0.1
+ *       httpProxyPort: 8888
  * </pre></blockquote>
  *
  * @author wanghuidong
@@ -89,4 +91,14 @@ public class OpenApiClientConfig {
      * HTTP数据传输超时时间（单位秒）
      */
     private int httpReadTimeout = ClientConstant.HTTP_READ_TIMEOUT;
+
+    /**
+     * HTTP请求代理域名
+     */
+    private String httpProxyHost;
+
+    /**
+     * HTTP请求代理端口
+     */
+    private Integer httpProxyPort;
 }

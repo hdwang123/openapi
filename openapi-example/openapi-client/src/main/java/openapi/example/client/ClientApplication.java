@@ -19,6 +19,7 @@ import org.springframework.context.ConfigurableApplicationContext;
 public class ClientApplication {
 
     public static void main(String[] args) {
+
         ConfigurableApplicationContext context = new SpringApplicationBuilder().sources(ClientApplication.class).web(WebApplicationType.NONE).run(args);
         long startTime = System.nanoTime();
         UserApiTest test = context.getBean(UserApiTest.class);

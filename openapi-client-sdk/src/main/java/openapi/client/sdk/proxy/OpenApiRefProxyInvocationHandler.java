@@ -83,6 +83,8 @@ public class OpenApiRefProxyInvocationHandler implements InvocationHandler {
                             .symmetricCry(config.getSymmetricCryEnum())
                             .httpConnectionTimeout(httpConnectionTimeout)
                             .httpReadTimeout(httpReadTimeout)
+                            .httpProxyHost(config.getHttpProxyHost())
+                            .httpProxyPort(config.getHttpProxyPort())
                             .build();
                 }
                 //调用远程openapi
