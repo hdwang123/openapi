@@ -18,7 +18,7 @@ public interface SymmetricCryHandler {
     /**
      * 定义所有的对称加密处理器
      */
-    Map<SymmetricCryEnum, SymmetricCryHandler> handlerMap = new EnumMap(SymmetricCryEnum.class) {{
+    Map<SymmetricCryEnum, SymmetricCryHandler> handlerMap = new EnumMap<SymmetricCryEnum, SymmetricCryHandler>(SymmetricCryEnum.class) {{
         put(SymmetricCryEnum.AES, new AESSymmetricCryHandler());
         put(SymmetricCryEnum.SM4, new SM4SymmetricCryHandler());
     }};

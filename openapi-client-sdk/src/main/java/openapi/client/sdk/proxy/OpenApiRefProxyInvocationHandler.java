@@ -26,12 +26,12 @@ public class OpenApiRefProxyInvocationHandler implements InvocationHandler {
     /**
      * openapi客户端
      */
-    private OpenApiClient openApiClient;
+    private final OpenApiClient openApiClient;
 
     /**
      * 开放api客户端配置
      */
-    private OpenApiClientConfig config;
+    private final OpenApiClientConfig config;
 
     /**
      * 构造函数

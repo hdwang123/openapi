@@ -16,8 +16,5 @@ public class ErrorCode {
      * 失败
      */
     public static final int FAILED = -1;
-    /**
-     * 系统异常
-     */
-    public static final int SERVER_ERROR = 500;
+
 }

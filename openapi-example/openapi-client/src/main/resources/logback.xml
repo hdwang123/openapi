@@ -6,7 +6,8 @@
     <!-- 日志输出格式 -->
     <!--    <property name="log.pattern" value="%d{yyyy-MM-dd HH:mm:ss}[%p][%c{0}-%M]-%m%n"/>-->
     <!--    <property name="log.pattern" value="%date{yyyy-MM-dd HH:mm:ss}|%-5level|%logger:%line|%msg%n"/>-->
-    <property name="log.pattern" value="%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{20} - [%method,%line] - %msg%n"/>
+    <property name="log.pattern"
+              value="%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{20} - [%method,%line] - %msg%n"/>
     <!--    <property name="log.pattern" value="%yellow(%date{yyyy-MM-dd HH:mm:ss})|%highlight(%-5level)|%green(%logger:%line)|%white(%msg%n)"/>-->
 
     <!-- 控制台输出 -->
@@ -66,7 +67,7 @@
 
 
     <!--系统操作日志-->
-    <root level="INFO">
+    <root level="DEBUG">
         <appender-ref ref="console"/>
         <appender-ref ref="INFO_FILE"/>
         <appender-ref ref="ERROR_FILE"/>

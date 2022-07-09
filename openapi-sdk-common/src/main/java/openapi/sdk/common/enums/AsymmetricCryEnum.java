@@ -15,5 +15,5 @@ public enum AsymmetricCryEnum {
     /**
      * 国密非对称加密
      */
-    SM2;
+    SM2
 }

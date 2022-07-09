@@ -72,11 +72,11 @@ public class TruncateUtil {
      */
     public static String truncate(Object[] array) {
         if (ArrayUtil.isNotEmpty(array)) {
-            Object[] newArray = new Object[array.length];
+            String[] strArray = new String[array.length];
             for (int i = 0; i < array.length; i++) {
-                newArray[i] = truncate(array[i]);
+                strArray[i] = truncate(array[i]);
             }
-            return newArray.toString();
+            return strArray.toString();
         }
         return emptyArray;
     }

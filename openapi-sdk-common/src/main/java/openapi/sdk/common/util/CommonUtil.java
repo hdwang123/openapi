@@ -22,8 +22,7 @@ public class CommonUtil {
     public static byte[] getSignContent(InParams inParams) {
         //使用数据+uuid作为签名的内容，保证无参函数调用也能经过签名的验证
         byte[] bodyBytes = inParams.getBodyBytes();
-        byte[] signContent = ArrayUtil.addAll(bodyBytes, inParams.getUuid().getBytes());
-        return signContent;
+        return ArrayUtil.addAll(bodyBytes, inParams.getUuid().getBytes());
     }
 
     /**

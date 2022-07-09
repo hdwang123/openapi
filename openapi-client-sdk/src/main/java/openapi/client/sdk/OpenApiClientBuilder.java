@@ -15,17 +15,17 @@ public class OpenApiClientBuilder {
     /**
      * openapi基础路径,例如(http://localhost)
      */
-    private String baseUrl;
+    private final String baseUrl;
 
     /**
      * 本系统私钥
      */
-    private String selfPrivateKey;
+    private final String selfPrivateKey;
 
     /**
      * 远程系统的公钥
      */
-    private String remotePublicKey;
+    private final String remotePublicKey;
 
     /**
      * 非对称加密算法
@@ -50,7 +50,7 @@ public class OpenApiClientBuilder {
     /**
      * 调用者ID
      */
-    private String callerId;
+    private final String callerId;
 
     /**
      * 接口名

@@ -32,57 +32,57 @@ public class OpenApiClient {
     /**
      * openapi基础路径,例如(http://localhost)
      */
-    private String baseUrl;
+    private final String baseUrl;
 
     /**
      * 本系统私钥
      */
-    private String selfPrivateKey;
+    private final String selfPrivateKey;
 
     /**
      * 远程系统的公钥
      */
-    private String remotePublicKey;
+    private final String remotePublicKey;
 
     /**
      * 非对称加密算法
      */
-    private AsymmetricCryEnum asymmetricCryEnum;
+    private final AsymmetricCryEnum asymmetricCryEnum;
 
     /**
      * 返回值是否需要解密
      */
-    private boolean retDecrypt;
+    private final boolean retDecrypt;
 
     /**
      * 是否启用对称加密(内容采用对称加密，对称加密密钥采用非对称加密)
      */
-    private boolean enableSymmetricCry;
+    private final boolean enableSymmetricCry;
 
     /**
      * 对称加密算法
      */
-    private SymmetricCryEnum symmetricCryEnum;
+    private final SymmetricCryEnum symmetricCryEnum;
 
     /**
      * 调用者ID
      */
-    private String callerId;
+    private final String callerId;
 
     /**
      * API接口名称
      */
-    private String api;
+    private final String api;
 
     /**
      * 非对称加密处理器
      */
-    private AsymmetricCryHandler asymmetricCryHandler;
+    private final AsymmetricCryHandler asymmetricCryHandler;
 
     /**
      * 对称加密处理器
      */
-    private SymmetricCryHandler symmetricCryHandler;
+    private final SymmetricCryHandler symmetricCryHandler;
 
     /**
      * HTTP建立连接超时时间（单位秒）
@@ -139,7 +139,7 @@ public class OpenApiClient {
     /**
      * 日志前缀
      */
-    private ThreadLocal<String> logPrefix = new ThreadLocal<>();
+    private final ThreadLocal<String> logPrefix = new ThreadLocal<>();
 
     /**
      * openapi客户端
@@ -360,8 +360,8 @@ public class OpenApiClient {
         } else {
             //多参函数
             List<String> paramStrList = new ArrayList<>();
-            for (int i = 0; i < params.length; i++) {
-                String paramStr = StrObjectConvert.objToStr(params[i], params[i].getClass());
+            for (Object param : params) {
+                String paramStr = StrObjectConvert.objToStr(param, param.getClass());
                 paramStrList.add(paramStr);
             }
             body = JSONUtil.toJsonStr(paramStrList);
@@ -401,7 +401,6 @@ public class OpenApiClient {
                 bodyBytes = this.asymmetricCryHandler.cry(remotePublicKey, bodyBytes);
             }
             inParams.setBodyBytes(bodyBytes);
-//            inParams.setBody(Base64Util.bytesToBase64(bodyBytes));
         }
         this.logCostTime("加密", startTime);
 
@@ -506,7 +505,7 @@ public class OpenApiClient {
             long startTime = System.nanoTime();
             byte[] dataBytes = outParams.getDataBytes();
             if (ArrayUtil.isNotEmpty(dataBytes)) {
-                byte[] decryptedDataBytes = null;
+                byte[] decryptedDataBytes;
                 if (enableSymmetricCry) {
                     String key = this.asymmetricCryHandler.deCry(selfPrivateKey, outParams.getSymmetricCryKey());
                     byte[] keyBytes = Base64Util.base64ToBytes(key);

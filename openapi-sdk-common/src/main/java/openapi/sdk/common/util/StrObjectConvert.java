@@ -30,7 +30,7 @@ public class StrObjectConvert {
         if (type instanceof Class) {
             isClassType = true;
         }
-        Object ins = null;
+        Object ins;
         if (isClassType && ClassUtil.isBasicType((Class) type)) {
             //是基本类型（包括包装类）：Boolean, Character, Byte, Short, Integer, Long, Float, Double, Void
             if (typeName.equals(Void.class.getName()) || typeName.equals(void.class.getName())) {
@@ -64,7 +64,7 @@ public class StrObjectConvert {
             return null;
         }
         String typeName = type.getTypeName();
-        String str = null;
+        String str;
         if (ObjectUtil.isBasicType(obj)) {
             //是基本类型（包括包装类）：Boolean, Character, Byte, Short, Integer, Long, Float, Double, Void
             if (typeName.equals(Void.class.getName()) || typeName.equals(void.class.getName())) {

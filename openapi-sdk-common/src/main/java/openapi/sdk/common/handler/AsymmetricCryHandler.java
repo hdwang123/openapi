@@ -18,7 +18,7 @@ public interface AsymmetricCryHandler {
     /**
      * 定义所有的非对称加密处理器
      */
-    Map<AsymmetricCryEnum, AsymmetricCryHandler> handlerMap = new EnumMap(AsymmetricCryEnum.class) {{
+    Map<AsymmetricCryEnum, AsymmetricCryHandler> handlerMap = new EnumMap<AsymmetricCryEnum, AsymmetricCryHandler>(AsymmetricCryEnum.class) {{
         put(AsymmetricCryEnum.RSA, new RSAAsymmetricCryHandler());
         put(AsymmetricCryEnum.SM2, new SM2AsymmetricCryHandler());
     }};

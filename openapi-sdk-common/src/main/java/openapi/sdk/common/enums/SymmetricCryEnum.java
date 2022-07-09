@@ -15,5 +15,5 @@ public enum SymmetricCryEnum {
     /**
      * 国密SM4
      */
-    SM4;
+    SM4
 }

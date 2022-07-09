@@ -30,7 +30,7 @@ public class OpenApiRefProxyFactoryBean<T> implements FactoryBean<T> {
     /**
      * OpenApiRef标注的接口类
      */
-    private Class<T> interClass;
+    private final Class<T> interClass;
 
     /**
      * 构造器

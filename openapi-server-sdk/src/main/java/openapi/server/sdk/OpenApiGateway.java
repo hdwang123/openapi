@@ -57,7 +57,7 @@ public class OpenApiGateway {
      * key: api_method
      * value: ApiHandler
      */
-    private Map<String, ApiHandler> apiHandlerMap = new HashMap<>();
+    private final Map<String, ApiHandler> apiHandlerMap = new HashMap<>();
 
     @Autowired
     private Context context;
@@ -71,7 +71,7 @@ public class OpenApiGateway {
     /**
      * 日志前缀
      */
-    private ThreadLocal<String> logPrefix = new ThreadLocal<>();
+    private final ThreadLocal<String> logPrefix = new ThreadLocal<>();
 
     private AsymmetricCryEnum asymmetricCryEnum;
     private String selfPrivateKey;
@@ -118,15 +118,15 @@ public class OpenApiGateway {
      */
     private String getHandlersStr() {
         Collection<ApiHandler> handlers = apiHandlerMap.values();
-        String handlersStr = StrUtil.EMPTY;
+        StringBuilder handlersStr = new StringBuilder(StrUtil.EMPTY);
         if (CollUtil.isEmpty(handlers)) {
-            handlersStr = "未找到ApiHandler,请确保注解@OpenApi所声明的bean可被spring扫描到";
+            handlersStr = new StringBuilder("未找到ApiHandler,请确保注解@OpenApi所声明的bean可被spring扫描到");
         } else {
             for (ApiHandler handler : handlers) {
-                handlersStr += handler + "\n";
+                handlersStr.append(handler).append("\n");
             }
         }
-        return handlersStr;
+        return handlersStr.toString();
     }
 
     /**
@@ -226,7 +226,7 @@ public class OpenApiGateway {
             if (outParams == null) {
                 outParams = OutParams.error("系统异常");
             }
-            outParams.setUuid(inParams.getUuid());
+            outParams.setUuid(inParams != null ? inParams.getUuid() : null);
 
             //写返回值到响应
             writeOutParams(response, outParams);
@@ -378,7 +378,7 @@ public class OpenApiGateway {
      */
     private String decryptBody(InParams inParams, ApiHandler apiHandler) {
         long startTime = System.nanoTime();
-        byte[] decryptedBody = null;
+        byte[] decryptedBody;
         try {
             boolean enableSymmetricCry = isEnableSymmetricCry(apiHandler);
             if (enableSymmetricCry) {
@@ -413,7 +413,7 @@ public class OpenApiGateway {
             OutParams outParams = OutParams.success();
 
             long startTime = System.nanoTime();
-            Object[] params = paramList.stream().toArray();
+            Object[] params = paramList.toArray();
 
             log.debug("{}调用API:{},入参：{}", logPrefix.get(), apiHandler, TruncateUtil.truncate(params));
             Object ret = apiHandler.getMethod().invoke(apiHandler.getBean(), params);
