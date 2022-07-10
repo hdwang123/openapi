@@ -37,12 +37,13 @@ public class CommonUtil {
             throw new OpenApiException("URL基础路径不能为空");
         }
         String separator = "/";
+        String formattedUrl = baseUrl;
         if (baseUrl.endsWith(separator)) {
-            baseUrl = baseUrl.substring(0, baseUrl.length() - 1);
+            formattedUrl = baseUrl.substring(0, baseUrl.length() - 1);
         }
         if (StrUtil.isNotBlank(path)) {
             path = path.startsWith(separator) ? path.substring(1) : path;
-            return baseUrl + separator + path;
+            return formattedUrl + separator + path;
         }
         return baseUrl;
     }
