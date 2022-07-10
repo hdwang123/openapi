@@ -57,8 +57,12 @@ public class TruncateUtil {
      */
     public static String truncate(byte[] bytes) {
         if (ArrayUtil.isNotEmpty(bytes)) {
-            //16进制表示，易读性比base64好
-            return truncate(Convert.toHex(bytes));
+            //16进制字符表示，易读性比base64好, 一个字节->两个字符
+            if (bytes.length > Constant.MAX_LOG_LENGTH / 2) {
+                byte[] subBytes = ArrayUtil.sub(bytes, 0, Constant.OVER_MAX_LOG_KEEP_LENGTH / 2);
+                return Convert.toHex(subBytes) + "(truncated...)";
+            }
+            return Convert.toHex(bytes);
         }
         return null;
     }
