@@ -2,6 +2,7 @@ package openapi.server.sdk.config;
 
 
 import openapi.sdk.common.enums.AsymmetricCryEnum;
+import openapi.sdk.common.enums.CryModeEnum;
 import openapi.sdk.common.enums.SymmetricCryEnum;
 
 /**
@@ -27,7 +28,7 @@ public interface OpenApiConfig {
     String getCallerPublicKey(String callerId);
 
     /**
-     * 获取采用的非对称加密算法(rsa,sm2)
+     * 获取采用的非对称加密算法(RSA,SM2)
      *
      * @return 加密算法
      * @see AsymmetricCryEnum
@@ -42,20 +43,19 @@ public interface OpenApiConfig {
     boolean retEncrypt();
 
     /**
-     * 是否启用对称加密
-     * 注：内容采用对称加密，对称加密密钥采用非对称加密
+     * 获取加密模式
      *
-     * @return 是否启用对称加密
+     * @return 加密模式
      */
-    default boolean enableSymmetricCry() {
-        //默认不启用
-        return false;
+    default CryModeEnum getCryMode() {
+        return CryModeEnum.SymmetricCry;
     }
 
     /**
      * 获取对称加密算法(AES或SM4)
      *
      * @return 对称加密算法
+     * @see SymmetricCryEnum
      */
     default SymmetricCryEnum getSymmetricCry() {
         return SymmetricCryEnum.AES;

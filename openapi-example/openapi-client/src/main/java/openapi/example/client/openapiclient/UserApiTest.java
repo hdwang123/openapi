@@ -6,6 +6,7 @@ import openapi.example.client.model.Gender;
 import openapi.example.client.model.User;
 import openapi.client.sdk.OpenApiClient;
 import openapi.sdk.common.enums.AsymmetricCryEnum;
+import openapi.sdk.common.enums.CryModeEnum;
 import openapi.sdk.common.model.OutParams;
 import openapi.sdk.common.enums.SymmetricCryEnum;
 import org.springframework.beans.factory.annotation.Value;
@@ -44,7 +45,7 @@ public class UserApiTest {
         apiClient = new OpenApiClientBuilder(baseUrl, privateKey, remotePublicKey, "001", "userApi")
                 .asymmetricCry(AsymmetricCryEnum.RSA)
                 .retDecrypt(true)
-                .enableSymmetricCry(true)
+                .cryModeEnum(CryModeEnum.SymmetricCry)
                 .symmetricCry(SymmetricCryEnum.AES)
                 .build();
     }
@@ -116,7 +117,7 @@ public class UserApiTest {
         OpenApiClient client = new OpenApiClientBuilder(baseUrl, privateKey, remotePublicKey, "001", "userApi")
                 .asymmetricCry(AsymmetricCryEnum.RSA)
                 .retDecrypt(false)
-                .enableSymmetricCry(false)
+                .cryModeEnum(CryModeEnum.AsymmetricCry)
                 .symmetricCry(SymmetricCryEnum.AES)
                 .httpReadTimeout(10)
                 .build();

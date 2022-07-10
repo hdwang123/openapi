@@ -4,6 +4,7 @@ package openapi.client.sdk.config;
 import lombok.Data;
 import openapi.client.sdk.constant.ClientConstant;
 import openapi.sdk.common.enums.AsymmetricCryEnum;
+import openapi.sdk.common.enums.CryModeEnum;
 import openapi.sdk.common.enums.SymmetricCryEnum;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
@@ -68,9 +69,9 @@ public class OpenApiClientConfig {
     private boolean retDecrypt = true;
 
     /**
-     * 是否启用对称加密(内容采用对称加密，对称加密密钥采用非对称加密)
+     * 加密模式
      */
-    private boolean enableSymmetricCry = true;
+    private CryModeEnum cryModeEnum = CryModeEnum.SymmetricCry;
 
     /**
      * 对称加密算法

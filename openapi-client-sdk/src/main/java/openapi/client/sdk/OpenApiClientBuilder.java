@@ -2,6 +2,7 @@ package openapi.client.sdk;
 
 import openapi.client.sdk.constant.ClientConstant;
 import openapi.sdk.common.enums.AsymmetricCryEnum;
+import openapi.sdk.common.enums.CryModeEnum;
 import openapi.sdk.common.enums.SymmetricCryEnum;
 
 /**
@@ -38,9 +39,9 @@ public class OpenApiClientBuilder {
     private boolean retDecrypt = true;
 
     /**
-     * 是否启用对称加密(内容采用对称加密，对称加密密钥采用非对称加密)
+     * 加密模式
      */
-    private boolean enableSymmetricCry = true;
+    private CryModeEnum cryModeEnum = CryModeEnum.SymmetricCry;
 
     /**
      * 对称加密算法
@@ -143,13 +144,13 @@ public class OpenApiClientBuilder {
     }
 
     /**
-     * 设置是否启用对称加密
+     * 设置加密模式
      *
-     * @param enableSymmetricCry 是否启用对称加密
+     * @param cryModeEnum 加密模式
      * @return builder对象
      */
-    public OpenApiClientBuilder enableSymmetricCry(boolean enableSymmetricCry) {
-        this.enableSymmetricCry = enableSymmetricCry;
+    public OpenApiClientBuilder cryModeEnum(CryModeEnum cryModeEnum) {
+        this.cryModeEnum = cryModeEnum;
         return this;
     }
 
@@ -215,7 +216,7 @@ public class OpenApiClientBuilder {
      */
     public OpenApiClient build() {
         OpenApiClient client = new OpenApiClient(baseUrl, selfPrivateKey, remotePublicKey, asymmetricCryEnum,
-                retDecrypt, enableSymmetricCry, symmetricCryEnum, callerId, api);
+                retDecrypt, cryModeEnum, symmetricCryEnum, callerId, api);
         client.setHttpConnectionTimeout(this.httpConnectionTimeout);
         client.setHttpReadTimeout(this.httpReadTimeout);
         client.setHttpProxyHost(this.httpProxyHost);

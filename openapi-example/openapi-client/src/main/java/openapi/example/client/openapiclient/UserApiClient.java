@@ -4,6 +4,7 @@ import openapi.client.sdk.annotation.OpenApiRef;
 import openapi.client.sdk.annotation.OpenApiMethod;
 import openapi.example.client.model.Gender;
 import openapi.example.client.model.User;
+import openapi.sdk.common.enums.CryModeEnum;
 
 import java.util.List;
 import java.util.Map;
@@ -36,7 +37,7 @@ public interface UserApiClient {
     @OpenApiMethod("listUsers3")
     List<User> listUsers3(long[] ids);
 
-    @OpenApiMethod(value = "getAllUsers", retDecrypt = "false", enableSymmetricCry = "false")
+    @OpenApiMethod(value = "getAllUsers", retDecrypt = "false", cryModeEnum = CryModeEnum.AsymmetricCry)
     List<User> getAllUsers();
 
     @OpenApiMethod(value = "getAllUsersMap")

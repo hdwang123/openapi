@@ -7,6 +7,7 @@ import openapi.client.sdk.OpenApiClientBuilder;
 import openapi.client.sdk.config.OpenApiClientConfig;
 import openapi.client.sdk.annotation.OpenApiMethod;
 import openapi.client.sdk.annotation.OpenApiRef;
+import openapi.sdk.common.enums.CryModeEnum;
 import openapi.sdk.common.exception.OpenApiClientException;
 import openapi.sdk.common.model.OutParams;
 import openapi.sdk.common.util.StrObjectConvert;
@@ -73,13 +74,13 @@ public class OpenApiRefProxyInvocationHandler implements InvocationHandler {
                 if (configDif) {
                     String api = method.getDeclaringClass().getAnnotation(OpenApiRef.class).value();
                     boolean retDecrypt = this.retDecrypt(openApiMethod);
-                    boolean enableSymmetricCry = this.enableSymmetricCry(openApiMethod);
+                    CryModeEnum cryModeEnum = this.getCryModeEnum(openApiMethod);
                     int httpConnectionTimeout = this.httpConnectionTimeout(openApiMethod);
                     int httpReadTimeout = this.httpReadTimeout(openApiMethod);
                     apiClient = new OpenApiClientBuilder(config.getBaseUrl(), config.getSelfPrivateKey(), config.getRemotePublicKey(), config.getCallerId(), api)
                             .asymmetricCry(config.getAsymmetricCryEnum())
                             .retDecrypt(retDecrypt)
-                            .enableSymmetricCry(enableSymmetricCry)
+                            .cryModeEnum(cryModeEnum)
                             .symmetricCry(config.getSymmetricCryEnum())
                             .httpConnectionTimeout(httpConnectionTimeout)
                             .httpReadTimeout(httpReadTimeout)
@@ -113,15 +114,15 @@ public class OpenApiRefProxyInvocationHandler implements InvocationHandler {
         if (retDecryptDif) {
             return true;
         }
-        boolean enableSymmetricCryDif = StrUtil.isNotBlank(openApiMethod.enableSymmetricCry()) && Boolean.parseBoolean(openApiMethod.enableSymmetricCry()) != config.isEnableSymmetricCry();
-        if (enableSymmetricCryDif) {
+        boolean cryModeDif = openApiMethod.cryModeEnum() != CryModeEnum.UNKNOWN && openApiMethod.cryModeEnum() != config.getCryModeEnum();
+        if (cryModeDif) {
             return true;
         }
-        boolean httpConnectionTimeoutDif = openApiMethod.httpConnectionTimeout() != -1 && openApiMethod.httpConnectionTimeout() != config.getHttpConnectionTimeout();
+        boolean httpConnectionTimeoutDif = openApiMethod.httpConnectionTimeout() != config.getHttpConnectionTimeout();
         if (httpConnectionTimeoutDif) {
             return true;
         }
-        boolean httpReadTimeoutDif = openApiMethod.httpReadTimeout() != -1 && openApiMethod.httpReadTimeout() != config.getHttpReadTimeout();
+        boolean httpReadTimeoutDif = openApiMethod.httpReadTimeout() != config.getHttpReadTimeout();
         if (httpReadTimeoutDif) {
             return true;
         }
@@ -143,17 +144,17 @@ public class OpenApiRefProxyInvocationHandler implements InvocationHandler {
     }
 
     /**
-     * 获取是否采用对称加密模式
+     * 获取加密模式
      *
      * @param openApiMethod API方法注解
-     * @return 是否采用对称加密模式
+     * @return 加密模式
      */
-    private boolean enableSymmetricCry(OpenApiMethod openApiMethod) {
-        boolean enableSymmetricCry = config.isEnableSymmetricCry();
-        if (StrUtil.isNotBlank(openApiMethod.enableSymmetricCry())) {
-            enableSymmetricCry = Boolean.parseBoolean(openApiMethod.enableSymmetricCry());
+    private CryModeEnum getCryModeEnum(OpenApiMethod openApiMethod) {
+        CryModeEnum cryModeEnum = config.getCryModeEnum();
+        if (CryModeEnum.UNKNOWN != openApiMethod.cryModeEnum()) {
+            cryModeEnum = openApiMethod.cryModeEnum();
         }
-        return enableSymmetricCry;
+        return cryModeEnum;
     }
 
     /**

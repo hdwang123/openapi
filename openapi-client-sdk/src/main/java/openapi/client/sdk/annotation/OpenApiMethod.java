@@ -1,6 +1,7 @@
 package openapi.client.sdk.annotation;
 
 import openapi.client.sdk.config.OpenApiClientConfig;
+import openapi.sdk.common.enums.CryModeEnum;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -34,11 +35,11 @@ public @interface OpenApiMethod {
     String retDecrypt() default "";
 
     /**
-     * 是否启用对称加密，(true:启用，false:不启用，默认由{@link OpenApiClientConfig}决定)
+     * 加密模式(默认由{@link OpenApiClientConfig}决定)
      *
-     * @return 是否启用对称加密
+     * @return 加密模式
      */
-    String enableSymmetricCry() default "";
+    CryModeEnum cryModeEnum() default CryModeEnum.UNKNOWN;
 
     /**
      * 设置HTTP建立连接超时时间（单位秒），默认由{@link OpenApiClientConfig}决定

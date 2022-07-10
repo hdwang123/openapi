@@ -59,7 +59,7 @@ public class OpenApiRefProxyFactoryBean<T> implements FactoryBean<T> {
         OpenApiClient apiClient = new OpenApiClientBuilder(config.getBaseUrl(), config.getSelfPrivateKey(), config.getRemotePublicKey(), config.getCallerId(), api)
                 .asymmetricCry(config.getAsymmetricCryEnum())
                 .retDecrypt(config.isRetDecrypt())
-                .enableSymmetricCry(config.isEnableSymmetricCry())
+                .cryModeEnum(config.getCryModeEnum())
                 .symmetricCry(config.getSymmetricCryEnum())
                 .httpConnectionTimeout(config.getHttpConnectionTimeout())
                 .httpReadTimeout(config.getHttpReadTimeout())

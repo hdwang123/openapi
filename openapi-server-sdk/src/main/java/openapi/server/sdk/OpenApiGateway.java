@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import openapi.sdk.common.constant.Constant;
 import openapi.sdk.common.constant.Header;
 import openapi.sdk.common.enums.AsymmetricCryEnum;
+import openapi.sdk.common.enums.CryModeEnum;
 import openapi.sdk.common.enums.SymmetricCryEnum;
 import openapi.sdk.common.exception.OpenApiServerException;
 import openapi.sdk.common.handler.AsymmetricCryHandler;
@@ -76,7 +77,7 @@ public class OpenApiGateway {
     private AsymmetricCryEnum asymmetricCryEnum;
     private String selfPrivateKey;
     private boolean retEncrypt;
-    private boolean enableSymmetricCry;
+    private CryModeEnum cryModeEnum;
     private SymmetricCryEnum symmetricCryEnum;
 
     /**
@@ -103,9 +104,9 @@ public class OpenApiGateway {
         //打印基本信息
         if (log.isDebugEnabled()) {
             String handlersStr = getHandlersStr();
-            log.debug("OpenApiGateway Init: \nSelfPrivateKey:{},\nAsymmetricCry:{},\nretEncrypt:{},\nenableSymmetricCry:{},\nSymmetricCry:{},\nApiHandlers:\n{}",
-                    selfPrivateKey, asymmetricCryEnum, retEncrypt, enableSymmetricCry, symmetricCryEnum, handlersStr);
-            logCryMode(this.enableSymmetricCry);
+            log.debug("OpenApiGateway Init: \nSelfPrivateKey:{},\nAsymmetricCry:{},\nretEncrypt:{},\ncryModeEnum:{},\nSymmetricCry:{},\nApiHandlers:\n{}",
+                    selfPrivateKey, asymmetricCryEnum, retEncrypt, cryModeEnum, symmetricCryEnum, handlersStr);
+            logCryMode(this.cryModeEnum);
         }
         //重要日志改成info级别
         log.info("OpenApiGateway init succeed. path={}", Constant.OPENAPI_PATH);
@@ -136,7 +137,7 @@ public class OpenApiGateway {
         this.selfPrivateKey = config.getSelfPrivateKey();
         this.asymmetricCryEnum = config.getAsymmetricCry();
         this.retEncrypt = config.retEncrypt();
-        this.enableSymmetricCry = config.enableSymmetricCry();
+        this.cryModeEnum = config.getCryMode();
         this.symmetricCryEnum = config.getSymmetricCry();
         this.asymmetricCryHandler = AsymmetricCryHandler.handlerMap.get(this.asymmetricCryEnum);
         this.symmetricCryHandler = SymmetricCryHandler.handlerMap.get(this.symmetricCryEnum);
@@ -378,17 +379,17 @@ public class OpenApiGateway {
      */
     private String decryptBody(InParams inParams, ApiHandler apiHandler) {
         long startTime = System.nanoTime();
-        byte[] decryptedBody;
+        byte[] bodyBytes = inParams.getBodyBytes();
         try {
-            boolean enableSymmetricCry = isEnableSymmetricCry(apiHandler);
-            if (enableSymmetricCry) {
-                //启用对称加密模式
+            CryModeEnum cryModeEnum = this.getCryModeEnum(apiHandler);
+            if (cryModeEnum == CryModeEnum.SymmetricCry) {
                 String key = this.asymmetricCryHandler.deCry(selfPrivateKey, inParams.getSymmetricCryKey());
                 byte[] keyBytes = Base64Util.base64ToBytes(key);
-                decryptedBody = this.symmetricCryHandler.deCry(inParams.getBodyBytes(), keyBytes);
+                bodyBytes = this.symmetricCryHandler.deCry(bodyBytes, keyBytes);
+            } else if (cryModeEnum == CryModeEnum.AsymmetricCry) {
+                bodyBytes = this.asymmetricCryHandler.deCry(selfPrivateKey, bodyBytes);
             } else {
-                //仅非对称加密模式
-                decryptedBody = this.asymmetricCryHandler.deCry(selfPrivateKey, inParams.getBodyBytes());
+                //不加密模式CryModeEnum.NONE
             }
         } catch (OpenApiServerException be) {
             throw new OpenApiServerException("解密失败：" + be.getMessage());
@@ -397,7 +398,7 @@ public class OpenApiGateway {
             throw new OpenApiServerException("解密失败");
         }
         this.logCostTime("解密", startTime);
-        return CompressUtil.decompressToText(decryptedBody);
+        return CompressUtil.decompressToText(bodyBytes);
     }
 
     /**
@@ -463,17 +464,19 @@ public class OpenApiGateway {
             log.debug("{}caller({}) publicKey:{}", logPrefix.get(), inParams.getCallerId(), callerPublicKey);
 
             //加密返回值
-            boolean enableSymmetricCry = isEnableSymmetricCry(apiHandler);
-            if (enableSymmetricCry) {
+            CryModeEnum cryModeEnum = this.getCryModeEnum(apiHandler);
+            if (cryModeEnum == CryModeEnum.SymmetricCry) {
                 //启用对称加密模式
                 byte[] keyBytes = SymmetricCryUtil.getKey(symmetricCryEnum);
                 String key = Base64Util.bytesToBase64(keyBytes);
                 String cryKey = this.asymmetricCryHandler.cry(callerPublicKey, key);
                 outParams.setSymmetricCryKey(cryKey);
                 retBytes = this.symmetricCryHandler.cry(retBytes, keyBytes);
-            } else {
+            } else if (cryModeEnum == CryModeEnum.AsymmetricCry) {
                 //仅采用非对称加密模式
                 retBytes = this.asymmetricCryHandler.cry(callerPublicKey, retBytes);
+            } else {
+                //不加密模式CryModeEnum.NONE
             }
             this.logCostTime("加密", startTime);
         } catch (OpenApiServerException be) {
@@ -485,18 +488,18 @@ public class OpenApiGateway {
     }
 
     /**
-     * 判断是否启用对称加密
+     * 获取加密模式
      *
      * @param apiHandler openapi处理器
-     * @return 是否启用对称加密
+     * @return 加密模式
      */
-    private boolean isEnableSymmetricCry(ApiHandler apiHandler) {
-        boolean enableSymmetricCry = this.enableSymmetricCry;
-        if (StrUtil.isNotBlank(apiHandler.getOpenApiMethod().enableSymmetricCry())) {
-            enableSymmetricCry = Boolean.parseBoolean(apiHandler.getOpenApiMethod().enableSymmetricCry());
+    private CryModeEnum getCryModeEnum(ApiHandler apiHandler) {
+        CryModeEnum cryModeEnum = this.cryModeEnum;
+        if (CryModeEnum.UNKNOWN != apiHandler.getOpenApiMethod().cryModeEnum()) {
+            cryModeEnum = apiHandler.getOpenApiMethod().cryModeEnum();
         }
-        logCryMode(enableSymmetricCry);
-        return enableSymmetricCry;
+        logCryMode(cryModeEnum);
+        return cryModeEnum;
     }
 
     /**
@@ -528,13 +531,15 @@ public class OpenApiGateway {
     /**
      * 记录加密模式
      *
-     * @param enableSymmetricCry 是否启用对称加密
+     * @param cryModeEnum 加密模式
      */
-    private void logCryMode(boolean enableSymmetricCry) {
-        if (enableSymmetricCry) {
-            log.debug("{}启用对称加密，采用非对称加密{}+对称加密{}模式", logPrefix.get(), asymmetricCryEnum, symmetricCryEnum);
+    private void logCryMode(CryModeEnum cryModeEnum) {
+        if (cryModeEnum == CryModeEnum.SymmetricCry) {
+            log.debug("{}采用非对称加密{}+对称加密{}模式", logPrefix.get(), asymmetricCryEnum, symmetricCryEnum);
+        } else if (cryModeEnum == CryModeEnum.AsymmetricCry) {
+            log.debug("{}仅采用非对称加密{}模式", logPrefix.get(), asymmetricCryEnum);
         } else {
-            log.debug("{}未启用对称加密，仅采用非对称加密{}模式", logPrefix.get(), asymmetricCryEnum);
+            log.debug("{}采用不加密模式,签名用的非对称加密{}", logPrefix.get(), asymmetricCryEnum);
         }
     }
 

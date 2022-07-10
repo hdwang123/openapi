@@ -4,6 +4,7 @@ import cn.hutool.json.JSONUtil;
 import lombok.extern.slf4j.Slf4j;
 import openapi.example.server.model.Gender;
 import openapi.example.server.model.User;
+import openapi.sdk.common.enums.CryModeEnum;
 import openapi.server.sdk.annotation.OpenApi;
 import openapi.server.sdk.annotation.OpenApiMethod;
 import openapi.server.sdk.doc.annotation.OpenApiDoc;
@@ -79,7 +80,7 @@ public class UserApi {
         return users;
     }
 
-    @OpenApiMethod(value = "getAllUsers", retEncrypt = "false", enableSymmetricCry = "false")
+    @OpenApiMethod(value = "getAllUsers", retEncrypt = "false", cryModeEnum = CryModeEnum.AsymmetricCry)
     public List<User> getAllUsers() {
         log.info("getAllUsers");
         List<User> users = new ArrayList<>();

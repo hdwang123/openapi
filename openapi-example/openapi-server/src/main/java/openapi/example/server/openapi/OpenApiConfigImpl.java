@@ -1,6 +1,7 @@
 package openapi.example.server.openapi;
 
 import openapi.sdk.common.enums.AsymmetricCryEnum;
+import openapi.sdk.common.enums.CryModeEnum;
 import openapi.sdk.common.enums.SymmetricCryEnum;
 import openapi.server.sdk.config.OpenApiConfig;
 import org.springframework.beans.factory.annotation.Value;
@@ -17,14 +18,12 @@ public class OpenApiConfigImpl implements OpenApiConfig {
     @Value("${keys.local.rsa.privateKey}")
     private String privateKey;
 
-    @Value("${keys.local.rsa.publicKey}")
-    private String publicKey;
-
     @Value("${keys.remote.rsa.publicKey}")
     private String callerPublicKey;
 
     @Override
     public AsymmetricCryEnum getAsymmetricCry() {
+        //设置非对称加密算法
         return AsymmetricCryEnum.RSA;
     }
 
@@ -36,21 +35,25 @@ public class OpenApiConfigImpl implements OpenApiConfig {
 
     @Override
     public String getSelfPrivateKey() {
+        //设置服务端私钥
         return privateKey;
     }
 
     @Override
     public boolean retEncrypt() {
+        //设置返回值是否需要加密
         return true;
     }
 
     @Override
-    public boolean enableSymmetricCry() {
-        return true;
+    public CryModeEnum getCryMode() {
+        //设置加密模式
+        return CryModeEnum.SymmetricCry;
     }
 
     @Override
     public SymmetricCryEnum getSymmetricCry() {
+        //设置对称加密算法
         return SymmetricCryEnum.AES;
     }
 
