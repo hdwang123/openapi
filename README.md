@@ -41,7 +41,7 @@ cn.hutool.hutool-all
 <dependency>
     <groupId>io.github.hdwang123</groupId>
     <artifactId>openapi-server-sdk</artifactId>
-    <version>1.4.1</version>
+    <version>1.5.1</version>
 </dependency>
 ```
 
@@ -58,14 +58,12 @@ public class OpenApiConfigImpl implements OpenApiConfig {
     @Value("${keys.local.rsa.privateKey}")
     private String privateKey;
 
-    @Value("${keys.local.rsa.publicKey}")
-    private String publicKey;
-
     @Value("${keys.remote.rsa.publicKey}")
     private String callerPublicKey;
 
     @Override
     public AsymmetricCryEnum getAsymmetricCry() {
+        //设置非对称加密算法
         return AsymmetricCryEnum.RSA;
     }
 
@@ -77,11 +75,31 @@ public class OpenApiConfigImpl implements OpenApiConfig {
 
     @Override
     public String getSelfPrivateKey() {
+        //设置服务端私钥
         return privateKey;
     }
 
     @Override
     public boolean retEncrypt() {
+        //设置返回值是否需要加密
+        return true;
+    }
+
+    @Override
+    public CryModeEnum getCryMode() {
+        //设置加密模式
+        return CryModeEnum.SYMMETRIC_CRY;
+    }
+
+    @Override
+    public SymmetricCryEnum getSymmetricCry() {
+        //设置对称加密算法
+        return SymmetricCryEnum.AES;
+    }
+
+    @Override
+    public boolean enableDoc() {
+        //是否启用接口文档功能
         return true;
     }
 }
@@ -124,7 +142,7 @@ public class UserApi {
 <dependency>
     <groupId>io.github.hdwang123</groupId>
     <artifactId>openapi-client-sdk</artifactId>
-    <version>1.4.1</version>
+    <version>1.5.1</version>
 </dependency>
 ```
 
@@ -143,9 +161,6 @@ public class UserApiClient {
     @Value("${keys.local.rsa.privateKey}")
     private String privateKey;
 
-    @Value("${keys.local.rsa.publicKey}")
-    private String publicKey;
-
     @Value("${keys.remote.rsa.publicKey}")
     private String remotePublicKey;
 
@@ -161,7 +176,7 @@ public class UserApiClient {
         apiClient = new OpenApiClientBuilder(baseUrl, privateKey, remotePublicKey, "001", "userApi")
                 .asymmetricCry(AsymmetricCryEnum.RSA)
                 .retDecrypt(true)
-                .enableSymmetricCry(true)
+                .cryModeEnum(CryModeEnum.SYMMETRIC_CRY)
                 .symmetricCry(SymmetricCryEnum.AES)
                 .build();
     }
@@ -189,9 +204,13 @@ openapi:
       remotePublicKey: ${keys.remote.rsa.publicKey}
       asymmetricCryEnum: RSA
       retDecrypt: true
-      enableSymmetricCry: true
+      cryModeEnum: SYMMETRIC_CRY
       symmetricCryEnum: AES
       callerId: "001"
+      httpConnectionTimeout: 3
+      httpReadTimeout: 6
+#      httpProxyHost: 127.0.0.1
+#      httpProxyPort: 8888
 ```
 
 2.定义服务引用
