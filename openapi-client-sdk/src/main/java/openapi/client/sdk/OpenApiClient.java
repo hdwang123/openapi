@@ -104,34 +104,74 @@ public class OpenApiClient {
      */
     private Integer httpProxyPort;
 
+    /**
+     * 获取HTTP建立连接超时时间（单位秒）
+     *
+     * @return HTTP建立连接超时时间（单位秒）
+     */
     public int getHttpConnectionTimeout() {
         return httpConnectionTimeout;
     }
 
+    /**
+     * 设置HTTP建立连接超时时间（单位秒）
+     *
+     * @param httpConnectionTimeout HTTP建立连接超时时间（单位秒）
+     */
     public void setHttpConnectionTimeout(int httpConnectionTimeout) {
         this.httpConnectionTimeout = httpConnectionTimeout;
     }
 
+    /**
+     * 获取HTTP数据传输超时时间（单位秒）
+     *
+     * @return HTTP数据传输超时时间（单位秒）
+     */
     public int getHttpReadTimeout() {
         return httpReadTimeout;
     }
 
+    /**
+     * 设置HTTP数据传输超时时间（单位秒）
+     *
+     * @param httpReadTimeout HTTP数据传输超时时间（单位秒）
+     */
     public void setHttpReadTimeout(int httpReadTimeout) {
         this.httpReadTimeout = httpReadTimeout;
     }
 
+    /**
+     * 获取HTTP请求代理域名
+     *
+     * @return HTTP请求代理域名
+     */
     public String getHttpProxyHost() {
         return httpProxyHost;
     }
 
+    /**
+     * 设置HTTP请求代理域名
+     *
+     * @param httpProxyHost HTTP请求代理域名
+     */
     public void setHttpProxyHost(String httpProxyHost) {
         this.httpProxyHost = httpProxyHost;
     }
 
+    /**
+     * 获取HTTP请求代理端口
+     *
+     * @return HTTP请求代理端口
+     */
     public Integer getHttpProxyPort() {
         return httpProxyPort;
     }
 
+    /**
+     * 设置HTTP请求代理端口
+     *
+     * @param httpProxyPort HTTP请求代理端口
+     */
     public void setHttpProxyPort(Integer httpProxyPort) {
         this.httpProxyPort = httpProxyPort;
     }
