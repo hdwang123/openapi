@@ -41,7 +41,7 @@ public class OpenApiClientBuilder {
     /**
      * 加密模式
      */
-    private CryModeEnum cryModeEnum = CryModeEnum.SymmetricCry;
+    private CryModeEnum cryModeEnum = CryModeEnum.SYMMETRIC_CRY;
 
     /**
      * 对称加密算法

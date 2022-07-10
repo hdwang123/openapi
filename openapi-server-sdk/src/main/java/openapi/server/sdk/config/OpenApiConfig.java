@@ -48,7 +48,7 @@ public interface OpenApiConfig {
      * @return 加密模式
      */
     default CryModeEnum getCryMode() {
-        return CryModeEnum.SymmetricCry;
+        return CryModeEnum.SYMMETRIC_CRY;
     }
 
     /**

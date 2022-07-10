@@ -24,7 +24,7 @@ import org.springframework.stereotype.Component;
  *       remotePublicKey: ${keys.remote.rsa.publicKey}
  *       asymmetricCryEnum: RSA
  *       retDecrypt: true
- *       enableSymmetricCry: true
+ *       cryModeEnum: SYMMETRIC_CRY
  *       symmetricCryEnum: AES
  *       callerId: "001"
  *       httpConnectionTimeout: 3
@@ -71,7 +71,7 @@ public class OpenApiClientConfig {
     /**
      * 加密模式
      */
-    private CryModeEnum cryModeEnum = CryModeEnum.SymmetricCry;
+    private CryModeEnum cryModeEnum = CryModeEnum.SYMMETRIC_CRY;
 
     /**
      * 对称加密算法

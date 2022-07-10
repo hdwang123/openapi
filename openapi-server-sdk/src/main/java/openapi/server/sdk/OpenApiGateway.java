@@ -382,11 +382,11 @@ public class OpenApiGateway {
         byte[] bodyBytes = inParams.getBodyBytes();
         try {
             CryModeEnum cryModeEnum = this.getCryModeEnum(apiHandler);
-            if (cryModeEnum == CryModeEnum.SymmetricCry) {
+            if (cryModeEnum == CryModeEnum.SYMMETRIC_CRY) {
                 String key = this.asymmetricCryHandler.deCry(selfPrivateKey, inParams.getSymmetricCryKey());
                 byte[] keyBytes = Base64Util.base64ToBytes(key);
                 bodyBytes = this.symmetricCryHandler.deCry(bodyBytes, keyBytes);
-            } else if (cryModeEnum == CryModeEnum.AsymmetricCry) {
+            } else if (cryModeEnum == CryModeEnum.ASYMMETRIC_CRY) {
                 bodyBytes = this.asymmetricCryHandler.deCry(selfPrivateKey, bodyBytes);
             } else {
                 //不加密模式CryModeEnum.NONE
@@ -465,14 +465,14 @@ public class OpenApiGateway {
 
             //加密返回值
             CryModeEnum cryModeEnum = this.getCryModeEnum(apiHandler);
-            if (cryModeEnum == CryModeEnum.SymmetricCry) {
+            if (cryModeEnum == CryModeEnum.SYMMETRIC_CRY) {
                 //启用对称加密模式
                 byte[] keyBytes = SymmetricCryUtil.getKey(symmetricCryEnum);
                 String key = Base64Util.bytesToBase64(keyBytes);
                 String cryKey = this.asymmetricCryHandler.cry(callerPublicKey, key);
                 outParams.setSymmetricCryKey(cryKey);
                 retBytes = this.symmetricCryHandler.cry(retBytes, keyBytes);
-            } else if (cryModeEnum == CryModeEnum.AsymmetricCry) {
+            } else if (cryModeEnum == CryModeEnum.ASYMMETRIC_CRY) {
                 //仅采用非对称加密模式
                 retBytes = this.asymmetricCryHandler.cry(callerPublicKey, retBytes);
             } else {
@@ -534,9 +534,9 @@ public class OpenApiGateway {
      * @param cryModeEnum 加密模式
      */
     private void logCryMode(CryModeEnum cryModeEnum) {
-        if (cryModeEnum == CryModeEnum.SymmetricCry) {
+        if (cryModeEnum == CryModeEnum.SYMMETRIC_CRY) {
             log.debug("{}采用非对称加密{}+对称加密{}模式", logPrefix.get(), asymmetricCryEnum, symmetricCryEnum);
-        } else if (cryModeEnum == CryModeEnum.AsymmetricCry) {
+        } else if (cryModeEnum == CryModeEnum.ASYMMETRIC_CRY) {
             log.debug("{}仅采用非对称加密{}模式", logPrefix.get(), asymmetricCryEnum);
         } else {
             log.debug("{}采用不加密模式,签名用的非对称加密{}", logPrefix.get(), asymmetricCryEnum);

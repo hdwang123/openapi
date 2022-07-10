@@ -48,7 +48,7 @@ public class OpenApiConfigImpl implements OpenApiConfig {
     @Override
     public CryModeEnum getCryMode() {
         //设置加密模式
-        return CryModeEnum.SymmetricCry;
+        return CryModeEnum.SYMMETRIC_CRY;
     }
 
     @Override

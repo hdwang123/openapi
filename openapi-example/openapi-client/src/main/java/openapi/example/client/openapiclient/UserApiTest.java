@@ -26,9 +26,6 @@ public class UserApiTest {
     @Value("${keys.local.rsa.privateKey}")
     private String privateKey;
 
-    @Value("${keys.local.rsa.publicKey}")
-    private String publicKey;
-
     @Value("${keys.remote.rsa.publicKey}")
     private String remotePublicKey;
 
@@ -45,7 +42,7 @@ public class UserApiTest {
         apiClient = new OpenApiClientBuilder(baseUrl, privateKey, remotePublicKey, "001", "userApi")
                 .asymmetricCry(AsymmetricCryEnum.RSA)
                 .retDecrypt(true)
-                .cryModeEnum(CryModeEnum.SymmetricCry)
+                .cryModeEnum(CryModeEnum.SYMMETRIC_CRY)
                 .symmetricCry(SymmetricCryEnum.AES)
                 .build();
     }
@@ -117,7 +114,7 @@ public class UserApiTest {
         OpenApiClient client = new OpenApiClientBuilder(baseUrl, privateKey, remotePublicKey, "001", "userApi")
                 .asymmetricCry(AsymmetricCryEnum.RSA)
                 .retDecrypt(false)
-                .cryModeEnum(CryModeEnum.AsymmetricCry)
+                .cryModeEnum(CryModeEnum.ASYMMETRIC_CRY)
                 .symmetricCry(SymmetricCryEnum.AES)
                 .httpReadTimeout(10)
                 .build();

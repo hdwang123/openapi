@@ -215,7 +215,7 @@ public class OpenApiClient {
      * @param retDecrypt        返回值是否需要解密
      */
     public OpenApiClient(String baseUrl, String selfPrivateKey, String remotePublicKey, AsymmetricCryEnum asymmetricCryEnum, boolean retDecrypt) {
-        this(baseUrl, selfPrivateKey, remotePublicKey, asymmetricCryEnum, retDecrypt, CryModeEnum.SymmetricCry, SymmetricCryEnum.AES);
+        this(baseUrl, selfPrivateKey, remotePublicKey, asymmetricCryEnum, retDecrypt, CryModeEnum.SYMMETRIC_CRY, SymmetricCryEnum.AES);
     }
 
     /**
@@ -423,7 +423,7 @@ public class OpenApiClient {
         long startTime = System.nanoTime();
         byte[] bodyBytes = inParams.getBodyBytes();
         if (ArrayUtil.isNotEmpty(bodyBytes)) {
-            if (this.cryModeEnum == CryModeEnum.SymmetricCry) {
+            if (this.cryModeEnum == CryModeEnum.SYMMETRIC_CRY) {
                 //生成对称密钥key
                 byte[] keyBytes = SymmetricCryUtil.getKey(symmetricCryEnum);
 
@@ -436,7 +436,7 @@ public class OpenApiClient {
 
                 //对内容进行对称加密
                 bodyBytes = this.symmetricCryHandler.cry(bodyBytes, keyBytes);
-            } else if (this.cryModeEnum == CryModeEnum.AsymmetricCry) {
+            } else if (this.cryModeEnum == CryModeEnum.ASYMMETRIC_CRY) {
                 bodyBytes = this.asymmetricCryHandler.cry(remotePublicKey, bodyBytes);
             } else {
                 //不加密模式CryModeEnum.NONE
@@ -546,11 +546,11 @@ public class OpenApiClient {
             long startTime = System.nanoTime();
             byte[] dataBytes = outParams.getDataBytes();
             if (ArrayUtil.isNotEmpty(dataBytes)) {
-                if (this.cryModeEnum == CryModeEnum.SymmetricCry) {
+                if (this.cryModeEnum == CryModeEnum.SYMMETRIC_CRY) {
                     String key = this.asymmetricCryHandler.deCry(selfPrivateKey, outParams.getSymmetricCryKey());
                     byte[] keyBytes = Base64Util.base64ToBytes(key);
                     dataBytes = this.symmetricCryHandler.deCry(dataBytes, keyBytes);
-                } else if (this.cryModeEnum == CryModeEnum.AsymmetricCry) {
+                } else if (this.cryModeEnum == CryModeEnum.ASYMMETRIC_CRY) {
                     dataBytes = this.asymmetricCryHandler.deCry(selfPrivateKey, dataBytes);
                 } else {
                     //不加密模式CryModeEnum.NONE
@@ -593,9 +593,9 @@ public class OpenApiClient {
      * @param cryModeEnum 加密模式
      */
     private void logCryModel(CryModeEnum cryModeEnum) {
-        if (cryModeEnum == CryModeEnum.SymmetricCry) {
+        if (cryModeEnum == CryModeEnum.SYMMETRIC_CRY) {
             log.debug("采用非对称加密{}+对称加密{}模式", asymmetricCryEnum, symmetricCryEnum);
-        } else if (cryModeEnum == CryModeEnum.AsymmetricCry) {
+        } else if (cryModeEnum == CryModeEnum.ASYMMETRIC_CRY) {
             log.debug("仅采用非对称加密{}模式", asymmetricCryEnum);
         } else if (cryModeEnum == CryModeEnum.NONE) {
             log.debug("采用不加密模式,签名用的非对称加密{}", asymmetricCryEnum);

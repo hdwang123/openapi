@@ -37,7 +37,7 @@ public interface UserApiClient {
     @OpenApiMethod("listUsers3")
     List<User> listUsers3(long[] ids);
 
-    @OpenApiMethod(value = "getAllUsers", retDecrypt = "false", cryModeEnum = CryModeEnum.AsymmetricCry)
+    @OpenApiMethod(value = "getAllUsers", retDecrypt = "false", cryModeEnum = CryModeEnum.ASYMMETRIC_CRY)
     List<User> getAllUsers();
 
     @OpenApiMethod(value = "getAllUsersMap")
