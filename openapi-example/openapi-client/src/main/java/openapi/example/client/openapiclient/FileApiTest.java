@@ -2,8 +2,7 @@ package openapi.example.client.openapiclient;
 
 import cn.hutool.core.io.FileUtil;
 import lombok.extern.slf4j.Slf4j;
-import openapi.example.client.model.FileInfo;
-import openapi.sdk.common.util.Base64Util;
+import openapi.sdk.common.model.FileBinary;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -26,12 +25,13 @@ public class FileApiTest {
     public void uploadTest() {
         log.info("upload start...");
         long startTime = System.currentTimeMillis();
-        File src = new File(dir, "001.txt");
+        File src = new File(dir, "001_big.txt");
         byte[] fileBytes = FileUtil.readBytes(src);
-        FileInfo fileInfo = new FileInfo();
-        fileInfo.setFileBase64(Base64Util.bytesToBase64(fileBytes));
-        fileInfo.setFileName(src.getName());
-        fileApiClient.upload(fileInfo);
+
+        FileBinary fileBinary = new FileBinary();
+        fileBinary.setData(fileBytes);
+        fileBinary.setFileName(src.getName());
+        fileApiClient.upload(fileBinary);
         log.info("upload end. costTime={}", System.currentTimeMillis() - startTime);
     }
 
@@ -39,9 +39,9 @@ public class FileApiTest {
     public void downloadTest() {
         log.info("download start...");
         long startTime = System.currentTimeMillis();
-        FileInfo fileInfo = fileApiClient.download(1L);
-        File dest = new File(dir, "download/" + fileInfo.getFileName());
-        byte[] fileBytes = Base64Util.base64ToBytes(fileInfo.getFileBase64());
+        FileBinary fileBinary = fileApiClient.download(1L);
+        File dest = new File(dir, "download/" + fileBinary.getFileName());
+        byte[] fileBytes = fileBinary.getData();
         FileUtil.writeBytes(fileBytes, dest);
         log.info("download end. costTime={}", System.currentTimeMillis() - startTime);
     }

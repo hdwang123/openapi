@@ -3,6 +3,7 @@ package openapi.server.sdk;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.io.IoUtil;
 import cn.hutool.core.util.ArrayUtil;
+import cn.hutool.core.util.ByteUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -10,10 +11,12 @@ import openapi.sdk.common.constant.Constant;
 import openapi.sdk.common.constant.Header;
 import openapi.sdk.common.enums.AsymmetricCryEnum;
 import openapi.sdk.common.enums.CryModeEnum;
+import openapi.sdk.common.enums.DataType;
 import openapi.sdk.common.enums.SymmetricCryEnum;
 import openapi.sdk.common.exception.OpenApiServerException;
 import openapi.sdk.common.handler.AsymmetricCryHandler;
 import openapi.sdk.common.handler.SymmetricCryHandler;
+import openapi.sdk.common.model.Binary;
 import openapi.sdk.common.model.InParams;
 import openapi.sdk.common.model.OutParams;
 import openapi.sdk.common.util.*;
@@ -35,6 +38,7 @@ import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.lang.reflect.Type;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 /**
@@ -228,6 +232,9 @@ public class OpenApiGateway {
                 outParams = OutParams.error("系统异常");
             }
             outParams.setUuid(inParams != null ? inParams.getUuid() : null);
+            if (outParams.getDataType() == null) {
+                outParams.setDataType(DataType.TEXT);
+            }
 
             //写返回值到响应
             writeOutParams(response, outParams);
@@ -257,6 +264,7 @@ public class OpenApiGateway {
             inParams.setSign(request.getHeader(Header.Request.SIGN));
             inParams.setSymmetricCryKey(request.getHeader(Header.Request.SYMMETRIC_CRY_KEY));
             inParams.setMultiParam(Boolean.parseBoolean(request.getHeader(Header.Request.MULTI_PARAM)));
+            inParams.setDataType(Enum.valueOf(DataType.class, request.getHeader(Header.Request.DATA_TYPE)));
 
             //获取请求体
             InputStream inputStream = request.getInputStream();
@@ -282,6 +290,7 @@ public class OpenApiGateway {
             response.addHeader(Header.Response.CODE, String.valueOf(outParams.getCode()));
             response.addHeader(Header.Response.MESSAGE, outParams.getMessage());
             response.addHeader(Header.Response.SYMMETRIC_CRY_KEY, outParams.getSymmetricCryKey());
+            response.addHeader(Header.Response.DATA_TYPE, outParams.getDataType().name());
             if (ArrayUtil.isEmpty(outParams.getDataBytes())) {
                 return;
             }
@@ -321,24 +330,46 @@ public class OpenApiGateway {
 
         //解密
         if (ArrayUtil.isNotEmpty(inParams.getBodyBytes())) {
-            String decryptedBody = decryptBody(inParams, apiHandler);
-
+            byte[] bodyBytes = decryptBody(inParams, apiHandler);
+            String paramStr;
             try {
                 Type[] paramTypes = apiHandler.getParamTypes();
+                int paramLength = 0;
+                if (inParams.getDataType() == DataType.BINARY) {
+                    //二进制类型，提取参数byte[]转换为参数
+                    bodyBytes = CompressUtil.decompress(bodyBytes);
+                    paramLength = ByteUtil.bytesToInt(ArrayUtil.sub(bodyBytes, 0, 4));
+                    byte[] paramBytes = ArrayUtil.sub(bodyBytes, 4, 4 + paramLength);
+                    paramStr = new String(paramBytes, StandardCharsets.UTF_8);
+                } else {
+                    paramStr = CompressUtil.decompressToText(bodyBytes);
+                }
                 if (inParams.isMultiParam()) {
                     //多参支持
-                    List<String> list = JSONUtil.toList(decryptedBody, String.class);
+                    List<String> list = JSONUtil.toList(paramStr, String.class);
                     if (list.size() != paramTypes.length) {
                         throw new OpenApiServerException("参数个数不匹配");
                     }
+                    long binaryLengthStartIndex = 4 + paramLength + 1;
                     for (int i = 0; i < list.size(); i++) {
-                        params.add(StrObjectConvert.strToObj(list.get(i), paramTypes[i]));
+                        Object obj = StrObjectConvert.strToObj(list.get(i), paramTypes[i]);
+                        if (obj instanceof Binary) {
+                            //填充Binary对象中的数据（传输的时候，其它属性值与数据分开传输的）
+                            binaryLengthStartIndex = this.fillBinaryData(bodyBytes, binaryLengthStartIndex, (Binary) obj);
+                        }
+                        params.add(obj);
                     }
                 } else {
                     if (paramTypes.length == 1) {
                         //单参
                         Type paramType = paramTypes[0];
-                        params.add(StrObjectConvert.strToObj(decryptedBody, paramType));
+                        Object obj = StrObjectConvert.strToObj(paramStr, paramType);
+                        if (obj instanceof Binary) {
+                            //填充Binary对象中的数据（传输的时候，其它属性值与数据分开传输的）
+                            long binaryLengthStartIndex = 4 + paramLength + 1;
+                            this.fillBinaryData(bodyBytes, binaryLengthStartIndex, (Binary) obj);
+                        }
+                        params.add(obj);
                     } else {
                         //无参
                     }
@@ -352,6 +383,27 @@ public class OpenApiGateway {
         }
         return params;
     }
+
+
+    /**
+     * 填充Binary对象中的数据
+     *
+     * @param bodyBytes              整个请求体的数据
+     * @param binaryLengthStartIndex 二进制数据长度信息(BinarySize)的起始位置
+     * @param obj                    二进制对象
+     * @return 下一个二进制数据长度信息(BinarySize)的起始位置
+     */
+    private long fillBinaryData(byte[] bodyBytes, long binaryLengthStartIndex, Binary obj) {
+        Binary binary = obj;
+        long binaryLength = ByteUtil.bytesToLong(ArrayUtil.sub(bodyBytes, (int) binaryLengthStartIndex, 8));
+        long binaryDataStartIndex = binaryLengthStartIndex + 8;
+        //受限于hutool和底层数组拷贝工具类，文件传输不能大于2,147,483,648字节（约2GB）
+        byte[] binaryDataBytes = ArrayUtil.sub(bodyBytes, (int) binaryDataStartIndex, (int) (binaryDataStartIndex + binaryLength));
+        binary.setData(binaryDataBytes);
+        binaryLengthStartIndex = binaryDataStartIndex + binaryLength;
+        return binaryLengthStartIndex;
+    }
+
 
     /**
      * 验签
@@ -377,7 +429,7 @@ public class OpenApiGateway {
      * @param apiHandler openapi处理器
      * @return 解密后的入参体
      */
-    private String decryptBody(InParams inParams, ApiHandler apiHandler) {
+    private byte[] decryptBody(InParams inParams, ApiHandler apiHandler) {
         long startTime = System.nanoTime();
         byte[] bodyBytes = inParams.getBodyBytes();
         try {
@@ -398,7 +450,7 @@ public class OpenApiGateway {
             throw new OpenApiServerException("解密失败");
         }
         this.logCostTime("解密", startTime);
-        return CompressUtil.decompressToText(bodyBytes);
+        return bodyBytes;
     }
 
     /**
@@ -422,21 +474,41 @@ public class OpenApiGateway {
             this.logCostTime("调用API", startTime);
 
             String retStr = StrUtil.EMPTY;
-            if (ret != null) {
-                retStr = StrObjectConvert.objToStr(ret, ret.getClass());
-            }
-            outParams.setData(retStr);
             byte[] retBytes = null;
-            if (StrUtil.isNotBlank(retStr)) {
-                //转成Byte[]
-                retBytes = CompressUtil.compressText(retStr);
+            outParams.setDataType(DataType.TEXT);
+            if (ret != null) {
+                if (ret instanceof Binary) {
+                    //二进制类型，将其它属性与数据分开传输
+                    Binary binary = (Binary) ret;
+                    byte[] binaryDataBytes = binary.getData();
+                    binary.setData(null);
+                    retStr = StrObjectConvert.objToStr(binary, ret.getClass());
+                    byte[] paramBytes = retStr.getBytes(StandardCharsets.UTF_8);
+                    byte[] paramLengthBytes = ByteUtil.intToBytes(paramBytes.length);
+                    byte[] binaryCountBytes = new byte[]{1};
+                    byte[] binaryLengthBytes = ByteUtil.longToBytes(binary.getLength());
+                    retBytes = ArrayUtil.addAll(paramLengthBytes, paramBytes, binaryCountBytes, binaryLengthBytes, binaryDataBytes);
+                    retBytes = CompressUtil.compress(retBytes);
+                    outParams.setDataType(DataType.BINARY);
+                } else {
+                    //文本类型直接转成字符串
+                    retStr = StrObjectConvert.objToStr(ret, ret.getClass());
+                    if (StrUtil.isNotBlank(retStr)) {
+                        //转成Byte[]
+                        retBytes = CompressUtil.compressText(retStr);
+                    }
+                }
+            }
 
+            //返回数据不为空
+            if (ArrayUtil.isNotEmpty(retBytes)) {
                 //判断返回值是否需要加密
                 boolean retEncrypt = isRetEncrypt(apiHandler);
                 if (retEncrypt) {
                     retBytes = encryptRet(inParams, retBytes, outParams, apiHandler);
                 }
             }
+            outParams.setData(retStr);
             outParams.setDataBytes(retBytes);
             return outParams;
         } catch (OpenApiServerException be) {

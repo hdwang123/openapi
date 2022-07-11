@@ -1,8 +1,7 @@
 package openapi.example.server.openapi;
 
 import cn.hutool.core.io.FileUtil;
-import openapi.example.server.model.FileInfo;
-import openapi.sdk.common.util.Base64Util;
+import openapi.sdk.common.model.FileBinary;
 import openapi.server.sdk.annotation.OpenApi;
 import openapi.server.sdk.annotation.OpenApiMethod;
 
@@ -20,19 +19,19 @@ public class FileApi {
     private static final String dir = FileApi.class.getResource("/test").getPath();
 
     @OpenApiMethod("upload")
-    public void upload(FileInfo fileInfo) {
-        File dest = new File(dir, "upload/" + fileInfo.getFileName());
-        byte[] fileBytes = Base64Util.base64ToBytes(fileInfo.getFileBase64());
+    public void upload(FileBinary fileBinary) {
+        File dest = new File(dir, "upload/" + fileBinary.getFileName());
+        byte[] fileBytes = fileBinary.getData();
         FileUtil.writeBytes(fileBytes, dest);
     }
 
     @OpenApiMethod("download")
-    public FileInfo download(Long id) {
+    public FileBinary download(Long id) {
         File src = new File(dir, "002.txt");
         byte[] fileBytes = FileUtil.readBytes(src);
-        FileInfo fileInfo = new FileInfo();
-        fileInfo.setFileBase64(Base64Util.bytesToBase64(fileBytes));
-        fileInfo.setFileName(src.getName());
-        return fileInfo;
+        FileBinary fileBinary = new FileBinary();
+        fileBinary.setData(fileBytes);
+        fileBinary.setFileName(src.getName());
+        return fileBinary;
     }
 }

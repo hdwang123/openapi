@@ -43,4 +43,14 @@ public class CompressUtil {
         byte[] decompressedBytes = ZipUtil.unGzip(compressedBytes);
         return new String(decompressedBytes, StandardCharsets.UTF_8);
     }
+
+    /**
+     * 解压
+     *
+     * @param compressedBytes 压缩的字节数组
+     * @return 解压后的字节数组
+     */
+    public static byte[] decompress(byte[] compressedBytes) {
+        return ZipUtil.unGzip(compressedBytes);
+    }
 }

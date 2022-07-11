@@ -3,6 +3,7 @@ package openapi.sdk.common.model;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.json.JSONUtil;
 import lombok.Data;
+import openapi.sdk.common.enums.DataType;
 import openapi.sdk.common.util.TruncateUtil;
 
 /**
@@ -62,6 +63,11 @@ public class InParams {
      * 是否是多参方法（由sdk判断）
      */
     private boolean multiParam;
+
+    /**
+     * 传输的数据类型
+     */
+    private DataType dataType;
 
     @Override
     public String toString() {

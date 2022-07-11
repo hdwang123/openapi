@@ -2,7 +2,7 @@ package openapi.example.client.openapiclient;
 
 import openapi.client.sdk.annotation.OpenApiMethod;
 import openapi.client.sdk.annotation.OpenApiRef;
-import openapi.example.client.model.FileInfo;
+import openapi.sdk.common.model.FileBinary;
 
 
 /**
@@ -15,8 +15,8 @@ import openapi.example.client.model.FileInfo;
 public interface FileApiClient {
 
     @OpenApiMethod(value = "upload", httpReadTimeout = 60)
-    void upload(FileInfo fileInfo);
+    void upload(FileBinary fileBinary);
 
-    @OpenApiMethod(value = "download", httpConnectionTimeout = 5, httpReadTimeout = 20)
-    FileInfo download(Long id);
+    @OpenApiMethod(value = "download", httpConnectionTimeout = 5, httpReadTimeout = 600)
+    FileBinary download(Long id);
 }

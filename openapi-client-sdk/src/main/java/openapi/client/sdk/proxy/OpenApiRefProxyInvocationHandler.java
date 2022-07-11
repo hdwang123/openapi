@@ -9,6 +9,7 @@ import openapi.client.sdk.annotation.OpenApiMethod;
 import openapi.client.sdk.annotation.OpenApiRef;
 import openapi.sdk.common.enums.CryModeEnum;
 import openapi.sdk.common.exception.OpenApiClientException;
+import openapi.sdk.common.model.Binary;
 import openapi.sdk.common.model.OutParams;
 import openapi.sdk.common.util.StrObjectConvert;
 
@@ -92,7 +93,13 @@ public class OpenApiRefProxyInvocationHandler implements InvocationHandler {
                 OutParams outParams = apiClient.callOpenApi(methodName, args);
                 Class<?> returnClass = method.getReturnType();
                 if (OutParams.isSuccess(outParams)) {
-                    return StrObjectConvert.strToObj(outParams.getData(), returnClass);
+                    Object obj = StrObjectConvert.strToObj(outParams.getData(), returnClass);
+                    if (Binary.class.isAssignableFrom(returnClass)) {
+                        //二进制类型则填充二进制数据
+                        Binary binary = (Binary) obj;
+                        binary.setData(outParams.getBinaryData());
+                    }
+                    return obj;
                 } else {
                     throw new OpenApiClientException("返回失败：" + outParams.getMessage());
                 }

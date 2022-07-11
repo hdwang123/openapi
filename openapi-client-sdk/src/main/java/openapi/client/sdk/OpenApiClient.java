@@ -1,6 +1,7 @@
 package openapi.client.sdk;
 
 import cn.hutool.core.util.ArrayUtil;
+import cn.hutool.core.util.ByteUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.http.ContentType;
 import cn.hutool.http.HttpRequest;
@@ -11,14 +12,17 @@ import openapi.sdk.common.constant.Constant;
 import openapi.sdk.common.constant.Header;
 import openapi.sdk.common.enums.AsymmetricCryEnum;
 import openapi.sdk.common.enums.CryModeEnum;
+import openapi.sdk.common.enums.DataType;
 import openapi.sdk.common.enums.SymmetricCryEnum;
 import openapi.sdk.common.exception.OpenApiClientException;
 import openapi.sdk.common.handler.AsymmetricCryHandler;
 import openapi.sdk.common.handler.SymmetricCryHandler;
+import openapi.sdk.common.model.Binary;
 import openapi.sdk.common.model.InParams;
 import openapi.sdk.common.model.OutParams;
 import openapi.sdk.common.util.*;
 
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 /**
@@ -285,10 +289,9 @@ public class OpenApiClient {
         //没有设置uuid则给设置一个
         if (StrUtil.isBlank(inParams.getUuid())) {
             inParams.setUuid(UUID.randomUUID().toString());
+            //设置日志前缀
+            logPrefix.set(String.format("uuid=%s:", inParams.getUuid()));
         }
-
-        //设置日志前缀
-        logPrefix.set(String.format("uuid=%s:", inParams.getUuid()));
         log.debug("{}入参：{}", logPrefix.get(), inParams);
 
 
@@ -320,6 +323,9 @@ public class OpenApiClient {
         inParams.setApi(api);
         inParams.setMethod(method);
 
+        //设置日志前缀
+        logPrefix.set(String.format("uuid=%s:", inParams.getUuid()));
+
         //设置入参的body
         setInParamsBody(inParams, params);
 
@@ -346,6 +352,9 @@ public class OpenApiClient {
         inParams.setCallerId(callerId);
         inParams.setApi(api);
         inParams.setMethod(method);
+
+        //设置日志前缀
+        logPrefix.set(String.format("uuid=%s:", inParams.getUuid()));
 
         //设置入参的body
         setInParamsBody(inParams, params);
@@ -374,6 +383,9 @@ public class OpenApiClient {
         inParams.setApi(api);
         inParams.setMethod(method);
 
+        //设置日志前缀
+        logPrefix.set(String.format("uuid=%s:", inParams.getUuid()));
+
         //设置入参的body
         setInParamsBody(inParams, params);
 
@@ -388,7 +400,8 @@ public class OpenApiClient {
      * @param params   方法参数
      */
     private void setInParamsBody(InParams inParams, Object[] params) {
-        String body;
+        String body = null;
+        byte[] bodyBytes = null;
         boolean multiParam;
         if (params == null || params.length == 0) {
             //无参函数
@@ -396,20 +409,69 @@ public class OpenApiClient {
             multiParam = false;
         } else if (params.length == 1) {
             //单参函数
-            body = StrObjectConvert.objToStr(params[0], params[0].getClass());
+            Object param = params[0];
+            Class paramClass = param.getClass();
+            if (param instanceof Binary) {
+                //二进制类型拆成：参数byte[]+数据byte[],取消文件<->文本转换，提升参数转换效率
+                Binary binary = (Binary) param;
+                byte[] binaryDataBytes = binary.getData();
+                binary.setData(null);
+                String paramStr = StrObjectConvert.objToStr(binary, paramClass);
+                byte[] paramBytes = paramStr.getBytes(StandardCharsets.UTF_8);
+                byte[] paramLengthBytes = ByteUtil.intToBytes(paramBytes.length);
+                byte[] binaryCountBytes = new byte[]{1};
+                byte[] binaryLengthBytes = ByteUtil.longToBytes(binary.getLength());
+                bodyBytes = ArrayUtil.addAll(paramLengthBytes, paramBytes, binaryCountBytes, binaryLengthBytes, binaryDataBytes);
+            } else {
+                body = StrObjectConvert.objToStr(param, paramClass);
+            }
             multiParam = false;
         } else {
             //多参函数
             List<String> paramStrList = new ArrayList<>();
+            int binaryCount = 0;
+            List<byte[]> binaryLengthBytesList = new ArrayList<>();
+            List<byte[]> binaryDataBytesList = new ArrayList<>();
             for (Object param : params) {
-                String paramStr = StrObjectConvert.objToStr(param, param.getClass());
+                String paramStr;
+                Class paramClass = param.getClass();
+                if (param instanceof Binary) {
+                    binaryCount++;
+                    Binary binary = (Binary) param;
+                    byte[] binaryDataBytes = binary.getData();
+                    binary.setData(null);
+                    paramStr = StrObjectConvert.objToStr(binary, paramClass);
+                    byte[] binaryLengthBytes = ByteUtil.longToBytes(binary.getLength());
+                    binaryLengthBytesList.add(binaryLengthBytes);
+                    binaryDataBytesList.add(binaryDataBytes);
+                } else {
+                    paramStr = StrObjectConvert.objToStr(param, paramClass);
+                }
                 paramStrList.add(paramStr);
             }
             body = JSONUtil.toJsonStr(paramStrList);
+            if (binaryCount > 0) {
+                byte[] paramBytes = body.getBytes(StandardCharsets.UTF_8);
+                byte[] paramLengthBytes = ByteUtil.intToBytes(paramBytes.length);
+                byte[] binaryCountBytes = new byte[]{(byte) binaryCount};
+                bodyBytes = ArrayUtil.addAll(paramLengthBytes, paramBytes, binaryCountBytes);
+                for (int i = 0; i < binaryCount; i++) {
+                    bodyBytes = ArrayUtil.addAll(bodyBytes, binaryLengthBytesList.get(i), binaryDataBytesList.get(i));
+                }
+            }
             multiParam = true;
         }
         inParams.setBody(body);
-        inParams.setBodyBytes(CompressUtil.compressText(body));
+        if (bodyBytes != null) {
+            //二进制数据传输
+            inParams.setBodyBytes(CompressUtil.compress(bodyBytes));
+            inParams.setDataType(DataType.BINARY);
+        } else {
+            //常规文本传输
+            inParams.setBodyBytes(CompressUtil.compressText(body));
+            inParams.setDataType(DataType.TEXT);
+        }
+        log.debug("{}传输的数据类型为：{}", logPrefix.get(), inParams.getDataType());
         inParams.setMultiParam(multiParam);
     }
 
@@ -470,6 +532,7 @@ public class OpenApiClient {
                 .setConnectionTimeout(httpConnectionTimeout * 1000)
                 .setReadTimeout(httpReadTimeout * 1000)
                 .addHeaders(headers)
+                .header(cn.hutool.http.Header.ACCEPT, ContentType.OCTET_STREAM.getValue())
                 .contentType(ContentType.OCTET_STREAM.getValue())
                 .body(bodyBytes);
         //设置http代理
@@ -494,7 +557,25 @@ public class OpenApiClient {
 
             //返回值字节数组转成字符串
             if (ArrayUtil.isNotEmpty(outParams.getDataBytes())) {
-                outParams.setData(CompressUtil.decompressToText(outParams.getDataBytes()));
+                if (outParams.getDataType() == DataType.BINARY) {
+                    //提取参数byte[]
+                    byte[] retBytes = outParams.getDataBytes();
+                    retBytes = CompressUtil.decompress(retBytes);
+                    int paramLength = ByteUtil.bytesToInt(ArrayUtil.sub(retBytes, 0, 4));
+                    byte[] paramBytes = ArrayUtil.sub(retBytes, 4, 4 + paramLength);
+                    String paramStr = new String(paramBytes, StandardCharsets.UTF_8);
+                    outParams.setData(paramStr);
+                    //提取二进制数据byte[]
+                    long binaryLengthStartIndex = 4 + paramLength + 1;
+                    long binaryLength = ByteUtil.bytesToLong(ArrayUtil.sub(retBytes, (int) binaryLengthStartIndex, 8));
+                    long binaryDataStartIndex = binaryLengthStartIndex + 8;
+                    byte[] binaryDataBytes = ArrayUtil.sub(retBytes, (int) binaryDataStartIndex, (int) (binaryDataStartIndex + binaryLength));
+                    outParams.setBinaryData(binaryDataBytes);
+                } else {
+                    outParams.setData(CompressUtil.decompressToText(outParams.getDataBytes()));
+                }
+                outParams.setDataBytes(null);
+                outParams.setDataBytesStr(null);
             }
         } else {
             throw new OpenApiClientException("调用openapi异常:" + outParams);
@@ -514,6 +595,7 @@ public class OpenApiClient {
         outParams.setCode(Integer.valueOf(response.header(Header.Response.CODE)));
         outParams.setMessage(response.header(Header.Response.MESSAGE));
         outParams.setSymmetricCryKey(response.header(Header.Response.SYMMETRIC_CRY_KEY));
+        outParams.setDataType(Enum.valueOf(DataType.class, response.header(Header.Response.DATA_TYPE)));
         outParams.setDataBytes(response.bodyBytes());
         return outParams;
     }
@@ -533,6 +615,7 @@ public class OpenApiClient {
         headers.put(Header.Request.SIGN, inParams.getSign());
         headers.put(Header.Request.SYMMETRIC_CRY_KEY, inParams.getSymmetricCryKey());
         headers.put(Header.Request.MULTI_PARAM, String.valueOf(inParams.isMultiParam()));
+        headers.put(Header.Response.DATA_TYPE, inParams.getDataType().name());
         return headers;
     }
 

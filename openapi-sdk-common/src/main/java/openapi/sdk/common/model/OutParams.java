@@ -4,6 +4,7 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.json.JSONUtil;
 import lombok.Data;
 import openapi.sdk.common.constant.ErrorCode;
+import openapi.sdk.common.enums.DataType;
 import openapi.sdk.common.util.TruncateUtil;
 
 /**
@@ -35,6 +36,12 @@ public class OutParams {
     private String data;
 
     /**
+     * 返回的二进制数据
+     * 注：数据为{@link Binary}类型中的二进制数据data
+     */
+    private byte[] binaryData;
+
+    /**
      * 返回值（字节数组形式，由sdk生成的内容密文也保存至此）
      */
     private byte[] dataBytes;
@@ -48,6 +55,12 @@ public class OutParams {
      * 对称加密Key(由sdk生成)
      */
     private String symmetricCryKey;
+
+    /**
+     * 传输的数据类型
+     */
+    private DataType dataType;
+
 
     /**
      * 调用成功的结果
