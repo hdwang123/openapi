@@ -1,5 +1,6 @@
 package openapi.client.sdk;
 
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.ByteUtil;
 import cn.hutool.core.util.StrUtil;
@@ -414,13 +415,15 @@ public class OpenApiClient {
             if (param instanceof Binary) {
                 //二进制类型拆成：参数byte[]+数据byte[],取消文件<->文本转换，提升参数转换效率
                 Binary binary = (Binary) param;
-                byte[] binaryDataBytes = binary.getData();
-                binary.setData(null);
-                String paramStr = StrObjectConvert.objToStr(binary, paramClass);
+                Binary binaryTmp = createNewBinary(paramClass, binary);
+                byte[] binaryDataBytes = binaryTmp.getData();
+                long binaryLength = binaryTmp.getLength();
+                binaryTmp.setData(null); //置空后，不影响下面的转换成字符串的效率
+                String paramStr = StrObjectConvert.objToStr(binaryTmp, paramClass);
                 byte[] paramBytes = paramStr.getBytes(StandardCharsets.UTF_8);
                 byte[] paramLengthBytes = ByteUtil.intToBytes(paramBytes.length);
                 byte[] binaryCountBytes = new byte[]{1};
-                byte[] binaryLengthBytes = ByteUtil.longToBytes(binary.getLength());
+                byte[] binaryLengthBytes = ByteUtil.longToBytes(binaryLength);
                 bodyBytes = ArrayUtil.addAll(paramLengthBytes, paramBytes, binaryCountBytes, binaryLengthBytes, binaryDataBytes);
             } else {
                 body = StrObjectConvert.objToStr(param, paramClass);
@@ -438,10 +441,12 @@ public class OpenApiClient {
                 if (param instanceof Binary) {
                     binaryCount++;
                     Binary binary = (Binary) param;
-                    byte[] binaryDataBytes = binary.getData();
-                    binary.setData(null);
-                    paramStr = StrObjectConvert.objToStr(binary, paramClass);
-                    byte[] binaryLengthBytes = ByteUtil.longToBytes(binary.getLength());
+                    Binary binaryTmp = createNewBinary(paramClass, binary);
+                    byte[] binaryDataBytes = binaryTmp.getData();
+                    long binaryLength = binaryTmp.getLength();
+                    binaryTmp.setData(null); //置空后，不影响下面的转换成字符串的效率
+                    paramStr = StrObjectConvert.objToStr(binaryTmp, paramClass);
+                    byte[] binaryLengthBytes = ByteUtil.longToBytes(binaryLength);
                     binaryLengthBytesList.add(binaryLengthBytes);
                     binaryDataBytesList.add(binaryDataBytes);
                 } else {
@@ -473,6 +478,25 @@ public class OpenApiClient {
         }
         log.debug("{}传输的数据类型为：{}", logPrefix.get(), inParams.getDataType());
         inParams.setMultiParam(multiParam);
+    }
+
+    /**
+     * 创建一个新的binary实例
+     *
+     * @param paramClass binary类型
+     * @param binary     binary老实例
+     * @return binary新的实例
+     */
+    private Binary createNewBinary(Class paramClass, Binary binary) {
+        Binary binaryTmp = null;
+        try {
+            //创建新实例以免影响原来的对象
+            binaryTmp = (Binary) paramClass.newInstance();
+            BeanUtil.copyProperties(binary, binaryTmp);
+        } catch (Exception ex) {
+            log.error("创建新的Binary实例失败", ex);
+        }
+        return binaryTmp;
     }
 
     /**
@@ -567,7 +591,7 @@ public class OpenApiClient {
                     outParams.setData(paramStr);
                     //提取二进制数据byte[]
                     long binaryLengthStartIndex = 4 + paramLength + 1;
-                    long binaryLength = ByteUtil.bytesToLong(ArrayUtil.sub(retBytes, (int) binaryLengthStartIndex, 8));
+                    long binaryLength = ByteUtil.bytesToLong(ArrayUtil.sub(retBytes, (int) binaryLengthStartIndex, (int) (binaryLengthStartIndex + 8)));
                     long binaryDataStartIndex = binaryLengthStartIndex + 8;
                     byte[] binaryDataBytes = ArrayUtil.sub(retBytes, (int) binaryDataStartIndex, (int) (binaryDataStartIndex + binaryLength));
                     outParams.setBinaryData(binaryDataBytes);

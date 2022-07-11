@@ -395,7 +395,7 @@ public class OpenApiGateway {
      */
     private long fillBinaryData(byte[] bodyBytes, long binaryLengthStartIndex, Binary obj) {
         Binary binary = obj;
-        long binaryLength = ByteUtil.bytesToLong(ArrayUtil.sub(bodyBytes, (int) binaryLengthStartIndex, 8));
+        long binaryLength = ByteUtil.bytesToLong(ArrayUtil.sub(bodyBytes, (int) binaryLengthStartIndex, (int) (binaryLengthStartIndex + 8)));
         long binaryDataStartIndex = binaryLengthStartIndex + 8;
         //受限于hutool和底层数组拷贝工具类，文件传输不能大于2,147,483,648字节（约2GB）
         byte[] binaryDataBytes = ArrayUtil.sub(bodyBytes, (int) binaryDataStartIndex, (int) (binaryDataStartIndex + binaryLength));

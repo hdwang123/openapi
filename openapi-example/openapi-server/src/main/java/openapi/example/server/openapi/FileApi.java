@@ -19,9 +19,9 @@ public class FileApi {
     private static final String dir = FileApi.class.getResource("/test").getPath();
 
     @OpenApiMethod("upload")
-    public void upload(FileBinary fileBinary) {
-        File dest = new File(dir, "upload/" + fileBinary.getFileName());
-        byte[] fileBytes = fileBinary.getData();
+    public void upload(Long id, FileBinary file1, FileBinary file2) {
+        File dest = new File(dir, "upload/" + file1.getFileName());
+        byte[] fileBytes = file1.getData();
         FileUtil.writeBytes(fileBytes, dest);
     }
 

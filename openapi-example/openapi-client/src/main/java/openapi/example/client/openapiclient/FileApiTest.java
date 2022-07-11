@@ -28,10 +28,10 @@ public class FileApiTest {
         File src = new File(dir, "001_big.txt");
         byte[] fileBytes = FileUtil.readBytes(src);
 
-        FileBinary fileBinary = new FileBinary();
-        fileBinary.setData(fileBytes);
-        fileBinary.setFileName(src.getName());
-        fileApiClient.upload(fileBinary);
+        FileBinary file1 = new FileBinary();
+        file1.setData(fileBytes);
+        file1.setFileName(src.getName());
+        fileApiClient.upload(10L, file1, file1);
         log.info("upload end. costTime={}", System.currentTimeMillis() - startTime);
     }
 
