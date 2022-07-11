@@ -25,7 +25,7 @@ public class FileApiTest {
     public void uploadTest() {
         log.info("upload start...");
         long startTime = System.currentTimeMillis();
-        File src = new File(dir, "001_big.txt");
+        File src = new File(dir, "001.txt");
         byte[] fileBytes = FileUtil.readBytes(src);
 
         FileBinary file1 = new FileBinary();
