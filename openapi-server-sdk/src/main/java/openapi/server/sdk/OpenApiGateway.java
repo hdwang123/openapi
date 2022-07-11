@@ -416,7 +416,7 @@ public class OpenApiGateway {
             long startTime = System.nanoTime();
             Object[] params = paramList.toArray();
 
-            log.debug("{}调用API:{},入参：{}", logPrefix.get(), apiHandler, TruncateUtil.truncate(params));
+            log.debug("{}调用API:{},入参：{}", logPrefix.get(), apiHandler, TruncateUtil.truncate(paramList));
             Object ret = apiHandler.getMethod().invoke(apiHandler.getBean(), params);
             log.debug("{}调用API:{},出参：{}", logPrefix.get(), apiHandler, TruncateUtil.truncate(ret));
             this.logCostTime("调用API", startTime);

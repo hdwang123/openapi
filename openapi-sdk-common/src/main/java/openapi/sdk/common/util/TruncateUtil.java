@@ -78,7 +78,13 @@ public class TruncateUtil {
         if (ArrayUtil.isNotEmpty(array)) {
             String[] strArray = new String[array.length];
             for (int i = 0; i < array.length; i++) {
-                strArray[i] = truncate(array[i]);
+                Object obj = array[i];
+                if (TypeUtil.isPrimitiveByteArray(obj.getClass())) {
+                    byte[] bytes = (byte[]) obj;
+                    strArray[i] = truncate(bytes);
+                } else {
+                    strArray[i] = truncate(obj);
+                }
             }
             return strArray.toString();
         }
@@ -96,10 +102,18 @@ public class TruncateUtil {
             List list = new LinkedList();
             Iterator iterator = coll.iterator();
             while (iterator.hasNext()) {
-                list.add(truncate(iterator.next()));
+                Object obj = iterator.next();
+                if (TypeUtil.isPrimitiveByteArray(obj.getClass())) {
+                    byte[] bytes = (byte[]) obj;
+                    list.add(truncate(bytes));
+                } else {
+                    list.add(truncate(obj));
+                }
             }
             return list.toString();
         }
         return emptyArray;
     }
+
+
 }
