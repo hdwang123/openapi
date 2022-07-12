@@ -52,10 +52,11 @@ public class CommonUtil {
     }
 
     /**
-     * 拷贝一个对象实例（浅拷贝）
+     * 拷贝实例（浅拷贝）
      *
-     * @param obj 对象
-     * @return binary新的实例
+     * @param obj 源对象
+     * @param <T> 对象泛型
+     * @return 新对象
      */
     public static <T> T cloneInstance(T obj) {
         try {

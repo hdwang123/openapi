@@ -70,10 +70,10 @@ public class TypeUtil extends cn.hutool.core.util.TypeUtil {
     }
 
     /**
-     * 判断是否是 Collection<Binary> 及其子类集合类型
+     * 判断是否是Binary及其子类的集合类型
      *
      * @param obj 对象
-     * @return 是否是 Collection<Binary> 及其子类集合类型
+     * @return 是否是Binary及其子类的集合类型
      */
     public static boolean isBinaryCollection(Object obj) {
         Class clazz = obj.getClass();
