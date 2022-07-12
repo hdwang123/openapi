@@ -1,9 +1,16 @@
 package openapi.sdk.common.model;
 
+import cn.hutool.json.JSONUtil;
 import lombok.Data;
+import lombok.SneakyThrows;
+import openapi.sdk.common.util.CommonUtil;
+import openapi.sdk.common.util.TruncateUtil;
 
 /**
  * 文件类型
+ * <p>
+ * 用于文件传输，用在方法参数上或方法返回值当中，可以提升文件传输效率
+ * </p>
  *
  * @author wanghuidong
  * 时间： 2022/7/11 19:10
@@ -21,4 +28,14 @@ public class FileBinary extends Binary {
      */
     private String fileType;
 
+    @SneakyThrows
+    @Override
+    public String toString() {
+        FileBinary binary = CommonUtil.cloneInstance(this);
+        long length = binary.getLength();
+        binary.setDataStr(TruncateUtil.truncate(binary.getData()));
+        binary.setData(null);
+        binary.setLength(length);
+        return JSONUtil.toJsonStr(binary);
+    }
 }

@@ -424,6 +424,7 @@ public class OpenApiClient {
             for (Object param : params) {
                 if (param instanceof Binary) {
                     paramStrList.add(BinaryUtil.getBinaryString((Binary) param));
+                    binaries.add((Binary) param);
                 } else {
                     paramStrList.add(StrObjectConvert.objToStr(param, param.getClass()));
                 }

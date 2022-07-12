@@ -43,6 +43,6 @@ public class FileApiTest {
         File dest = new File(dir, "download/" + fileBinary.getFileName());
         byte[] fileBytes = fileBinary.getData();
         FileUtil.writeBytes(fileBytes, dest);
-        log.info("download end. costTime={}", System.currentTimeMillis() - startTime);
+        log.info("download end. costTime={}, file={}", System.currentTimeMillis() - startTime, fileBinary);
     }
 }

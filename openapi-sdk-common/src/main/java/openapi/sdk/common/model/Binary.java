@@ -1,9 +1,9 @@
 package openapi.sdk.common.model;
 
-import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.json.JSONUtil;
 import lombok.Data;
 import lombok.SneakyThrows;
+import openapi.sdk.common.util.CommonUtil;
 import openapi.sdk.common.util.TruncateUtil;
 
 /**
@@ -55,10 +55,11 @@ public class Binary {
     @SneakyThrows
     @Override
     public String toString() {
-        Binary binary = this.getClass().newInstance();
-        BeanUtil.copyProperties(this, binary);
+        Binary binary = CommonUtil.cloneInstance(this);
+        long length = binary.getLength();
         binary.setDataStr(TruncateUtil.truncate(binary.getData()));
         binary.setData(null);
+        binary.setLength(length);
         return JSONUtil.toJsonStr(binary);
     }
 }

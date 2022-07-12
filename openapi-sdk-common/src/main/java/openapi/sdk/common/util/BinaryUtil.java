@@ -25,7 +25,9 @@ public class BinaryUtil {
      */
     public static String getBinaryString(Binary param) {
         Binary tmp = CommonUtil.cloneInstance(param);
+        long length = param.getLength();
         tmp.setData(null);
+        tmp.setLength(length);
         return StrObjectConvert.objToStr(tmp, tmp.getClass());
     }
 
