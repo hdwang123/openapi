@@ -7,6 +7,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author wanghuidong
@@ -33,6 +35,40 @@ public class FileApiTest {
         file1.setFileName(src.getName());
         fileApiClient.upload(10L, file1, file1);
         log.info("upload end. costTime={}", System.currentTimeMillis() - startTime);
+    }
+
+    public void batchUploadTest() {
+        log.info("batchUpload start...");
+        long startTime = System.currentTimeMillis();
+        File src = new File(dir, "001.txt");
+        byte[] fileBytes = FileUtil.readBytes(src);
+
+        FileBinary file1 = new FileBinary();
+        file1.setData(fileBytes);
+        file1.setFileName(src.getName());
+
+        FileBinary[] fileBinaries = new FileBinary[2];
+        fileBinaries[0] = file1;
+        fileBinaries[1] = file1;
+        fileApiClient.upload(101L, fileBinaries);
+        log.info("batchUpload end. costTime={}", System.currentTimeMillis() - startTime);
+    }
+
+    public void batchUpload2Test() {
+        log.info("batchUpload start...");
+        long startTime = System.currentTimeMillis();
+        File src = new File(dir, "001.txt");
+        byte[] fileBytes = FileUtil.readBytes(src);
+
+        FileBinary file1 = new FileBinary();
+        file1.setData(fileBytes);
+        file1.setFileName(src.getName());
+
+        List<FileBinary> fileBinaries = new ArrayList<>();
+        fileBinaries.add(file1);
+        fileBinaries.add(file1);
+        fileApiClient.upload(102L, fileBinaries);
+        log.info("batchUpload end. costTime={}", System.currentTimeMillis() - startTime);
     }
 
 

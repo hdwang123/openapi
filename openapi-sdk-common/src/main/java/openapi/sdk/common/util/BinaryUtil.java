@@ -2,7 +2,6 @@ package openapi.sdk.common.util;
 
 import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.ByteUtil;
-import cn.hutool.json.JSONUtil;
 import openapi.sdk.common.model.Binary;
 
 import java.nio.charset.StandardCharsets;
@@ -20,15 +19,33 @@ public class BinaryUtil {
     /**
      * 获取二进制对象的字符串表示（数据清空了）
      *
-     * @param param 二进制对象
+     * @param binary 二进制对象
      * @return 字符串
      */
-    public static String getBinaryString(Binary param) {
-        Binary tmp = CommonUtil.cloneInstance(param);
-        long length = param.getLength();
+    public static String getBinaryString(Binary binary) {
+        Binary tmp = CommonUtil.cloneInstance(binary);
+        long length = binary.getLength();
         tmp.setData(null);
         tmp.setLength(length);
         return StrObjectConvert.objToStr(tmp, tmp.getClass());
+    }
+
+    /**
+     * 获取二进制对象列表的字符串表示（数据清空了）
+     *
+     * @param binaries 二进制对象列表
+     * @return 字符串
+     */
+    public static String getBinariesString(List<Binary> binaries) {
+        List<Binary> temps = new ArrayList<>();
+        for (Binary binary : binaries) {
+            Binary tmp = CommonUtil.cloneInstance(binary);
+            long length = binary.getLength();
+            tmp.setData(null);
+            tmp.setLength(length);
+            temps.add(tmp);
+        }
+        return StrObjectConvert.objToStr(temps, temps.getClass());
     }
 
     /**
@@ -52,10 +69,10 @@ public class BinaryUtil {
      * 构建多个二进制对象的字节数据
      *
      * @param binaries     多个二进制对象
-     * @param paramStrList 多个参数的字符串表示
+     * @param paramJsonStr 参数的字符串表示
      * @return 字节数据
      */
-    public static byte[] buildMultiBinaryBytes(List<Binary> binaries, List<String> paramStrList) {
+    public static byte[] buildMultiBinaryBytes(List<Binary> binaries, String paramJsonStr) {
         List<byte[]> binaryLengthBytesList = new ArrayList<>();
         List<byte[]> binaryDataBytesList = new ArrayList<>();
         for (Binary binary : binaries) {
@@ -64,7 +81,6 @@ public class BinaryUtil {
             binaryLengthBytesList.add(binaryLengthBytes);
             binaryDataBytesList.add(binaryDataBytes);
         }
-        String paramJsonStr = JSONUtil.toJsonStr(paramStrList);
         byte[] paramBytes = paramJsonStr.getBytes(StandardCharsets.UTF_8);
         byte[] paramLengthBytes = ByteUtil.intToBytes(paramBytes.length);
         int binaryCount = binaries.size();

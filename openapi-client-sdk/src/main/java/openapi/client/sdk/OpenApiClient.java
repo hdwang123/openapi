@@ -409,30 +409,68 @@ public class OpenApiClient {
         } else if (params.length == 1) {
             //单参函数
             Object param = params[0];
+            Class paramClass = param.getClass();
             if (param instanceof Binary) {
                 //二进制类型拆成：参数byte[]+数据byte[],取消文件<->文本转换，提升参数转换效率
                 body = BinaryUtil.getBinaryString((Binary) param);
                 bodyBytes = BinaryUtil.buildSingleBinaryBytes((Binary) param, body);
+            } else if (TypeUtil.isBinaryArray(paramClass)) {
+                //多个二进制类型转换成：参数byte[]+数据byte[]
+                Binary[] binaries = (Binary[]) param;
+                List<Binary> binaryList = new ArrayList<>();
+                for (Binary binary : binaries) {
+                    binaryList.add(binary);
+                }
+                body = BinaryUtil.getBinariesString(binaryList);
+                bodyBytes = BinaryUtil.buildMultiBinaryBytes(binaryList, body);
+            } else if (TypeUtil.isBinaryCollection(param)) {
+                //多个二进制类型转换成：参数byte[]+数据byte[]
+                Collection coll = (Collection) param;
+                List<Binary> binaryList = new ArrayList<>();
+                for (Object obj : coll) {
+                    Binary binary = (Binary) obj;
+                    binaryList.add(binary);
+                }
+                body = BinaryUtil.getBinariesString(binaryList);
+                bodyBytes = BinaryUtil.buildMultiBinaryBytes(binaryList, body);
             } else {
-                body = StrObjectConvert.objToStr(param, param.getClass());
+                body = StrObjectConvert.objToStr(param, paramClass);
             }
             multiParam = false;
         } else {
             //多参函数
             List<String> paramStrList = new ArrayList<>();
-            List<Binary> binaries = new ArrayList<>();
+            List<Binary> binaryList = new ArrayList<>();
             for (Object param : params) {
+                //按照参数的顺序，依次转换成字符串或二进制数据类型
                 if (param instanceof Binary) {
                     paramStrList.add(BinaryUtil.getBinaryString((Binary) param));
-                    binaries.add((Binary) param);
+                    binaryList.add((Binary) param);
+                } else if (TypeUtil.isBinaryArray(param.getClass())) {
+                    Binary[] binaries = (Binary[]) param;
+                    List<Binary> arrayBinaries = new ArrayList<>();
+                    for (Binary binary : binaries) {
+                        arrayBinaries.add(binary);
+                        binaryList.add(binary);
+                    }
+                    paramStrList.add(BinaryUtil.getBinariesString(arrayBinaries));
+                } else if (TypeUtil.isBinaryCollection(param)) {
+                    Collection coll = (Collection) param;
+                    List<Binary> listBinaries = new ArrayList<>();
+                    for (Object obj : coll) {
+                        Binary binary = (Binary) obj;
+                        listBinaries.add(binary);
+                        binaryList.add(binary);
+                    }
+                    paramStrList.add(BinaryUtil.getBinariesString(listBinaries));
                 } else {
                     paramStrList.add(StrObjectConvert.objToStr(param, param.getClass()));
                 }
             }
-            if (CollUtil.isNotEmpty(binaries)) {
-                bodyBytes = BinaryUtil.buildMultiBinaryBytes(binaries, paramStrList);
-            }
             body = JSONUtil.toJsonStr(paramStrList);
+            if (CollUtil.isNotEmpty(binaryList)) {
+                bodyBytes = BinaryUtil.buildMultiBinaryBytes(binaryList, body);
+            }
             multiParam = true;
         }
         inParams.setBody(body);
@@ -517,6 +555,7 @@ public class OpenApiClient {
         HttpResponse response = request.execute();
         OutParams outParams = getOutParams(response);
         log.debug("{}调用openapi出参：{}", logPrefix.get(), outParams);
+        log.debug("{}响应体的数据类型为：{}", logPrefix.get(), outParams.getDataType());
         this.logCostTime("调用openapi", startTime);
 
         if (OutParams.isSuccess(outParams)) {

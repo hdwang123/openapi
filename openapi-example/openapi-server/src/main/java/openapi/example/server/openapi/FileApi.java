@@ -6,6 +6,7 @@ import openapi.server.sdk.annotation.OpenApi;
 import openapi.server.sdk.annotation.OpenApiMethod;
 
 import java.io.File;
+import java.util.List;
 
 /**
  * 文件API
@@ -24,6 +25,19 @@ public class FileApi {
         byte[] fileBytes = file1.getData();
         FileUtil.writeBytes(fileBytes, dest);
     }
+
+    @OpenApiMethod("batchUpload")
+    public void upload(Long id, FileBinary[] files) {
+        System.out.println("batchUpload id:" + id);
+        System.out.println("batchUpload files count:" + files.length);
+    }
+
+    @OpenApiMethod("batchUpload2")
+    public void upload(Long id, List<FileBinary> files) {
+        System.out.println("batchUpload id:" + id);
+        System.out.println("batchUpload files count:" + files.size());
+    }
+
 
     @OpenApiMethod("download")
     public FileBinary download(Long id) {

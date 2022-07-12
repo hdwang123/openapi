@@ -210,6 +210,7 @@ public class OpenApiGateway {
             //获取入参
             inParams = getInParams(request);
             log.debug("{}接收到请求：{}", logPrefix.get(), inParams);
+            log.debug("{}请求体的数据类型为：{}", logPrefix.get(), inParams.getDataType());
 
             //获取openapi处理器
             ApiHandler apiHandler = getApiHandler(inParams);
@@ -351,9 +352,20 @@ public class OpenApiGateway {
                     long binaryLengthStartIndex = BinaryUtil.getBinaryLengthStartIndex(paramLength);
                     for (int i = 0; i < list.size(); i++) {
                         Object obj = StrObjectConvert.strToObj(list.get(i), paramTypes[i]);
+                        //如果是二进制类型或二进制数组类型或二进制集合类型，则按照顺序依次填充数据
                         if (obj instanceof Binary) {
-                            //填充Binary对象中的数据（传输的时候，其它属性值与数据分开传输的）
                             binaryLengthStartIndex = this.fillBinaryData((Binary) obj, bodyBytes, binaryLengthStartIndex);
+                        } else if (TypeUtil.isBinaryArray(obj.getClass())) {
+                            Binary[] binaries = (Binary[]) obj;
+                            for (Binary binary : binaries) {
+                                binaryLengthStartIndex = this.fillBinaryData(binary, bodyBytes, binaryLengthStartIndex);
+                            }
+                        } else if (TypeUtil.isBinaryCollection(obj)) {
+                            Collection coll = (Collection) obj;
+                            for (Object element : coll) {
+                                Binary binary = (Binary) element;
+                                binaryLengthStartIndex = this.fillBinaryData(binary, bodyBytes, binaryLengthStartIndex);
+                            }
                         }
                         params.add(obj);
                     }
@@ -363,9 +375,24 @@ public class OpenApiGateway {
                         Type paramType = paramTypes[0];
                         Object obj = StrObjectConvert.strToObj(paramStr, paramType);
                         if (obj instanceof Binary) {
-                            //填充Binary对象中的数据（传输的时候，其它属性值与数据分开传输的）
+                            //填充二进制数据
                             long binaryLengthStartIndex = BinaryUtil.getBinaryLengthStartIndex(paramLength);
                             this.fillBinaryData((Binary) obj, bodyBytes, binaryLengthStartIndex);
+                        } else if (TypeUtil.isBinaryArray(obj.getClass())) {
+                            //填充多个二进制数
+                            Binary[] binaries = (Binary[]) obj;
+                            long binaryLengthStartIndex = BinaryUtil.getBinaryLengthStartIndex(paramLength);
+                            for (Binary binary : binaries) {
+                                binaryLengthStartIndex = this.fillBinaryData(binary, bodyBytes, binaryLengthStartIndex);
+                            }
+                        } else if (TypeUtil.isBinaryCollection(obj)) {
+                            //填充多个二进制数
+                            Collection coll = (Collection) obj;
+                            long binaryLengthStartIndex = BinaryUtil.getBinaryLengthStartIndex(paramLength);
+                            for (Object element : coll) {
+                                Binary binary = (Binary) element;
+                                binaryLengthStartIndex = this.fillBinaryData(binary, bodyBytes, binaryLengthStartIndex);
+                            }
                         }
                         params.add(obj);
                     } else {
