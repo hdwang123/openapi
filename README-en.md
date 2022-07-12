@@ -26,10 +26,22 @@ cn.hutool.hutool-all
 3. Implement the signature verification of the interface (<font size=1>The server will verify the client's signature to
    ensure that the caller's identity and data are not tampered with</font>)
 
+## feature
+
+1. Provide client sdk and server sdk to facilitate the rapid integration of open api functions in existing projects
+2. Implemented three API security interaction methods: only signing + asymmetric encryption + symmetric encryption,
+   configuration switching can be performed
+3. Implemented a variety of encryption algorithms such as RSA and SM2 for encryption and decryption of interface
+   parameters and return values
+4. A set of data transmission mechanism is specially customized for file transfer, making file transfer more convenient
+   and fast
+5. Implemented the server interface document function, which is convenient for querying all API interfaces
+6. Method invocation implements HTTP timeout, HTTP proxy and other settings, and supports method-level configuration
+
 ## program flow chart
 
-<img src="https://github.com/hdwang123/openapi/blob/main/doc/openapi-en.png" />   
-<img src="https://github.com/hdwang123/openapi/blob/main/doc/openapi2-en.png" />   
+<img src="doc/openapi-flowchart-en.png" />   
+<img src="doc/openapi-flowchart2-en.png" />   
 
 ## Instructions
 
@@ -42,7 +54,7 @@ cn.hutool.hutool-all
 <dependency>
     <groupId>io.github.hdwang123</groupId>
     <artifactId>openapi-server-sdk</artifactId>
-    <version>1.5.2</version>
+    <version>1.5.3</version>
 </dependency>
 ```
 
@@ -134,7 +146,7 @@ public class UserApi {
 
 url：http://localhost:8080/openapi/doc.html  
 Replace http://localhost:8080 with the actual path in the actual project   
-<img src="https://github.com/hdwang123/openapi/blob/main/doc/openapi-doc.png" />
+<img src="doc/openapi-doc.png" />
 
 ### Client
 
@@ -145,7 +157,7 @@ Replace http://localhost:8080 with the actual path in the actual project
 <dependency>
     <groupId>io.github.hdwang123</groupId>
     <artifactId>openapi-client-sdk</artifactId>
-    <version>1.5.2</version>
+    <version>1.5.3</version>
 </dependency>
 ```
 
@@ -245,3 +257,7 @@ public class UserApiTest2 {
     }
 }    
 ```
+
+#### http call sample
+
+<img src="doc/openapi-request.png" />

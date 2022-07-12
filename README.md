@@ -25,10 +25,19 @@ cn.hutool.hutool-all
 2.实现接口的参数与返回值的加解密（<font size=1>使用非对称加密：RSA/SM2，或对称加密：AES/SM4</font>）  
 3.实现接口的验签（<font size=1>服务端会校验客户端的签名，确保调用者身份以及数据不被篡改</font>）
 
+## 特色
+
+1.提供客户端sdk和服务端sdk,方便在已有项目中快速集成开放api功能  
+2.实现了三种API的安全交互方式：仅加签+非对称加密+对称加密，可以进行配置切换  
+3.实现了RSA和SM2等多种加密算法用于接口参数与返回值的加解密  
+4.专门为文件传输定制一套数据传输机制，使得文件传输更加方便、快速  
+5.实现了服务端接口文档功能，方便查询所有的API接口  
+6.方法调用实现了HTTP超时时间、HTTP代理等设置，且支持方法级别的配置
+
 ## 程序流程图
 
-<img src="https://github.com/hdwang123/openapi/blob/main/doc/openapi.png" />   
-<img src="https://github.com/hdwang123/openapi/blob/main/doc/openapi2.png" />   
+<img src="doc/openapi-flowchart.png" />   
+<img src="doc/openapi-flowchart2.png" />
 
 ## 使用方法
 
@@ -41,7 +50,7 @@ cn.hutool.hutool-all
 <dependency>
     <groupId>io.github.hdwang123</groupId>
     <artifactId>openapi-server-sdk</artifactId>
-    <version>1.5.2</version>
+    <version>1.5.3</version>
 </dependency>
 ```
 
@@ -131,7 +140,7 @@ public class UserApi {
 
 网址：http://localhost:8080/openapi/doc.html  
 实际项目中替换 http://localhost:8080 为实际路径  
-<img src="https://github.com/hdwang123/openapi/blob/main/doc/openapi-doc.png" />
+<img src="doc/openapi-doc.png" />
 
 ### 客户端
 
@@ -142,7 +151,7 @@ public class UserApi {
 <dependency>
     <groupId>io.github.hdwang123</groupId>
     <artifactId>openapi-client-sdk</artifactId>
-    <version>1.5.2</version>
+    <version>1.5.3</version>
 </dependency>
 ```
 
@@ -241,3 +250,7 @@ public class UserApiTest2 {
     }
 }    
 ```
+
+#### HTTP调用样例
+
+<img src="doc/openapi-request.png" />
