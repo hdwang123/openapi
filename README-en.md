@@ -258,6 +258,6 @@ public class UserApiTest2 {
 }    
 ```
 
-#### http call sample
+#### 3.http call sample
 
 <img src="doc/openapi-request.png" />

@@ -251,6 +251,6 @@ public class UserApiTest2 {
 }    
 ```
 
-#### HTTP调用样例
+#### 3.HTTP调用样例
 
 <img src="doc/openapi-request.png" />
