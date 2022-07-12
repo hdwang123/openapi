@@ -27,8 +27,8 @@ cn.hutool.hutool-all
 
 ## 程序流程图
 
-<img src="https://github.com/hdwang123/openapi/raw/main/doc/openapi.png" />   
-<img src="https://github.com/hdwang123/openapi/raw/main/doc/openapi2.png" />   
+<img src="doc/openapi.png" />   
+<img src="doc/openapi2.png" />   
 
 ## 使用方法
 
@@ -131,7 +131,7 @@ public class UserApi {
 
 网址：http://localhost:8080/openapi/doc.html  
 实际项目中替换 http://localhost:8080 为实际路径  
-<img src="https://github.com/hdwang123/openapi/blob/main/doc/openapi-doc.png" />
+<img src="doc/openapi-doc.png" />
 
 ### 客户端
 
