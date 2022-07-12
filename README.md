@@ -27,8 +27,8 @@ cn.hutool.hutool-all
 
 ## 程序流程图
 
-<img src="https://github.com/hdwang123/openapi/blob/main/doc/openapi.png" />   
-<img src="https://github.com/hdwang123/openapi/blob/main/doc/openapi2.png" />   
+<img src="https://github.com/hdwang123/openapi/raw/main/doc/openapi.png" />   
+<img src="https://github.com/hdwang123/openapi/raw/main/doc/openapi2.png" />   
 
 ## 使用方法
 
