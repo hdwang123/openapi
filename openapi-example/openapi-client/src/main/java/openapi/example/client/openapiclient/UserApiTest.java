@@ -1,14 +1,14 @@
 package openapi.example.client.openapiclient;
 
 import lombok.extern.slf4j.Slf4j;
+import openapi.client.sdk.OpenApiClient;
 import openapi.client.sdk.OpenApiClientBuilder;
 import openapi.example.client.model.Gender;
 import openapi.example.client.model.User;
-import openapi.client.sdk.OpenApiClient;
 import openapi.sdk.common.enums.AsymmetricCryEnum;
 import openapi.sdk.common.enums.CryModeEnum;
-import openapi.sdk.common.model.OutParams;
 import openapi.sdk.common.enums.SymmetricCryEnum;
+import openapi.sdk.common.model.OutParams;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 

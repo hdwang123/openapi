@@ -125,11 +125,11 @@ public class OpenApiRefProxyInvocationHandler implements InvocationHandler {
         if (cryModeDif) {
             return true;
         }
-        boolean httpConnectionTimeoutDif = openApiMethod.httpConnectionTimeout() != config.getHttpConnectionTimeout();
+        boolean httpConnectionTimeoutDif = openApiMethod.httpConnectionTimeout() != -1 && openApiMethod.httpConnectionTimeout() != config.getHttpConnectionTimeout();
         if (httpConnectionTimeoutDif) {
             return true;
         }
-        boolean httpReadTimeoutDif = openApiMethod.httpReadTimeout() != config.getHttpReadTimeout();
+        boolean httpReadTimeoutDif = openApiMethod.httpReadTimeout() != -1 && openApiMethod.httpReadTimeout() != config.getHttpReadTimeout();
         if (httpReadTimeoutDif) {
             return true;
         }

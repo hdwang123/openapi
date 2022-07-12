@@ -91,168 +91,49 @@ public class OpenApiClient {
     /**
      * HTTP建立连接超时时间（单位秒）
      */
-    private int httpConnectionTimeout;
+    private final int httpConnectionTimeout;
 
     /**
      * HTTP数据传输超时时间（单位秒）
      */
-    private int httpReadTimeout;
+    private final int httpReadTimeout;
 
     /**
      * HTTP请求代理域名
      */
-    private String httpProxyHost;
+    private final String httpProxyHost;
 
     /**
      * HTTP请求代理端口
      */
-    private Integer httpProxyPort;
-
-    /**
-     * 获取HTTP建立连接超时时间（单位秒）
-     *
-     * @return HTTP建立连接超时时间（单位秒）
-     */
-    public int getHttpConnectionTimeout() {
-        return httpConnectionTimeout;
-    }
-
-    /**
-     * 设置HTTP建立连接超时时间（单位秒）
-     *
-     * @param httpConnectionTimeout HTTP建立连接超时时间（单位秒）
-     */
-    public void setHttpConnectionTimeout(int httpConnectionTimeout) {
-        this.httpConnectionTimeout = httpConnectionTimeout;
-    }
-
-    /**
-     * 获取HTTP数据传输超时时间（单位秒）
-     *
-     * @return HTTP数据传输超时时间（单位秒）
-     */
-    public int getHttpReadTimeout() {
-        return httpReadTimeout;
-    }
-
-    /**
-     * 设置HTTP数据传输超时时间（单位秒）
-     *
-     * @param httpReadTimeout HTTP数据传输超时时间（单位秒）
-     */
-    public void setHttpReadTimeout(int httpReadTimeout) {
-        this.httpReadTimeout = httpReadTimeout;
-    }
-
-    /**
-     * 获取HTTP请求代理域名
-     *
-     * @return HTTP请求代理域名
-     */
-    public String getHttpProxyHost() {
-        return httpProxyHost;
-    }
-
-    /**
-     * 设置HTTP请求代理域名
-     *
-     * @param httpProxyHost HTTP请求代理域名
-     */
-    public void setHttpProxyHost(String httpProxyHost) {
-        this.httpProxyHost = httpProxyHost;
-    }
-
-    /**
-     * 获取HTTP请求代理端口
-     *
-     * @return HTTP请求代理端口
-     */
-    public Integer getHttpProxyPort() {
-        return httpProxyPort;
-    }
-
-    /**
-     * 设置HTTP请求代理端口
-     *
-     * @param httpProxyPort HTTP请求代理端口
-     */
-    public void setHttpProxyPort(Integer httpProxyPort) {
-        this.httpProxyPort = httpProxyPort;
-    }
+    private final Integer httpProxyPort;
 
     /**
      * 日志前缀
      */
     private final ThreadLocal<String> logPrefix = new ThreadLocal<>();
 
-    /**
-     * openapi客户端
-     *
-     * @param baseUrl         openapi基础路径
-     * @param selfPrivateKey  本系统私钥
-     * @param remotePublicKey 远程系统的公钥
-     */
-    public OpenApiClient(String baseUrl, String selfPrivateKey, String remotePublicKey) {
-        this(baseUrl, selfPrivateKey, remotePublicKey, AsymmetricCryEnum.RSA);
-    }
 
     /**
      * openapi客户端
      *
-     * @param baseUrl           openapi基础路径
-     * @param selfPrivateKey    本系统私钥
-     * @param remotePublicKey   远程系统的公钥
-     * @param asymmetricCryEnum 非对称加密算法
-     */
-    public OpenApiClient(String baseUrl, String selfPrivateKey, String remotePublicKey, AsymmetricCryEnum asymmetricCryEnum) {
-        this(baseUrl, selfPrivateKey, remotePublicKey, asymmetricCryEnum, true);
-    }
-
-    /**
-     * openapi客户端
-     *
-     * @param baseUrl           openapi基础路径
-     * @param selfPrivateKey    本系统私钥
-     * @param remotePublicKey   远程系统的公钥
-     * @param asymmetricCryEnum 非对称加密算法
-     * @param retDecrypt        返回值是否需要解密
-     */
-    public OpenApiClient(String baseUrl, String selfPrivateKey, String remotePublicKey, AsymmetricCryEnum asymmetricCryEnum, boolean retDecrypt) {
-        this(baseUrl, selfPrivateKey, remotePublicKey, asymmetricCryEnum, retDecrypt, CryModeEnum.SYMMETRIC_CRY, SymmetricCryEnum.AES);
-    }
-
-    /**
-     * openapi客户端
-     *
-     * @param baseUrl           openapi基础路径
-     * @param selfPrivateKey    本系统私钥
-     * @param remotePublicKey   远程系统的公钥
-     * @param asymmetricCryEnum 非对称加密算法
-     * @param retDecrypt        返回值是否需要解密
-     * @param cryModeEnum       加密模式
-     * @param symmetricCryEnum  对称加密算法
+     * @param baseUrl               openapi基础路径
+     * @param selfPrivateKey        本系统私钥
+     * @param remotePublicKey       远程系统的公钥
+     * @param asymmetricCryEnum     非对称加密算法
+     * @param retDecrypt            返回值是否需要解密
+     * @param cryModeEnum           加密模式
+     * @param symmetricCryEnum      对称加密算法
+     * @param callerId              调用者ID
+     * @param api                   接口名称
+     * @param httpConnectionTimeout HTTP建立连接超时时间（单位秒）
+     * @param httpReadTimeout       HTTP数据传输超时时间（单位秒）
+     * @param httpProxyHost         HTTP请求代理域名
+     * @param httpProxyPort         HTTP请求代理端口
      */
     public OpenApiClient(String baseUrl, String selfPrivateKey, String remotePublicKey, AsymmetricCryEnum asymmetricCryEnum,
-                         boolean retDecrypt, CryModeEnum cryModeEnum, SymmetricCryEnum symmetricCryEnum) {
-        this(baseUrl, selfPrivateKey, remotePublicKey, asymmetricCryEnum, retDecrypt, cryModeEnum, symmetricCryEnum, null, null);
-    }
-
-    /**
-     * openapi客户端
-     *
-     * @param baseUrl           openapi基础路径
-     * @param selfPrivateKey    本系统私钥
-     * @param remotePublicKey   远程系统的公钥
-     * @param asymmetricCryEnum 非对称加密算法
-     * @param retDecrypt        返回值是否需要解密
-     * @param cryModeEnum       加密模式
-     * @param symmetricCryEnum  对称加密算法
-     * @param callerId          调用者ID
-     * @param api               接口名称
-     */
-    public OpenApiClient(String baseUrl, String selfPrivateKey, String remotePublicKey, AsymmetricCryEnum asymmetricCryEnum,
-                         boolean retDecrypt, CryModeEnum cryModeEnum, SymmetricCryEnum symmetricCryEnum,
-                         String callerId, String api) {
+                         boolean retDecrypt, CryModeEnum cryModeEnum, SymmetricCryEnum symmetricCryEnum, String callerId, String api,
+                         int httpConnectionTimeout, int httpReadTimeout, String httpProxyHost, Integer httpProxyPort) {
         this.baseUrl = baseUrl;
         this.selfPrivateKey = selfPrivateKey;
         this.remotePublicKey = remotePublicKey;
@@ -264,6 +145,10 @@ public class OpenApiClient {
         this.api = api;
         this.asymmetricCryHandler = AsymmetricCryHandler.handlerMap.get(asymmetricCryEnum);
         this.symmetricCryHandler = SymmetricCryHandler.handlerMap.get(symmetricCryEnum);
+        this.httpConnectionTimeout = httpConnectionTimeout;
+        this.httpReadTimeout = httpReadTimeout;
+        this.httpProxyHost = httpProxyHost;
+        this.httpProxyPort = httpProxyPort;
 
         //初始化信息打印
         if (log.isDebugEnabled()) {

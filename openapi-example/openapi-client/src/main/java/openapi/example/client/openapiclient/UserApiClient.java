@@ -1,7 +1,7 @@
 package openapi.example.client.openapiclient;
 
-import openapi.client.sdk.annotation.OpenApiRef;
 import openapi.client.sdk.annotation.OpenApiMethod;
+import openapi.client.sdk.annotation.OpenApiRef;
 import openapi.example.client.model.Gender;
 import openapi.example.client.model.User;
 import openapi.sdk.common.enums.CryModeEnum;

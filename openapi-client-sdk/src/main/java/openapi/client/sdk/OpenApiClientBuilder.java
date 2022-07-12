@@ -215,12 +215,10 @@ public class OpenApiClientBuilder {
      * @return OpenClientApi对象
      */
     public OpenApiClient build() {
-        OpenApiClient client = new OpenApiClient(baseUrl, selfPrivateKey, remotePublicKey, asymmetricCryEnum,
-                retDecrypt, cryModeEnum, symmetricCryEnum, callerId, api);
-        client.setHttpConnectionTimeout(this.httpConnectionTimeout);
-        client.setHttpReadTimeout(this.httpReadTimeout);
-        client.setHttpProxyHost(this.httpProxyHost);
-        client.setHttpProxyPort(this.httpProxyPort);
+        OpenApiClient client = new OpenApiClient(
+                baseUrl, selfPrivateKey, remotePublicKey, asymmetricCryEnum,
+                retDecrypt, cryModeEnum, symmetricCryEnum, callerId, api,
+                httpConnectionTimeout, httpReadTimeout, httpProxyHost, httpProxyPort);
         return client;
     }
 }
