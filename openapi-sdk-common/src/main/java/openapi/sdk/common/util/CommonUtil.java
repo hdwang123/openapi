@@ -1,7 +1,9 @@
 package openapi.sdk.common.util;
 
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.StrUtil;
+import lombok.extern.slf4j.Slf4j;
 import openapi.sdk.common.exception.OpenApiException;
 import openapi.sdk.common.model.InParams;
 
@@ -11,6 +13,7 @@ import openapi.sdk.common.model.InParams;
  * @author wanghuidong
  * 时间： 2022/5/29 10:16
  */
+@Slf4j
 public class CommonUtil {
 
     /**
@@ -46,5 +49,23 @@ public class CommonUtil {
             return formattedUrl + separator + path;
         }
         return baseUrl;
+    }
+
+    /**
+     * 拷贝一个对象实例（浅拷贝）
+     *
+     * @param obj 对象
+     * @return binary新的实例
+     */
+    public static <T> T cloneInstance(T obj) {
+        try {
+            //创建新实例以免影响原来的对象
+            T tmp = (T) obj.getClass().newInstance();
+            BeanUtil.copyProperties(obj, tmp);
+            return tmp;
+        } catch (Exception ex) {
+            log.error("克隆新实例失败", ex);
+        }
+        return null;
     }
 }

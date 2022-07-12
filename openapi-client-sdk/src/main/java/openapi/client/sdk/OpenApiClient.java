@@ -1,8 +1,7 @@
 package openapi.client.sdk;
 
-import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ArrayUtil;
-import cn.hutool.core.util.ByteUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.http.ContentType;
 import cn.hutool.http.HttpRequest;
@@ -23,7 +22,6 @@ import openapi.sdk.common.model.InParams;
 import openapi.sdk.common.model.OutParams;
 import openapi.sdk.common.util.*;
 
-import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 /**
@@ -411,59 +409,29 @@ public class OpenApiClient {
         } else if (params.length == 1) {
             //单参函数
             Object param = params[0];
-            Class paramClass = param.getClass();
             if (param instanceof Binary) {
                 //二进制类型拆成：参数byte[]+数据byte[],取消文件<->文本转换，提升参数转换效率
-                Binary binary = (Binary) param;
-                Binary binaryTmp = createNewBinary(paramClass, binary);
-                byte[] binaryDataBytes = binaryTmp.getData();
-                long binaryLength = binaryTmp.getLength();
-                binaryTmp.setData(null); //置空后，不影响下面的转换成字符串的效率
-                String paramStr = StrObjectConvert.objToStr(binaryTmp, paramClass);
-                byte[] paramBytes = paramStr.getBytes(StandardCharsets.UTF_8);
-                byte[] paramLengthBytes = ByteUtil.intToBytes(paramBytes.length);
-                byte[] binaryCountBytes = new byte[]{1};
-                byte[] binaryLengthBytes = ByteUtil.longToBytes(binaryLength);
-                bodyBytes = ArrayUtil.addAll(paramLengthBytes, paramBytes, binaryCountBytes, binaryLengthBytes, binaryDataBytes);
+                body = BinaryUtil.getBinaryString((Binary) param);
+                bodyBytes = BinaryUtil.buildSingleBinaryBytes((Binary) param, body);
             } else {
-                body = StrObjectConvert.objToStr(param, paramClass);
+                body = StrObjectConvert.objToStr(param, param.getClass());
             }
             multiParam = false;
         } else {
             //多参函数
             List<String> paramStrList = new ArrayList<>();
-            int binaryCount = 0;
-            List<byte[]> binaryLengthBytesList = new ArrayList<>();
-            List<byte[]> binaryDataBytesList = new ArrayList<>();
+            List<Binary> binaries = new ArrayList<>();
             for (Object param : params) {
-                String paramStr;
-                Class paramClass = param.getClass();
                 if (param instanceof Binary) {
-                    binaryCount++;
-                    Binary binary = (Binary) param;
-                    Binary binaryTmp = createNewBinary(paramClass, binary);
-                    byte[] binaryDataBytes = binaryTmp.getData();
-                    long binaryLength = binaryTmp.getLength();
-                    binaryTmp.setData(null); //置空后，不影响下面的转换成字符串的效率
-                    paramStr = StrObjectConvert.objToStr(binaryTmp, paramClass);
-                    byte[] binaryLengthBytes = ByteUtil.longToBytes(binaryLength);
-                    binaryLengthBytesList.add(binaryLengthBytes);
-                    binaryDataBytesList.add(binaryDataBytes);
+                    paramStrList.add(BinaryUtil.getBinaryString((Binary) param));
                 } else {
-                    paramStr = StrObjectConvert.objToStr(param, paramClass);
+                    paramStrList.add(StrObjectConvert.objToStr(param, param.getClass()));
                 }
-                paramStrList.add(paramStr);
+            }
+            if (CollUtil.isNotEmpty(binaries)) {
+                bodyBytes = BinaryUtil.buildMultiBinaryBytes(binaries, paramStrList);
             }
             body = JSONUtil.toJsonStr(paramStrList);
-            if (binaryCount > 0) {
-                byte[] paramBytes = body.getBytes(StandardCharsets.UTF_8);
-                byte[] paramLengthBytes = ByteUtil.intToBytes(paramBytes.length);
-                byte[] binaryCountBytes = new byte[]{(byte) binaryCount};
-                bodyBytes = ArrayUtil.addAll(paramLengthBytes, paramBytes, binaryCountBytes);
-                for (int i = 0; i < binaryCount; i++) {
-                    bodyBytes = ArrayUtil.addAll(bodyBytes, binaryLengthBytesList.get(i), binaryDataBytesList.get(i));
-                }
-            }
             multiParam = true;
         }
         inParams.setBody(body);
@@ -476,27 +444,8 @@ public class OpenApiClient {
             inParams.setBodyBytes(CompressUtil.compressText(body));
             inParams.setDataType(DataType.TEXT);
         }
-        log.debug("{}传输的数据类型为：{}", logPrefix.get(), inParams.getDataType());
+        log.debug("{}请求体的数据类型为：{}", logPrefix.get(), inParams.getDataType());
         inParams.setMultiParam(multiParam);
-    }
-
-    /**
-     * 创建一个新的binary实例
-     *
-     * @param paramClass binary类型
-     * @param binary     binary老实例
-     * @return binary新的实例
-     */
-    private Binary createNewBinary(Class paramClass, Binary binary) {
-        Binary binaryTmp = null;
-        try {
-            //创建新实例以免影响原来的对象
-            binaryTmp = (Binary) paramClass.newInstance();
-            BeanUtil.copyProperties(binary, binaryTmp);
-        } catch (Exception ex) {
-            log.error("创建新的Binary实例失败", ex);
-        }
-        return binaryTmp;
     }
 
     /**
@@ -585,15 +534,12 @@ public class OpenApiClient {
                     //提取参数byte[]
                     byte[] retBytes = outParams.getDataBytes();
                     retBytes = CompressUtil.decompress(retBytes);
-                    int paramLength = ByteUtil.bytesToInt(ArrayUtil.sub(retBytes, 0, 4));
-                    byte[] paramBytes = ArrayUtil.sub(retBytes, 4, 4 + paramLength);
-                    String paramStr = new String(paramBytes, StandardCharsets.UTF_8);
+                    int paramLength = BinaryUtil.getParamLength(retBytes);
+                    String paramStr = BinaryUtil.getParamStr(retBytes, paramLength);
                     outParams.setData(paramStr);
                     //提取二进制数据byte[]
-                    long binaryLengthStartIndex = 4 + paramLength + 1;
-                    long binaryLength = ByteUtil.bytesToLong(ArrayUtil.sub(retBytes, (int) binaryLengthStartIndex, (int) (binaryLengthStartIndex + 8)));
-                    long binaryDataStartIndex = binaryLengthStartIndex + 8;
-                    byte[] binaryDataBytes = ArrayUtil.sub(retBytes, (int) binaryDataStartIndex, (int) (binaryDataStartIndex + binaryLength));
+                    long binaryLengthStartIndex = BinaryUtil.getBinaryLengthStartIndex(paramLength);
+                    byte[] binaryDataBytes = BinaryUtil.getBinaryDataBytes(retBytes, binaryLengthStartIndex);
                     outParams.setBinaryData(binaryDataBytes);
                 } else {
                     outParams.setData(CompressUtil.decompressToText(outParams.getDataBytes()));
@@ -606,6 +552,7 @@ public class OpenApiClient {
         }
         return outParams;
     }
+
 
     /**
      * 获取出参
@@ -639,7 +586,7 @@ public class OpenApiClient {
         headers.put(Header.Request.SIGN, inParams.getSign());
         headers.put(Header.Request.SYMMETRIC_CRY_KEY, inParams.getSymmetricCryKey());
         headers.put(Header.Request.MULTI_PARAM, String.valueOf(inParams.isMultiParam()));
-        headers.put(Header.Response.DATA_TYPE, inParams.getDataType().name());
+        headers.put(Header.Request.DATA_TYPE, inParams.getDataType().name());
         return headers;
     }
 

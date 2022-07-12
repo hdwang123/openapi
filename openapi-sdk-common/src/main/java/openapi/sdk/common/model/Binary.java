@@ -14,7 +14,7 @@ import openapi.sdk.common.util.TruncateUtil;
  * <pre>
  * 如果方法参数中含有此类型参数，则传输的数据格式如下：
  * ParamsSize 4字节(存储参数长度)
- * PramsData  参数数据
+ * ParamsData  参数数据
  * BinaryCount 1字节（二进制数据个数）
  * BinarySize 8字节（二进制数据长度）
  * BinaryData 二进制数据
