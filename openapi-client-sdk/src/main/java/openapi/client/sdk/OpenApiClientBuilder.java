@@ -79,6 +79,11 @@ public class OpenApiClientBuilder {
     private Integer httpProxyPort;
 
     /**
+     * 是否对HTTP传输的数据启用压缩
+     */
+    private boolean enableCompress = false;
+
+    /**
      * 构造器
      *
      * @param baseUrl         openapi接口基础路径
@@ -210,6 +215,17 @@ public class OpenApiClientBuilder {
     }
 
     /**
+     * 设置是否对数据进行压缩
+     *
+     * @param enableCompress 是否对数据进行压缩
+     * @return builder对象
+     */
+    public OpenApiClientBuilder enableCompress(boolean enableCompress) {
+        this.enableCompress = enableCompress;
+        return this;
+    }
+
+    /**
      * 构建一个OpenClientApi对象
      *
      * @return OpenClientApi对象
@@ -218,7 +234,7 @@ public class OpenApiClientBuilder {
         OpenApiClient client = new OpenApiClient(
                 baseUrl, selfPrivateKey, remotePublicKey, asymmetricCryEnum,
                 retDecrypt, cryModeEnum, symmetricCryEnum, callerId, api,
-                httpConnectionTimeout, httpReadTimeout, httpProxyHost, httpProxyPort);
+                httpConnectionTimeout, httpReadTimeout, httpProxyHost, httpProxyPort, enableCompress);
         return client;
     }
 }

@@ -65,6 +65,7 @@ public class OpenApiRefProxyFactoryBean<T> implements FactoryBean<T> {
                 .httpReadTimeout(config.getHttpReadTimeout())
                 .httpProxyHost(config.getHttpProxyHost())
                 .httpProxyPort(config.getHttpProxyPort())
+                .enableCompress(config.isEnableCompress())
                 .build();
 
         //创建OpenApiRef代理调用处理器对象

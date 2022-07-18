@@ -44,6 +44,7 @@ public class UserApiTest {
                 .retDecrypt(true)
                 .cryModeEnum(CryModeEnum.SYMMETRIC_CRY)
                 .symmetricCry(SymmetricCryEnum.AES)
+                .enableCompress(true)
                 .build();
     }
 
@@ -117,6 +118,7 @@ public class UserApiTest {
                 .cryModeEnum(CryModeEnum.ASYMMETRIC_CRY)
                 .symmetricCry(SymmetricCryEnum.AES)
                 .httpReadTimeout(10)
+                .enableCompress(true)
                 .build();
         OutParams outParams = client.callOpenApi("getAllUsers");
         log.info("返回值：" + outParams);

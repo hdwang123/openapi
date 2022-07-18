@@ -29,6 +29,7 @@ import org.springframework.stereotype.Component;
  *       callerId: "001"
  *       httpConnectionTimeout: 3
  *       httpReadTimeout: 5
+ *       enableCompress: true
  *       httpProxyHost: 127.0.0.1
  *       httpProxyPort: 8888
  * </pre></blockquote>
@@ -102,4 +103,9 @@ public class OpenApiClientConfig {
      * HTTP请求代理端口
      */
     private Integer httpProxyPort;
+
+    /**
+     * 是否启用压缩
+     */
+    private boolean enableCompress = false;
 }

@@ -22,6 +22,7 @@ import openapi.sdk.common.model.InParams;
 import openapi.sdk.common.model.OutParams;
 import openapi.sdk.common.util.*;
 
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 /**
@@ -109,6 +110,11 @@ public class OpenApiClient {
     private final Integer httpProxyPort;
 
     /**
+     * 是否启用压缩
+     */
+    private boolean enableCompress;
+
+    /**
      * 日志前缀
      */
     private final ThreadLocal<String> logPrefix = new ThreadLocal<>();
@@ -130,10 +136,11 @@ public class OpenApiClient {
      * @param httpReadTimeout       HTTP数据传输超时时间（单位秒）
      * @param httpProxyHost         HTTP请求代理域名
      * @param httpProxyPort         HTTP请求代理端口
+     * @param enableCompress        是否启用压缩
      */
     public OpenApiClient(String baseUrl, String selfPrivateKey, String remotePublicKey, AsymmetricCryEnum asymmetricCryEnum,
                          boolean retDecrypt, CryModeEnum cryModeEnum, SymmetricCryEnum symmetricCryEnum, String callerId, String api,
-                         int httpConnectionTimeout, int httpReadTimeout, String httpProxyHost, Integer httpProxyPort) {
+                         int httpConnectionTimeout, int httpReadTimeout, String httpProxyHost, Integer httpProxyPort, boolean enableCompress) {
         this.baseUrl = baseUrl;
         this.selfPrivateKey = selfPrivateKey;
         this.remotePublicKey = remotePublicKey;
@@ -149,6 +156,7 @@ public class OpenApiClient {
         this.httpReadTimeout = httpReadTimeout;
         this.httpProxyHost = httpProxyHost;
         this.httpProxyPort = httpProxyPort;
+        this.enableCompress = enableCompress;
 
         //初始化信息打印
         if (log.isDebugEnabled()) {
@@ -361,11 +369,11 @@ public class OpenApiClient {
         inParams.setBody(body);
         if (bodyBytes != null) {
             //二进制数据传输
-            inParams.setBodyBytes(CompressUtil.compress(bodyBytes));
+            inParams.setBodyBytes(enableCompress ? CompressUtil.compress(bodyBytes) : bodyBytes);
             inParams.setDataType(DataType.BINARY);
         } else {
             //常规文本传输
-            inParams.setBodyBytes(CompressUtil.compressText(body));
+            inParams.setBodyBytes(enableCompress ? CompressUtil.compressText(body) : body.getBytes(StandardCharsets.UTF_8));
             inParams.setDataType(DataType.TEXT);
         }
         log.debug("{}请求体的数据类型为：{}", logPrefix.get(), inParams.getDataType());
@@ -454,11 +462,11 @@ public class OpenApiClient {
             }
 
             //返回值字节数组转成字符串
-            if (ArrayUtil.isNotEmpty(outParams.getDataBytes())) {
+            byte[] retBytes = outParams.getDataBytes();
+            if (ArrayUtil.isNotEmpty(retBytes)) {
                 if (outParams.getDataType() == DataType.BINARY) {
                     //提取参数byte[]
-                    byte[] retBytes = outParams.getDataBytes();
-                    retBytes = CompressUtil.decompress(retBytes);
+                    retBytes = enableCompress ? CompressUtil.decompress(retBytes) : retBytes;
                     int paramLength = BinaryUtil.getParamLength(retBytes);
                     String paramStr = BinaryUtil.getParamStr(retBytes, paramLength);
                     outParams.setData(paramStr);
@@ -467,7 +475,8 @@ public class OpenApiClient {
                     byte[] binaryDataBytes = BinaryUtil.getBinaryDataBytes(retBytes, binaryLengthStartIndex);
                     outParams.setBinaryData(binaryDataBytes);
                 } else {
-                    outParams.setData(CompressUtil.decompressToText(outParams.getDataBytes()));
+                    String data = enableCompress ? CompressUtil.decompressToText(retBytes) : new String(retBytes, StandardCharsets.UTF_8);
+                    outParams.setData(data);
                 }
                 outParams.setDataBytes(null);
                 outParams.setDataBytesStr(null);
