@@ -62,4 +62,10 @@ public class OpenApiConfigImpl implements OpenApiConfig {
         //是否启用接口文档功能
         return true;
     }
+
+    @Override
+    public boolean enableCompress() {
+        //禁用压缩
+        return false;
+    }
 }

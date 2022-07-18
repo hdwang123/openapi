@@ -102,4 +102,9 @@ public class OpenApiClientConfig {
      * HTTP请求代理端口
      */
     private Integer httpProxyPort;
+
+    /**
+     * 是否启用压缩
+     */
+    private boolean enableCompress;
 }

@@ -70,4 +70,13 @@ public interface OpenApiConfig {
         //默认启用
         return true;
     }
+
+    /**
+     * 配置是否对HTTP传输的数据启用压缩
+     *
+     * @return 是否启用压缩
+     */
+    default boolean enableCompress() {
+        return true;
+    }
 }

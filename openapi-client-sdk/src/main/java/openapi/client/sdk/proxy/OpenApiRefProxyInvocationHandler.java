@@ -87,6 +87,7 @@ public class OpenApiRefProxyInvocationHandler implements InvocationHandler {
                             .httpReadTimeout(httpReadTimeout)
                             .httpProxyHost(config.getHttpProxyHost())
                             .httpProxyPort(config.getHttpProxyPort())
+                            .enableCompress(config.isEnableCompress())
                             .build();
                 }
                 //调用远程openapi

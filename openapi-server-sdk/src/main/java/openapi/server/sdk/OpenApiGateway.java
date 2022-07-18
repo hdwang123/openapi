@@ -37,6 +37,7 @@ import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.lang.reflect.Type;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 /**
@@ -81,6 +82,7 @@ public class OpenApiGateway {
     private boolean retEncrypt;
     private CryModeEnum cryModeEnum;
     private SymmetricCryEnum symmetricCryEnum;
+    private boolean enableCompress;
 
     /**
      * 非对称加密处理器
@@ -141,6 +143,7 @@ public class OpenApiGateway {
         this.retEncrypt = config.retEncrypt();
         this.cryModeEnum = config.getCryMode();
         this.symmetricCryEnum = config.getSymmetricCry();
+        this.enableCompress = config.enableCompress();
         this.asymmetricCryHandler = AsymmetricCryHandler.handlerMap.get(this.asymmetricCryEnum);
         this.symmetricCryHandler = SymmetricCryHandler.handlerMap.get(this.symmetricCryEnum);
     }
@@ -337,11 +340,11 @@ public class OpenApiGateway {
                 int paramLength = 0;
                 if (inParams.getDataType() == DataType.BINARY) {
                     //二进制类型，提取参数byte[]转换为参数
-                    bodyBytes = CompressUtil.decompress(bodyBytes);
+                    bodyBytes = enableCompress ? CompressUtil.decompress(bodyBytes) : bodyBytes;
                     paramLength = BinaryUtil.getParamLength(bodyBytes);
                     paramStr = BinaryUtil.getParamStr(bodyBytes, paramLength);
                 } else {
-                    paramStr = CompressUtil.decompressToText(bodyBytes);
+                    paramStr = enableCompress ? CompressUtil.decompressToText(bodyBytes) : new String(bodyBytes, StandardCharsets.UTF_8);
                 }
                 if (inParams.isMultiParam()) {
                     //多参支持
@@ -502,14 +505,14 @@ public class OpenApiGateway {
                     Binary binary = (Binary) ret;
                     retStr = BinaryUtil.getBinaryString(binary);
                     retBytes = BinaryUtil.buildSingleBinaryBytes(binary, retStr);
-                    retBytes = CompressUtil.compress(retBytes);
+                    retBytes = enableCompress ? CompressUtil.compress(retBytes) : retBytes;
                     outParams.setDataType(DataType.BINARY);
                 } else {
                     //文本类型直接转成字符串
                     retStr = StrObjectConvert.objToStr(ret, ret.getClass());
                     if (StrUtil.isNotBlank(retStr)) {
                         //转成Byte[]
-                        retBytes = CompressUtil.compressText(retStr);
+                        retBytes = enableCompress ? CompressUtil.compressText(retStr) : retStr.getBytes(StandardCharsets.UTF_8);
                     }
                 }
             }
