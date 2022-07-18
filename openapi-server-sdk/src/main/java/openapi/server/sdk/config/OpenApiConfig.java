@@ -77,6 +77,7 @@ public interface OpenApiConfig {
      * @return 是否启用压缩
      */
     default boolean enableCompress() {
-        return true;
+        //默认禁用
+        return false;
     }
 }

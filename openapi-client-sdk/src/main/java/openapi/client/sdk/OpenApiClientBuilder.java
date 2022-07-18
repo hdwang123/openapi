@@ -81,7 +81,7 @@ public class OpenApiClientBuilder {
     /**
      * 是否对HTTP传输的数据启用压缩
      */
-    private boolean enableCompress = true;
+    private boolean enableCompress = false;
 
     /**
      * 构造器
