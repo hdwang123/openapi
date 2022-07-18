@@ -65,7 +65,7 @@ public class OpenApiConfigImpl implements OpenApiConfig {
 
     @Override
     public boolean enableCompress() {
-        //禁用压缩
-        return false;
+        //HTTP传输内容启用压缩
+        return true;
     }
 }
