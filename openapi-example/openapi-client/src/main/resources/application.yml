@@ -21,6 +21,7 @@ openapi:
 #      httpProxyHost: 127.0.0.1
 #      httpProxyPort: 8888
 
+
 #对非对称加密密钥对
 keys:
   local:
