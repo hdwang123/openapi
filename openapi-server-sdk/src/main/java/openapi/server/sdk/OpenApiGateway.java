@@ -338,10 +338,12 @@ public class OpenApiGateway {
             try {
                 Type[] paramTypes = apiHandler.getParamTypes();
                 int paramLength = 0;
+                long binaryLengthStartIndex = 0;
                 if (inParams.getDataType() == DataType.BINARY) {
                     //二进制类型，提取参数byte[]转换为参数
                     bodyBytes = enableCompress ? CompressUtil.decompress(bodyBytes) : bodyBytes;
                     paramLength = BinaryUtil.getParamLength(bodyBytes);
+                    binaryLengthStartIndex = BinaryUtil.getBinaryLengthStartIndex(paramLength);
                     paramStr = BinaryUtil.getParamStr(bodyBytes, paramLength);
                 } else {
                     paramStr = enableCompress ? CompressUtil.decompressToText(bodyBytes) : new String(bodyBytes, StandardCharsets.UTF_8);
@@ -352,23 +354,11 @@ public class OpenApiGateway {
                     if (list.size() != paramTypes.length) {
                         throw new OpenApiServerException("参数个数不匹配");
                     }
-                    long binaryLengthStartIndex = BinaryUtil.getBinaryLengthStartIndex(paramLength);
                     for (int i = 0; i < list.size(); i++) {
                         Object obj = StrObjectConvert.strToObj(list.get(i), paramTypes[i]);
-                        //如果是二进制类型或二进制数组类型或二进制集合类型，则按照顺序依次填充数据
-                        if (obj instanceof Binary) {
-                            binaryLengthStartIndex = this.fillBinaryData((Binary) obj, bodyBytes, binaryLengthStartIndex);
-                        } else if (TypeUtil.isBinaryArray(obj.getClass())) {
-                            Binary[] binaries = (Binary[]) obj;
-                            for (Binary binary : binaries) {
-                                binaryLengthStartIndex = this.fillBinaryData(binary, bodyBytes, binaryLengthStartIndex);
-                            }
-                        } else if (TypeUtil.isBinaryCollection(obj)) {
-                            Collection coll = (Collection) obj;
-                            for (Object element : coll) {
-                                Binary binary = (Binary) element;
-                                binaryLengthStartIndex = this.fillBinaryData(binary, bodyBytes, binaryLengthStartIndex);
-                            }
+                        //如果是二进制类型参数，则按照顺序依次填充数据
+                        if (BinaryUtil.isBinaryParam(obj)) {
+                            binaryLengthStartIndex = this.fillBinaryParam(obj, bodyBytes, binaryLengthStartIndex);
                         }
                         params.add(obj);
                     }
@@ -377,25 +367,8 @@ public class OpenApiGateway {
                         //单参
                         Type paramType = paramTypes[0];
                         Object obj = StrObjectConvert.strToObj(paramStr, paramType);
-                        if (obj instanceof Binary) {
-                            //填充二进制数据
-                            long binaryLengthStartIndex = BinaryUtil.getBinaryLengthStartIndex(paramLength);
-                            this.fillBinaryData((Binary) obj, bodyBytes, binaryLengthStartIndex);
-                        } else if (TypeUtil.isBinaryArray(obj.getClass())) {
-                            //填充多个二进制数
-                            Binary[] binaries = (Binary[]) obj;
-                            long binaryLengthStartIndex = BinaryUtil.getBinaryLengthStartIndex(paramLength);
-                            for (Binary binary : binaries) {
-                                binaryLengthStartIndex = this.fillBinaryData(binary, bodyBytes, binaryLengthStartIndex);
-                            }
-                        } else if (TypeUtil.isBinaryCollection(obj)) {
-                            //填充多个二进制数
-                            Collection coll = (Collection) obj;
-                            long binaryLengthStartIndex = BinaryUtil.getBinaryLengthStartIndex(paramLength);
-                            for (Object element : coll) {
-                                Binary binary = (Binary) element;
-                                binaryLengthStartIndex = this.fillBinaryData(binary, bodyBytes, binaryLengthStartIndex);
-                            }
+                        if (BinaryUtil.isBinaryParam(obj)) {
+                            this.fillBinaryParam(obj, bodyBytes, binaryLengthStartIndex);
                         }
                         params.add(obj);
                     } else {
@@ -410,6 +383,32 @@ public class OpenApiGateway {
             }
         }
         return params;
+    }
+
+    /**
+     * 填充二进制类型参数对象
+     *
+     * @param obj                    参数对象
+     * @param bodyBytes              HTTP请求体（或响应体）的字节数据
+     * @param binaryLengthStartIndex 二进制数据长度信息的起始索引
+     * @return 下一个二进制数据长度信息的起始索引
+     */
+    private long fillBinaryParam(Object obj, byte[] bodyBytes, long binaryLengthStartIndex) {
+        if (obj instanceof Binary) {
+            binaryLengthStartIndex = this.fillBinaryData((Binary) obj, bodyBytes, binaryLengthStartIndex);
+        } else if (TypeUtil.isBinaryArray(obj.getClass())) {
+            Binary[] binaries = (Binary[]) obj;
+            for (Binary binary : binaries) {
+                binaryLengthStartIndex = this.fillBinaryData(binary, bodyBytes, binaryLengthStartIndex);
+            }
+        } else if (TypeUtil.isBinaryCollection(obj)) {
+            Collection coll = (Collection) obj;
+            for (Object element : coll) {
+                Binary binary = (Binary) element;
+                binaryLengthStartIndex = this.fillBinaryData(binary, bodyBytes, binaryLengthStartIndex);
+            }
+        }
+        return binaryLengthStartIndex;
     }
 
 

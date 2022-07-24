@@ -17,6 +17,16 @@ import java.util.List;
 public class BinaryUtil {
 
     /**
+     * 判断是否是二进制类型参数(包括数组、集合)
+     *
+     * @param obj 对象
+     * @return 是否是二进制类型对象
+     */
+    public static boolean isBinaryParam(Object obj) {
+        return obj instanceof Binary || TypeUtil.isBinaryArray(obj.getClass()) || TypeUtil.isBinaryCollection(obj);
+    }
+
+    /**
      * 获取二进制对象的字符串表示（数据清空了）
      *
      * @param binary 二进制对象
@@ -123,8 +133,7 @@ public class BinaryUtil {
      * @return 文件长度信息(BinarySize)的起始位置
      */
     public static long getBinaryLengthStartIndex(int paramLength) {
-        long binaryLengthStartIndex = 4 + paramLength + 1;
-        return binaryLengthStartIndex;
+        return 4 + paramLength + 1;
     }
 
     /**

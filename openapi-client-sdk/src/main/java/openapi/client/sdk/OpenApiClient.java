@@ -18,6 +18,7 @@ import openapi.sdk.common.exception.OpenApiClientException;
 import openapi.sdk.common.handler.AsymmetricCryHandler;
 import openapi.sdk.common.handler.SymmetricCryHandler;
 import openapi.sdk.common.model.Binary;
+import openapi.sdk.common.model.BinaryParam;
 import openapi.sdk.common.model.InParams;
 import openapi.sdk.common.model.OutParams;
 import openapi.sdk.common.util.*;
@@ -303,29 +304,10 @@ public class OpenApiClient {
             //单参函数
             Object param = params[0];
             Class paramClass = param.getClass();
-            if (param instanceof Binary) {
-                //二进制类型拆成：参数byte[]+数据byte[],取消文件<->文本转换，提升参数转换效率
-                body = BinaryUtil.getBinaryString((Binary) param);
-                bodyBytes = BinaryUtil.buildSingleBinaryBytes((Binary) param, body);
-            } else if (TypeUtil.isBinaryArray(paramClass)) {
-                //多个二进制类型转换成：参数byte[]+数据byte[]
-                Binary[] binaries = (Binary[]) param;
-                List<Binary> binaryList = new ArrayList<>();
-                for (Binary binary : binaries) {
-                    binaryList.add(binary);
-                }
-                body = BinaryUtil.getBinariesString(binaryList);
-                bodyBytes = BinaryUtil.buildMultiBinaryBytes(binaryList, body);
-            } else if (TypeUtil.isBinaryCollection(param)) {
-                //多个二进制类型转换成：参数byte[]+数据byte[]
-                Collection coll = (Collection) param;
-                List<Binary> binaryList = new ArrayList<>();
-                for (Object obj : coll) {
-                    Binary binary = (Binary) obj;
-                    binaryList.add(binary);
-                }
-                body = BinaryUtil.getBinariesString(binaryList);
-                bodyBytes = BinaryUtil.buildMultiBinaryBytes(binaryList, body);
+            if (BinaryUtil.isBinaryParam(param)) {
+                BinaryParam binaryParam = this.getBinaryParam(param);
+                body = binaryParam.getBinariesStr();
+                bodyBytes = BinaryUtil.buildMultiBinaryBytes(binaryParam.getBinaries(), body);
             } else {
                 body = StrObjectConvert.objToStr(param, paramClass);
             }
@@ -336,26 +318,10 @@ public class OpenApiClient {
             List<Binary> binaryList = new ArrayList<>();
             for (Object param : params) {
                 //按照参数的顺序，依次转换成字符串或二进制数据类型
-                if (param instanceof Binary) {
-                    paramStrList.add(BinaryUtil.getBinaryString((Binary) param));
-                    binaryList.add((Binary) param);
-                } else if (TypeUtil.isBinaryArray(param.getClass())) {
-                    Binary[] binaries = (Binary[]) param;
-                    List<Binary> arrayBinaries = new ArrayList<>();
-                    for (Binary binary : binaries) {
-                        arrayBinaries.add(binary);
-                        binaryList.add(binary);
-                    }
-                    paramStrList.add(BinaryUtil.getBinariesString(arrayBinaries));
-                } else if (TypeUtil.isBinaryCollection(param)) {
-                    Collection coll = (Collection) param;
-                    List<Binary> listBinaries = new ArrayList<>();
-                    for (Object obj : coll) {
-                        Binary binary = (Binary) obj;
-                        listBinaries.add(binary);
-                        binaryList.add(binary);
-                    }
-                    paramStrList.add(BinaryUtil.getBinariesString(listBinaries));
+                if (BinaryUtil.isBinaryParam(param)) {
+                    BinaryParam binaryParam = this.getBinaryParam(param);
+                    binaryList.addAll(binaryParam.getBinaries());
+                    paramStrList.add(binaryParam.getBinariesStr());
                 } else {
                     paramStrList.add(StrObjectConvert.objToStr(param, param.getClass()));
                 }
@@ -378,6 +344,40 @@ public class OpenApiClient {
         }
         log.debug("{}请求体的数据类型为：{}", logPrefix.get(), inParams.getDataType());
         inParams.setMultiParam(multiParam);
+    }
+
+    /**
+     * 获取二进制类型参数对象
+     *
+     * @param obj 参数对象
+     * @return 二进制类型参数对象
+     */
+    private BinaryParam getBinaryParam(Object obj) {
+        BinaryParam binaryParam = new BinaryParam();
+        List<Binary> binaryList = new ArrayList<>();
+        if (obj instanceof Binary) {
+            binaryList.add((Binary) obj);
+            binaryParam.setBinariesStr(BinaryUtil.getBinaryString((Binary) obj));
+        } else if (TypeUtil.isBinaryArray(obj.getClass())) {
+            Binary[] binaries = (Binary[]) obj;
+            List<Binary> arrayBinaries = new ArrayList<>();
+            for (Binary binary : binaries) {
+                arrayBinaries.add(binary);
+                binaryList.add(binary);
+            }
+            binaryParam.setBinariesStr(BinaryUtil.getBinariesString(arrayBinaries));
+        } else if (TypeUtil.isBinaryCollection(obj)) {
+            Collection coll = (Collection) obj;
+            List<Binary> listBinaries = new ArrayList<>();
+            for (Object element : coll) {
+                Binary binary = (Binary) element;
+                listBinaries.add(binary);
+                binaryList.add(binary);
+            }
+            binaryParam.setBinariesStr(BinaryUtil.getBinariesString(listBinaries));
+        }
+        binaryParam.setBinaries(binaryList);
+        return binaryParam;
     }
 
     /**
@@ -604,10 +604,10 @@ public class OpenApiClient {
     public String toString() {
         return String.format("\nopenApiClient hashCode:%x,\nbaseUrl:%s,\nselfPrivateKey:%s,\nremotePublicKey:%s," +
                         "\nasymmetricCryEnum:%s,\nretDecrypt:%s;\ncryModeEnum:%s,\nsymmetricCryEnum:%s," +
-                        "\ncallerId:%s,\napi:%s,\nhttpConnectionTimeout:%s,\nhttpReadTimeout:%s",
+                        "\ncallerId:%s,\napi:%s,\nhttpConnectionTimeout:%s,\nhttpReadTimeout:%s,\nenableCompress:%s",
                 this.hashCode(), baseUrl, selfPrivateKey, remotePublicKey,
                 asymmetricCryEnum, retDecrypt, cryModeEnum, symmetricCryEnum,
-                callerId, api, httpConnectionTimeout, httpReadTimeout);
+                callerId, api, httpConnectionTimeout, httpReadTimeout, enableCompress);
     }
 
 
