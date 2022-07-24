@@ -18,7 +18,7 @@ openapi:
       callerId: "001"
       httpConnectionTimeout: 3
       httpReadTimeout: 6
-      enableCompress: true
+      enableCompress: false
 #      httpProxyHost: 127.0.0.1
 #      httpProxyPort: 8888
 

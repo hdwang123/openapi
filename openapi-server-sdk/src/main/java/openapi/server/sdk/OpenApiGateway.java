@@ -108,9 +108,10 @@ public class OpenApiGateway {
         //打印基本信息
         if (log.isDebugEnabled()) {
             String handlersStr = getHandlersStr();
-            log.debug("OpenApiGateway Init: \nSelfPrivateKey:{},\nAsymmetricCry:{},\nretEncrypt:{},\ncryModeEnum:{},\nSymmetricCry:{},\nApiHandlers:\n{}",
-                    selfPrivateKey, asymmetricCryEnum, retEncrypt, cryModeEnum, symmetricCryEnum, handlersStr);
-            logCryMode(this.cryModeEnum);
+            log.debug("OpenApiGateway Init: \nSelfPrivateKey:{},\nAsymmetricCry:{},\nretEncrypt:{},\ncryModeEnum:{},\nSymmetricCry:{},\nenableCompress:{},\nApiHandlers:\n{}",
+                    selfPrivateKey, asymmetricCryEnum, retEncrypt, cryModeEnum, symmetricCryEnum, enableCompress, handlersStr);
+            this.logCryMode(this.cryModeEnum, null);
+            this.logEnableCompress(enableCompress, null);
         }
         //重要日志改成info级别
         log.info("OpenApiGateway init succeed. path={}", Constant.OPENAPI_PATH);
@@ -341,12 +342,12 @@ public class OpenApiGateway {
                 long binaryLengthStartIndex = 0;
                 if (inParams.getDataType() == DataType.BINARY) {
                     //二进制类型，提取参数byte[]转换为参数
-                    bodyBytes = enableCompress ? CompressUtil.decompress(bodyBytes) : bodyBytes;
+                    bodyBytes = isEnableCompress(apiHandler) ? CompressUtil.decompress(bodyBytes) : bodyBytes;
                     paramLength = BinaryUtil.getParamLength(bodyBytes);
                     binaryLengthStartIndex = BinaryUtil.getBinaryLengthStartIndex(paramLength);
                     paramStr = BinaryUtil.getParamStr(bodyBytes, paramLength);
                 } else {
-                    paramStr = enableCompress ? CompressUtil.decompressToText(bodyBytes) : new String(bodyBytes, StandardCharsets.UTF_8);
+                    paramStr = isEnableCompress(apiHandler) ? CompressUtil.decompressToText(bodyBytes) : new String(bodyBytes, StandardCharsets.UTF_8);
                 }
                 if (inParams.isMultiParam()) {
                     //多参支持
@@ -504,14 +505,14 @@ public class OpenApiGateway {
                     Binary binary = (Binary) ret;
                     retStr = BinaryUtil.getBinaryString(binary);
                     retBytes = BinaryUtil.buildSingleBinaryBytes(binary, retStr);
-                    retBytes = enableCompress ? CompressUtil.compress(retBytes) : retBytes;
+                    retBytes = isEnableCompress(apiHandler) ? CompressUtil.compress(retBytes) : retBytes;
                     outParams.setDataType(DataType.BINARY);
                 } else {
                     //文本类型直接转成字符串
                     retStr = StrObjectConvert.objToStr(ret, ret.getClass());
                     if (StrUtil.isNotBlank(retStr)) {
                         //转成Byte[]
-                        retBytes = enableCompress ? CompressUtil.compressText(retStr) : retStr.getBytes(StandardCharsets.UTF_8);
+                        retBytes = isEnableCompress(apiHandler) ? CompressUtil.compressText(retStr) : retStr.getBytes(StandardCharsets.UTF_8);
                     }
                 }
             }
@@ -583,10 +584,11 @@ public class OpenApiGateway {
      */
     private CryModeEnum getCryModeEnum(ApiHandler apiHandler) {
         CryModeEnum cryModeEnum = this.cryModeEnum;
-        if (CryModeEnum.UNKNOWN != apiHandler.getOpenApiMethod().cryModeEnum()) {
-            cryModeEnum = apiHandler.getOpenApiMethod().cryModeEnum();
+        OpenApiMethod apiMethod = apiHandler.getOpenApiMethod();
+        if (CryModeEnum.UNKNOWN != apiMethod.cryModeEnum()) {
+            cryModeEnum = apiMethod.cryModeEnum();
+            logCryMode(cryModeEnum, apiMethod);
         }
-        logCryMode(cryModeEnum);
         return cryModeEnum;
     }
 
@@ -606,6 +608,22 @@ public class OpenApiGateway {
     }
 
     /**
+     * 判断数据是否启用压缩
+     *
+     * @param apiHandler openapi处理器
+     * @return 是否启用压缩
+     */
+    private boolean isEnableCompress(ApiHandler apiHandler) {
+        boolean enableCompress = this.enableCompress;
+        OpenApiMethod apiMethod = apiHandler.getOpenApiMethod();
+        if (StrUtil.isNotBlank(apiMethod.enableCompress())) {
+            enableCompress = Boolean.parseBoolean(apiMethod.enableCompress());
+            this.logEnableCompress(enableCompress, apiMethod);
+        }
+        return enableCompress;
+    }
+
+    /**
      * 获取api处理器Map的key
      *
      * @param openApiName       开放api名称
@@ -617,18 +635,37 @@ public class OpenApiGateway {
     }
 
     /**
-     * 记录加密模式
+     * 记录加密模式日志
      *
      * @param cryModeEnum 加密模式
+     * @param apiMethod   api方法注解
      */
-    private void logCryMode(CryModeEnum cryModeEnum) {
-        if (cryModeEnum == CryModeEnum.SYMMETRIC_CRY) {
-            log.debug("{}采用非对称加密{}+对称加密{}模式", logPrefix.get(), asymmetricCryEnum, symmetricCryEnum);
-        } else if (cryModeEnum == CryModeEnum.ASYMMETRIC_CRY) {
-            log.debug("{}仅采用非对称加密{}模式", logPrefix.get(), asymmetricCryEnum);
-        } else {
-            log.debug("{}采用不加密模式,签名用的非对称加密{}", logPrefix.get(), asymmetricCryEnum);
+    private void logCryMode(CryModeEnum cryModeEnum, OpenApiMethod apiMethod) {
+        String methodId = StrUtil.EMPTY;
+        if (apiMethod != null) {
+            methodId = apiMethod.value();
         }
+        if (cryModeEnum == CryModeEnum.SYMMETRIC_CRY) {
+            log.debug("{}采用非对称加密{}+对称加密{}模式", methodId, asymmetricCryEnum, symmetricCryEnum);
+        } else if (cryModeEnum == CryModeEnum.ASYMMETRIC_CRY) {
+            log.debug("{}仅采用非对称加密{}模式", methodId, asymmetricCryEnum);
+        } else {
+            log.debug("{}采用不加密模式,签名用的非对称加密{}", methodId, asymmetricCryEnum);
+        }
+    }
+
+    /**
+     * 记录是否启用压缩日志
+     *
+     * @param enableCompress 是否启用压缩
+     * @param apiMethod      api方法注解
+     */
+    private void logEnableCompress(boolean enableCompress, OpenApiMethod apiMethod) {
+        String methodId = StrUtil.EMPTY;
+        if (apiMethod != null) {
+            methodId = apiMethod.value();
+        }
+        log.debug("{}HTTP传输数据{}压缩功能", methodId, enableCompress ? "启用" : "未启用");
     }
 
     /**

@@ -44,7 +44,7 @@ public class UserApiTest {
                 .retDecrypt(true)
                 .cryModeEnum(CryModeEnum.SYMMETRIC_CRY)
                 .symmetricCry(SymmetricCryEnum.AES)
-                .enableCompress(true)
+                .enableCompress(false)
                 .build();
     }
 

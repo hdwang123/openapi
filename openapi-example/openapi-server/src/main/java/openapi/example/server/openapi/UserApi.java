@@ -80,7 +80,7 @@ public class UserApi {
         return users;
     }
 
-    @OpenApiMethod(value = "getAllUsers", retEncrypt = "false", cryModeEnum = CryModeEnum.ASYMMETRIC_CRY)
+    @OpenApiMethod(value = "getAllUsers", retEncrypt = "false", cryModeEnum = CryModeEnum.ASYMMETRIC_CRY, enableCompress = "true")
     public List<User> getAllUsers() {
         log.info("getAllUsers");
         List<User> users = new ArrayList<>();

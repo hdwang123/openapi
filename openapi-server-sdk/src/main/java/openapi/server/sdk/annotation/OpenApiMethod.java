@@ -39,4 +39,12 @@ public @interface OpenApiMethod {
      * @return 加密模式
      */
     CryModeEnum cryModeEnum() default CryModeEnum.UNKNOWN;
+
+    /**
+     * HTTP传输的数据是否启用压缩(true:压缩，false:不压缩，默认由{@link openapi.server.sdk.config.OpenApiConfig}决定)
+     *
+     * @return 是否启用压缩
+     */
+    String enableCompress() default "";
+
 }

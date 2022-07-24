@@ -54,4 +54,11 @@ public @interface OpenApiMethod {
      * @return 数据传输超时时间
      */
     int httpReadTimeout() default -1;
+
+    /**
+     * 数据是否启用压缩(true:压缩，false:不压缩，默认由{@link OpenApiClientConfig}决定)
+     *
+     * @return 是否启用压缩
+     */
+    String enableCompress() default "";
 }

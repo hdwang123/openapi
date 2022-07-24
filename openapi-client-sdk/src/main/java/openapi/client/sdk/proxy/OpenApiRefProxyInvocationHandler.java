@@ -78,6 +78,7 @@ public class OpenApiRefProxyInvocationHandler implements InvocationHandler {
                     CryModeEnum cryModeEnum = this.getCryModeEnum(openApiMethod);
                     int httpConnectionTimeout = this.httpConnectionTimeout(openApiMethod);
                     int httpReadTimeout = this.httpReadTimeout(openApiMethod);
+                    boolean enableCompress = this.enableCompress(openApiMethod);
                     apiClient = new OpenApiClientBuilder(config.getBaseUrl(), config.getSelfPrivateKey(), config.getRemotePublicKey(), config.getCallerId(), api)
                             .asymmetricCry(config.getAsymmetricCryEnum())
                             .retDecrypt(retDecrypt)
@@ -87,7 +88,7 @@ public class OpenApiRefProxyInvocationHandler implements InvocationHandler {
                             .httpReadTimeout(httpReadTimeout)
                             .httpProxyHost(config.getHttpProxyHost())
                             .httpProxyPort(config.getHttpProxyPort())
-                            .enableCompress(config.isEnableCompress())
+                            .enableCompress(enableCompress)
                             .build();
                 }
                 //调用远程openapi
@@ -132,6 +133,10 @@ public class OpenApiRefProxyInvocationHandler implements InvocationHandler {
         }
         boolean httpReadTimeoutDif = openApiMethod.httpReadTimeout() != -1 && openApiMethod.httpReadTimeout() != config.getHttpReadTimeout();
         if (httpReadTimeoutDif) {
+            return true;
+        }
+        boolean enableCompressDif = StrUtil.isNotBlank(openApiMethod.enableCompress()) && Boolean.parseBoolean(openApiMethod.enableCompress()) != config.isEnableCompress();
+        if (enableCompressDif) {
             return true;
         }
         return false;
@@ -191,5 +196,19 @@ public class OpenApiRefProxyInvocationHandler implements InvocationHandler {
             timeout = openApiMethod.httpReadTimeout();
         }
         return timeout;
+    }
+
+    /**
+     * 获取HTTP传输的数据是否启用压缩
+     *
+     * @param openApiMethod API方法注解
+     * @return HTTP传输的数据是否启用压缩
+     */
+    private boolean enableCompress(OpenApiMethod openApiMethod) {
+        boolean enableCompress = config.isEnableCompress();
+        if (StrUtil.isNotBlank(openApiMethod.enableCompress())) {
+            enableCompress = Boolean.parseBoolean(openApiMethod.enableCompress());
+        }
+        return enableCompress;
     }
 }

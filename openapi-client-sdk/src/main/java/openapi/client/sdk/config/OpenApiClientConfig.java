@@ -105,7 +105,7 @@ public class OpenApiClientConfig {
     private Integer httpProxyPort;
 
     /**
-     * 是否启用压缩
+     * HTTP传输的数据是否启用压缩
      */
     private boolean enableCompress = false;
 }
