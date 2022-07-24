@@ -2,6 +2,7 @@ package openapi.client.sdk;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ArrayUtil;
+import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.http.ContentType;
 import cn.hutool.http.HttpRequest;
@@ -181,7 +182,7 @@ public class OpenApiClient {
 
         //没有设置uuid则给设置一个
         if (StrUtil.isBlank(inParams.getUuid())) {
-            inParams.setUuid(UUID.randomUUID().toString());
+            inParams.setUuid(IdUtil.simpleUUID());
             //设置日志前缀
             logPrefix.set(String.format("uuid=%s:", inParams.getUuid()));
         }
@@ -211,7 +212,7 @@ public class OpenApiClient {
 
         //构建InParams对象
         InParams inParams = new InParams();
-        inParams.setUuid(UUID.randomUUID().toString());
+        inParams.setUuid(IdUtil.simpleUUID());
         inParams.setCallerId(callerId);
         inParams.setApi(api);
         inParams.setMethod(method);
@@ -241,7 +242,7 @@ public class OpenApiClient {
 
         //构建InParams对象
         InParams inParams = new InParams();
-        inParams.setUuid(UUID.randomUUID().toString());
+        inParams.setUuid(IdUtil.simpleUUID());
         inParams.setCallerId(callerId);
         inParams.setApi(api);
         inParams.setMethod(method);
@@ -271,7 +272,7 @@ public class OpenApiClient {
 
         //构建InParams对象
         InParams inParams = new InParams();
-        inParams.setUuid(UUID.randomUUID().toString());
+        inParams.setUuid(IdUtil.simpleUUID());
         inParams.setCallerId(callerId);
         inParams.setApi(api);
         inParams.setMethod(method);
