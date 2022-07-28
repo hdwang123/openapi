@@ -6,7 +6,7 @@ import cn.hutool.json.JSONArray;
 import cn.hutool.json.JSONUtil;
 import openapi.sdk.common.constant.Constant;
 import openapi.server.sdk.config.OpenApiConfig;
-import openapi.server.sdk.doc.annotation.OpenApiDoc;
+import openapi.sdk.common.annotation.OpenApiDoc;
 import openapi.server.sdk.doc.model.*;
 import openapi.server.sdk.doc.model.Method;
 import openapi.server.sdk.model.ApiHandler;

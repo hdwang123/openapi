@@ -19,7 +19,7 @@ import openapi.sdk.common.exception.OpenApiClientException;
 import openapi.sdk.common.handler.AsymmetricCryHandler;
 import openapi.sdk.common.handler.SymmetricCryHandler;
 import openapi.sdk.common.model.Binary;
-import openapi.sdk.common.model.BinaryParam;
+import openapi.client.sdk.model.BinaryParam;
 import openapi.sdk.common.model.InParams;
 import openapi.sdk.common.model.OutParams;
 import openapi.sdk.common.util.*;

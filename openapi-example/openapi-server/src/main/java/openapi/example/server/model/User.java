@@ -1,7 +1,7 @@
 package openapi.example.server.model;
 
 import lombok.Data;
-import openapi.server.sdk.doc.annotation.OpenApiDoc;
+import openapi.sdk.common.annotation.OpenApiDoc;
 
 import java.util.List;
 

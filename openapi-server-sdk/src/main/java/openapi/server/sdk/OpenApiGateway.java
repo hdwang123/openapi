@@ -24,6 +24,7 @@ import openapi.server.sdk.annotation.OpenApiMethod;
 import openapi.server.sdk.config.OpenApiConfig;
 import openapi.server.sdk.model.ApiHandler;
 import openapi.server.sdk.model.Context;
+import openapi.server.sdk.model.OpenApiRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.http.MediaType;
@@ -338,6 +339,15 @@ public class OpenApiGateway {
             String paramStr;
             try {
                 Type[] paramTypes = apiHandler.getParamTypes();
+                //移除OpenApiRequest参数
+                List<Type> paramTypeList = new ArrayList<>();
+                for (Type type : paramTypes) {
+                    if (type.getTypeName().equals(OpenApiRequest.class.getName())) {
+                        continue;
+                    }
+                    paramTypeList.add(type);
+                }
+                //将入参转换为方法参数
                 int paramLength = 0;
                 long binaryLengthStartIndex = 0;
                 if (inParams.getDataType() == DataType.BINARY) {
@@ -349,32 +359,53 @@ public class OpenApiGateway {
                 } else {
                     paramStr = isEnableCompress(apiHandler) ? CompressUtil.decompressToText(bodyBytes) : new String(bodyBytes, StandardCharsets.UTF_8);
                 }
+                List<Object> paramsTmp = new ArrayList<>();
                 if (inParams.isMultiParam()) {
                     //多参支持
                     List<String> list = JSONUtil.toList(paramStr, String.class);
-                    if (list.size() != paramTypes.length) {
+                    if (list.size() != paramTypeList.size()) {
                         throw new OpenApiServerException("参数个数不匹配");
                     }
                     for (int i = 0; i < list.size(); i++) {
-                        Object obj = StrObjectConvert.strToObj(list.get(i), paramTypes[i]);
+                        Object obj = StrObjectConvert.strToObj(list.get(i), paramTypeList.get(i));
                         //如果是二进制类型参数，则按照顺序依次填充数据
                         if (BinaryUtil.isBinaryParam(obj)) {
                             binaryLengthStartIndex = this.fillBinaryParam(obj, bodyBytes, binaryLengthStartIndex);
                         }
-                        params.add(obj);
+                        paramsTmp.add(obj);
                     }
                 } else {
-                    if (paramTypes.length == 1) {
+                    if (paramTypeList.size() == 1) {
                         //单参
-                        Type paramType = paramTypes[0];
+                        Type paramType = paramTypeList.get(0);
                         Object obj = StrObjectConvert.strToObj(paramStr, paramType);
                         if (BinaryUtil.isBinaryParam(obj)) {
                             this.fillBinaryParam(obj, bodyBytes, binaryLengthStartIndex);
                         }
-                        params.add(obj);
+                        paramsTmp.add(obj);
                     } else {
                         //无参
                     }
+                }
+                //加回OpenApiRequest参数
+                int paramsTmpIndex = 0;
+                OpenApiRequest request = null;
+                for (Type type : paramTypes) {
+                    Object param;
+                    if (type.getTypeName().equals(OpenApiRequest.class.getName())) {
+                        if (request == null) {
+                            request = new OpenApiRequest();
+                            request.setUuid(inParams.getUuid());
+                            request.setCallerId(inParams.getCallerId());
+                            request.setApi(inParams.getApi());
+                            request.setMethod(inParams.getMethod());
+                            request.setDataType(inParams.getDataType());
+                        }
+                        param = request;
+                    } else {
+                        param = paramsTmp.get(paramsTmpIndex++);
+                    }
+                    params.add(param);
                 }
             } catch (OpenApiServerException be) {
                 throw new OpenApiServerException("入参转换异常：" + be.getMessage());

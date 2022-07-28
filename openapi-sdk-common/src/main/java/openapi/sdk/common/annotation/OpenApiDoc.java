@@ -1,4 +1,4 @@
-package openapi.server.sdk.doc.annotation;
+package openapi.sdk.common.annotation;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

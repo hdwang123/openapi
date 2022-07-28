@@ -7,7 +7,8 @@ import openapi.example.server.model.User;
 import openapi.sdk.common.enums.CryModeEnum;
 import openapi.server.sdk.annotation.OpenApi;
 import openapi.server.sdk.annotation.OpenApiMethod;
-import openapi.server.sdk.doc.annotation.OpenApiDoc;
+import openapi.sdk.common.annotation.OpenApiDoc;
+import openapi.server.sdk.model.OpenApiRequest;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -26,8 +27,9 @@ public class UserApi {
 
     @OpenApiDoc(cnName = "查询用户", describe = "根据用户ID查询用户", retCnName = "用户", retDescribe = "用户信息")
     @OpenApiMethod("getUserById")
-    public User getUserById(@OpenApiDoc(cnName = "用户ID") Long id) {
-        log.info("getUserById：id=" + id);
+    public User getUserById(@OpenApiDoc(cnName = "用户ID") Long id,
+                            @OpenApiDoc(ignore = true) OpenApiRequest request) {
+        log.info("getUserById：id={},request={}", id, request);
         User user = new User();
         user.setId(1L);
         user.setName("张三");

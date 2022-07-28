@@ -1,6 +1,7 @@
-package openapi.sdk.common.model;
+package openapi.client.sdk.model;
 
 import lombok.Data;
+import openapi.sdk.common.model.Binary;
 
 import java.util.List;
 

@@ -3,6 +3,7 @@ package openapi.sdk.common.model;
 import cn.hutool.json.JSONUtil;
 import lombok.Data;
 import lombok.SneakyThrows;
+import openapi.sdk.common.annotation.OpenApiDoc;
 import openapi.sdk.common.util.CommonUtil;
 import openapi.sdk.common.util.TruncateUtil;
 
@@ -24,22 +25,26 @@ import openapi.sdk.common.util.TruncateUtil;
  * @author wanghuidong
  * 时间： 2022/7/11 19:08
  */
+@OpenApiDoc(cnName = "二进制对象")
 @Data
 public class Binary {
 
     /**
      * 数据长度（多少字节）
      */
+    @OpenApiDoc(cnName = "数据长度")
     private long length;
 
     /**
      * 数据
      */
+    @OpenApiDoc(cnName = "数据")
     private byte[] data;
 
     /**
      * 数据字符串表示（用于打日志）
      */
+    @OpenApiDoc(ignore = true)
     private String dataStr;
 
     /**
