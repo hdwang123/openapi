@@ -30,7 +30,7 @@ public @interface OpenApiDoc {
     String describe() default "";
 
     /**
-     * 是否取消生成文档信息,仅针对类、方法、对象属性（true:取消生成，false:生成，默认生成）
+     * 是否取消生成文档信息（true:取消生成，false:生成，默认生成）
      *
      * @return 是否忽略
      */

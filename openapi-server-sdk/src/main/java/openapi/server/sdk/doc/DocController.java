@@ -130,7 +130,9 @@ public class DocController {
             Type type = apiHandler.getParamTypes()[i];
             Parameter parameter = apiHandler.getParameters()[i];
             Param param = getParam(type, parameter);
-            method.getParams().add(param);
+            if (param != null) {
+                method.getParams().add(param);
+            }
         }
 
         //设置方法返回值信息
@@ -151,13 +153,16 @@ public class DocController {
         Param param = new Param();
         param.setType(type.getTypeName());
         param.setName(parameter.getName());
-        param.setProperties(getProperties(type));
-
         if (parameter.isAnnotationPresent(OpenApiDoc.class)) {
             OpenApiDoc apiDoc = parameter.getAnnotation(OpenApiDoc.class);
             param.setCnName(apiDoc.cnName());
             param.setDescribe(apiDoc.describe());
+            if (apiDoc.ignore()) {
+                //取消文档的生成
+                return null;
+            }
         }
+        param.setProperties(getProperties(type));
         return param;
     }
 
