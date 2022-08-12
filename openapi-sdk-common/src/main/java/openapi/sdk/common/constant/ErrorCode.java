@@ -17,4 +17,9 @@ public class ErrorCode {
      */
     public static final int FAILED = -1;
 
+    /**
+     * 未找到
+     */
+    public static final int NOT_FOUND = 404;
+
 }

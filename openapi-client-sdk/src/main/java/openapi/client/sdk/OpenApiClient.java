@@ -9,7 +9,9 @@ import cn.hutool.http.HttpRequest;
 import cn.hutool.http.HttpResponse;
 import cn.hutool.json.JSONUtil;
 import lombok.extern.slf4j.Slf4j;
+import openapi.client.sdk.model.BinaryParam;
 import openapi.sdk.common.constant.Constant;
+import openapi.sdk.common.constant.ErrorCode;
 import openapi.sdk.common.constant.Header;
 import openapi.sdk.common.enums.AsymmetricCryEnum;
 import openapi.sdk.common.enums.CryModeEnum;
@@ -19,7 +21,6 @@ import openapi.sdk.common.exception.OpenApiClientException;
 import openapi.sdk.common.handler.AsymmetricCryHandler;
 import openapi.sdk.common.handler.SymmetricCryHandler;
 import openapi.sdk.common.model.Binary;
-import openapi.client.sdk.model.BinaryParam;
 import openapi.sdk.common.model.InParams;
 import openapi.sdk.common.model.OutParams;
 import openapi.sdk.common.util.*;
@@ -498,11 +499,16 @@ public class OpenApiClient {
     private OutParams getOutParams(HttpResponse response) {
         OutParams outParams = new OutParams();
         outParams.setUuid(response.header(Header.Response.UUID));
-        outParams.setCode(Integer.valueOf(response.header(Header.Response.CODE)));
-        outParams.setMessage(response.header(Header.Response.MESSAGE));
-        outParams.setSymmetricCryKey(response.header(Header.Response.SYMMETRIC_CRY_KEY));
-        outParams.setDataType(Enum.valueOf(DataType.class, response.header(Header.Response.DATA_TYPE)));
-        outParams.setDataBytes(response.bodyBytes());
+        String resCode = response.header(Header.Response.CODE);
+        if (StrUtil.isBlank(resCode)) {
+            outParams.setCode(ErrorCode.NOT_FOUND);
+        } else {
+            outParams.setCode(Integer.valueOf(resCode));
+            outParams.setMessage(Base64Util.base64ToStr(response.header(Header.Response.MESSAGE)));
+            outParams.setSymmetricCryKey(response.header(Header.Response.SYMMETRIC_CRY_KEY));
+            outParams.setDataType(Enum.valueOf(DataType.class, response.header(Header.Response.DATA_TYPE)));
+            outParams.setDataBytes(response.bodyBytes());
+        }
         return outParams;
     }
 

@@ -293,7 +293,7 @@ public class OpenApiGateway {
             response.setContentType(MediaType.APPLICATION_OCTET_STREAM_VALUE);
             response.addHeader(Header.Response.UUID, outParams.getUuid());
             response.addHeader(Header.Response.CODE, String.valueOf(outParams.getCode()));
-            response.addHeader(Header.Response.MESSAGE, outParams.getMessage());
+            response.addHeader(Header.Response.MESSAGE, Base64Util.strToBase64(outParams.getMessage()));
             response.addHeader(Header.Response.SYMMETRIC_CRY_KEY, outParams.getSymmetricCryKey());
             response.addHeader(Header.Response.DATA_TYPE, outParams.getDataType().name());
             if (ArrayUtil.isEmpty(outParams.getDataBytes())) {
@@ -316,7 +316,7 @@ public class OpenApiGateway {
         String handlerKey = getHandlerKey(inParams.getApi(), inParams.getMethod());
         ApiHandler apiHandler = apiHandlerMap.get(handlerKey);
         if (apiHandler == null) {
-            throw new OpenApiServerException("找不到指定的opeapi处理器");
+            throw new OpenApiServerException("找不到指定的openapi处理器");
         }
         return apiHandler;
     }
