@@ -4,11 +4,11 @@ import cn.hutool.core.util.ClassUtil;
 import cn.hutool.core.util.ReflectUtil;
 import cn.hutool.json.JSONArray;
 import cn.hutool.json.JSONUtil;
+import openapi.sdk.common.annotation.OpenApiDoc;
 import openapi.sdk.common.constant.Constant;
 import openapi.server.sdk.config.OpenApiConfig;
-import openapi.sdk.common.annotation.OpenApiDoc;
-import openapi.server.sdk.doc.model.*;
 import openapi.server.sdk.doc.model.Method;
+import openapi.server.sdk.doc.model.*;
 import openapi.server.sdk.model.ApiHandler;
 import openapi.server.sdk.model.Context;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -162,7 +162,7 @@ public class DocController {
                 return null;
             }
         }
-        param.setProperties(getProperties(type));
+        param.setProperties(getProperties(type, new HashSet<>()));
         return param;
     }
 
@@ -176,7 +176,7 @@ public class DocController {
         Type type = method.getGenericReturnType();
         RetVal retVal = new RetVal();
         retVal.setRetType(type.getTypeName());
-        retVal.setProperties(getProperties(type));
+        retVal.setProperties(getProperties(type, new HashSet<>()));
 
         if (method.isAnnotationPresent(OpenApiDoc.class)) {
             OpenApiDoc apiDoc = method.getAnnotation(OpenApiDoc.class);
@@ -189,11 +189,13 @@ public class DocController {
     /**
      * 获取指定类型里的属性信息
      *
-     * @param type 类型（包括Class,ParameterizedType,GenericArrayType,TypeVariable,WildcardType）
+     * @param type             类型（包括Class,ParameterizedType,GenericArrayType,TypeVariable,WildcardType）
+     * @param recusedTypeNames 递归过的类型名称
      * @return 属性信息
      */
-    private List<Property> getProperties(Type type) {
+    private List<Property> getProperties(Type type, Set<String> recusedTypeNames) {
         List<Property> properties = null;
+        recusedTypeNames.add(type.getTypeName());
         if (type instanceof Class) {
             //基本类型直接返回
             if (ClassUtil.isBasicType((Class) type)) {
@@ -215,7 +217,7 @@ public class DocController {
             //数组类型则获取元素的属性
             if (((Class) type).isArray()) {
                 Class elementType = ((Class) type).getComponentType();
-                return getProperties(elementType);
+                return getProperties(elementType, recusedTypeNames);
             }
 
             properties = new ArrayList<>();
@@ -223,9 +225,9 @@ public class DocController {
             for (Field field : fields) {
                 Property property = new Property();
                 property.setName(field.getName());
-                property.setType(field.getGenericType().getTypeName());
-                //递归设置属性
-                property.setProperties(getProperties(field.getGenericType()));
+                Type propertyType = field.getGenericType();
+                String propertyTypeName = propertyType.getTypeName();
+                property.setType(propertyTypeName);
 
                 if (field.isAnnotationPresent(OpenApiDoc.class)) {
                     OpenApiDoc apiDoc = field.getAnnotation(OpenApiDoc.class);
@@ -237,6 +239,12 @@ public class DocController {
                     }
                 }
 
+                //未递归过的类型可以递归获取属性，防止出现StackOverflowError
+                if (!recusedTypeNames.contains(propertyTypeName)) {
+                    //递归设置属性
+                    property.setProperties(getProperties(propertyType, recusedTypeNames));
+                    recusedTypeNames.add(propertyTypeName);
+                }
                 properties.add(property);
             }
         } else if (type instanceof ParameterizedType) {
@@ -246,7 +254,7 @@ public class DocController {
             if (Collection.class.isAssignableFrom(rawType)) {
                 //取第一个泛型参数(集合元素)的属性
                 Type elementType = parameterizedType.getActualTypeArguments()[0];
-                return getProperties(elementType);
+                return getProperties(elementType, recusedTypeNames);
             }
             //Map泛型类(HashMap、Hashtable、TreeMap等)
             if (Map.class.isAssignableFrom(rawType)) {
@@ -255,7 +263,7 @@ public class DocController {
         } else if (type instanceof GenericArrayType) {
             //是泛型数组 or 类型参数数组
             Type elementType = ((GenericArrayType) type).getGenericComponentType();
-            return getProperties(elementType);
+            return getProperties(elementType, recusedTypeNames);
         }
         return properties;
     }
@@ -276,7 +284,7 @@ public class DocController {
         Property property = new Property();
         property.setName("key");
         property.setType(keyType.getTypeName());
-        property.setProperties(getProperties(keyType));
+        property.setProperties(getProperties(keyType, new HashSet<>()));
         Class keyClass = getClassByType(keyType);
         if (keyClass != null && keyClass.isAnnotationPresent(OpenApiDoc.class)) {
             OpenApiDoc apiDoc = (OpenApiDoc) keyClass.getAnnotation(OpenApiDoc.class);
@@ -290,7 +298,7 @@ public class DocController {
         property = new Property();
         property.setName("value");
         property.setType(valueType.getTypeName());
-        property.setProperties(getProperties(valueType));
+        property.setProperties(getProperties(valueType, new HashSet<>()));
         Class valueClass = getClassByType(valueType);
         if (valueClass != null && valueClass.isAnnotationPresent(OpenApiDoc.class)) {
             OpenApiDoc apiDoc = (OpenApiDoc) valueClass.getAnnotation(OpenApiDoc.class);
