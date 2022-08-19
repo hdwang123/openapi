@@ -1,11 +1,8 @@
 package openapi.sdk.common.model;
 
-import cn.hutool.json.JSONUtil;
-import lombok.Data;
-import lombok.SneakyThrows;
+import lombok.Getter;
+import lombok.Setter;
 import openapi.sdk.common.annotation.OpenApiDoc;
-import openapi.sdk.common.util.CommonUtil;
-import openapi.sdk.common.util.TruncateUtil;
 
 /**
  * 文件类型
@@ -16,8 +13,9 @@ import openapi.sdk.common.util.TruncateUtil;
  * @author wanghuidong
  * 时间： 2022/7/11 19:10
  */
+@Getter
+@Setter
 @OpenApiDoc(cnName = "文件对象")
-@Data
 public class FileBinary extends Binary {
 
     /**
@@ -31,15 +29,4 @@ public class FileBinary extends Binary {
      */
     @OpenApiDoc(cnName = "文件类型")
     private String fileType;
-
-    @SneakyThrows
-    @Override
-    public String toString() {
-        FileBinary binary = CommonUtil.cloneInstance(this);
-        long length = binary.getLength();
-        binary.setDataStr(TruncateUtil.truncate(binary.getData()));
-        binary.setData(null);
-        binary.setLength(length);
-        return JSONUtil.toJsonStr(binary);
-    }
 }

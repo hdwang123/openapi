@@ -1,7 +1,8 @@
 package openapi.sdk.common.model;
 
 import cn.hutool.json.JSONUtil;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.SneakyThrows;
 import openapi.sdk.common.annotation.OpenApiDoc;
 import openapi.sdk.common.util.CommonUtil;
@@ -25,8 +26,9 @@ import openapi.sdk.common.util.TruncateUtil;
  * @author wanghuidong
  * 时间： 2022/7/11 19:08
  */
+@Setter
+@Getter
 @OpenApiDoc(cnName = "二进制对象")
-@Data
 public class Binary {
 
     /**
