@@ -244,7 +244,7 @@ public class OpenApiGateway {
             //写返回值到响应
             writeOutParams(response, outParams);
 
-            log.debug(logPrefix.get() + "调用完毕：" + outParams);
+            log.debug("{}调用完毕：{}", logPrefix.get(), outParams);
         }
     }
 

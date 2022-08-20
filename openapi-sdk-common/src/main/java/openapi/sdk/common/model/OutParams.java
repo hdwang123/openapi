@@ -42,6 +42,11 @@ public class OutParams {
     private byte[] binaryData;
 
     /**
+     * 用于日志打印
+     */
+    private String binaryDataStr;
+
+    /**
      * 返回值（字节数组形式，由sdk生成的内容密文也保存至此）
      */
     private byte[] dataBytes;
@@ -131,6 +136,8 @@ public class OutParams {
         outParams.setData(TruncateUtil.truncate(outParams.getData()));
         outParams.setDataBytesStr(TruncateUtil.truncate(outParams.getDataBytes()));
         outParams.setDataBytes(null);
+        outParams.setBinaryDataStr(TruncateUtil.truncate(outParams.getBinaryData()));
+        outParams.setBinaryData(null);
         return JSONUtil.toJsonStr(outParams);
     }
 
