@@ -189,13 +189,18 @@ public class DocController {
     /**
      * 获取指定类型里的属性信息
      *
-     * @param type             类型（包括Class,ParameterizedType,GenericArrayType,TypeVariable,WildcardType）
-     * @param recusedTypeNames 递归过的类型名称
+     * @param type              类型（包括Class,ParameterizedType,GenericArrayType,TypeVariable,WildcardType）
+     * @param recurredTypeNames 递归过的类型名称
      * @return 属性信息
      */
-    private List<Property> getProperties(Type type, Set<String> recusedTypeNames) {
+    private List<Property> getProperties(Type type, Set<String> recurredTypeNames) {
         List<Property> properties = null;
-        recusedTypeNames.add(type.getTypeName());
+        //递归过的类型取消递归获取属性，防止出现StackOverflowError
+        if (recurredTypeNames.contains(type.getTypeName())) {
+            return null;
+        }
+        recurredTypeNames.add(type.getTypeName());
+
         if (type instanceof Class) {
             //基本类型直接返回
             if (ClassUtil.isBasicType((Class) type)) {
@@ -217,7 +222,7 @@ public class DocController {
             //数组类型则获取元素的属性
             if (((Class) type).isArray()) {
                 Class elementType = ((Class) type).getComponentType();
-                return getProperties(elementType, recusedTypeNames);
+                return getProperties(elementType, recurredTypeNames);
             }
 
             properties = new ArrayList<>();
@@ -238,13 +243,8 @@ public class DocController {
                         continue;
                     }
                 }
-
-                //未递归过的类型可以递归获取属性，防止出现StackOverflowError
-                if (!recusedTypeNames.contains(propertyTypeName)) {
-                    //递归设置属性
-                    property.setProperties(getProperties(propertyType, recusedTypeNames));
-                    recusedTypeNames.add(propertyTypeName);
-                }
+                //递归设置属性
+                property.setProperties(getProperties(propertyType, recurredTypeNames));
                 properties.add(property);
             }
         } else if (type instanceof ParameterizedType) {
@@ -254,16 +254,16 @@ public class DocController {
             if (Collection.class.isAssignableFrom(rawType)) {
                 //取第一个泛型参数(集合元素)的属性
                 Type elementType = parameterizedType.getActualTypeArguments()[0];
-                return getProperties(elementType, recusedTypeNames);
+                return getProperties(elementType, recurredTypeNames);
             }
             //Map泛型类(HashMap、Hashtable、TreeMap等)
             if (Map.class.isAssignableFrom(rawType)) {
-                properties = getMapProperties(parameterizedType);
+                properties = getMapProperties(parameterizedType, recurredTypeNames);
             }
         } else if (type instanceof GenericArrayType) {
             //是泛型数组 or 类型参数数组
             Type elementType = ((GenericArrayType) type).getGenericComponentType();
-            return getProperties(elementType, recusedTypeNames);
+            return getProperties(elementType, recurredTypeNames);
         }
         return properties;
     }
@@ -272,9 +272,10 @@ public class DocController {
      * 获取Map<Key,Value>类型的属性，分别提取Key、Value中的属性
      *
      * @param parameterizedType 参数化类型
+     * @param recurredTypeNames 递归过的类型名称
      * @return 属性集合（[Key:{properties},Value:{properties}]）
      */
-    private List<Property> getMapProperties(ParameterizedType parameterizedType) {
+    private List<Property> getMapProperties(ParameterizedType parameterizedType, Set<String> recurredTypeNames) {
         List<Property> properties;
         properties = new ArrayList<>();
 
@@ -284,7 +285,7 @@ public class DocController {
         Property property = new Property();
         property.setName("key");
         property.setType(keyType.getTypeName());
-        property.setProperties(getProperties(keyType, new HashSet<>()));
+        property.setProperties(getProperties(keyType, recurredTypeNames));
         Class keyClass = getClassByType(keyType);
         if (keyClass != null && keyClass.isAnnotationPresent(OpenApiDoc.class)) {
             OpenApiDoc apiDoc = (OpenApiDoc) keyClass.getAnnotation(OpenApiDoc.class);
@@ -298,7 +299,7 @@ public class DocController {
         property = new Property();
         property.setName("value");
         property.setType(valueType.getTypeName());
-        property.setProperties(getProperties(valueType, new HashSet<>()));
+        property.setProperties(getProperties(valueType, recurredTypeNames));
         Class valueClass = getClassByType(valueType);
         if (valueClass != null && valueClass.isAnnotationPresent(OpenApiDoc.class)) {
             OpenApiDoc apiDoc = (OpenApiDoc) valueClass.getAnnotation(OpenApiDoc.class);
