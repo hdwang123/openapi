@@ -1,0 +1,6 @@
+正式版发布
+1.修改版本号
+mvn versions:set -DnewVersion=1.0.0
+
+2.确认版本号更新没有问题，然后执行发布release（profile的ID）
+mvn clean deploy -P release
