@@ -119,16 +119,14 @@ public class OpenApiRefProxyRegistry implements BeanDefinitionRegistryPostProces
      */
     private void registerOpenApiRefProxies(BeanDefinitionRegistry registry, Set<Class<?>> interClazzSet) {
         for (Class<?> interClazz : interClazzSet) {
-            BeanDefinitionBuilder beanDefinitionBuilder = BeanDefinitionBuilder.genericBeanDefinition(interClazz);
-            GenericBeanDefinition definition = (GenericBeanDefinition) beanDefinitionBuilder.getRawBeanDefinition();
-
-            //设置构造方法的参数  对于Class<?>,既可以设置为Class,也可以传Class的完全类名
-            definition.getConstructorArgumentValues().addGenericArgumentValue(interClazz);
-
-            //Bean的类型，指定为某个代理接口的类型
+            GenericBeanDefinition definition = new GenericBeanDefinition();
+            //设置Bean的类型，指定为代理工厂对象
             definition.setBeanClass(OpenApiRefProxyFactoryBean.class);
 
-            //表示 根据代理接口的类型来自动装配
+            //设置Bean的构造器参数：具体的OpenApiRef接口
+            definition.getConstructorArgumentValues().addGenericArgumentValue(interClazz);
+
+            //设置Bean的依赖注入模式为根据类型注入
             definition.setAutowireMode(AbstractBeanDefinition.AUTOWIRE_BY_TYPE);
 
             //注册bean
