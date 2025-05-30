@@ -211,10 +211,10 @@ openapi:
       baseUrl: http://localhost:8080
       selfPrivateKey: ${keys.local.rsa.privateKey}
       remotePublicKey: ${keys.remote.rsa.publicKey}
-      asymmetricCryEnum: RSA
+      asymmetricCryAlgo: RSA
       retDecrypt: true
       cryModeEnum: SYMMETRIC_CRY
-      symmetricCryEnum: AES
+      symmetricCryAlgo: AES
       callerId: "001"
       httpConnectionTimeout: 3
       httpReadTimeout: 6
