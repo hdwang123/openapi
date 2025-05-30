@@ -9,15 +9,14 @@ import openapi.sdk.common.handler.asymmetric.SM2AsymmetricCryHandler;
 import openapi.sdk.common.handler.symmetric.SM4SymmetricCryHandler;
 import openapi.server.sdk.config.OpenApiConfig;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
 
 /**
- * openapi的配置信息
+ * openapi的配置信息(自定义加密算法)
  *
  * @author wanghuidong
  */
-@Component
-public class OpenApiConfigImpl implements OpenApiConfig {
+//@Component
+public class CustomCryHandlerConfig implements OpenApiConfig {
 
     @Value("${keys.local.sm2.privateKey}")
     private String privateKey;

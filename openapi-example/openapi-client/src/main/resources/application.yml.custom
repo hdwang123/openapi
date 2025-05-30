@@ -11,14 +11,16 @@ openapi:
       baseUrl: http://localhost:8080
       selfPrivateKey: ${keys.local.sm2.privateKey}
       remotePublicKey: ${keys.remote.sm2.publicKey}
-      asymmetricCryAlgo: SM2
+      asymmetricCryAlgo: CUSTOM
       retDecrypt: true
       cryModeEnum: SYMMETRIC_CRY
-      symmetricCryAlgo: SM4
+      symmetricCryAlgo: CUSTOM
       callerId: "001"
       httpConnectionTimeout: 3
       httpReadTimeout: 6
       enableCompress: false
+      customAsymmetricCryHandler: customA
+      customSymmetricCryHandler: customS
 #      httpProxyHost: 127.0.0.1
 #      httpProxyPort: 8888
 
