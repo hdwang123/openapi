@@ -1,12 +1,5 @@
 package openapi.sdk.common.handler;
 
-import openapi.sdk.common.enums.SymmetricCryEnum;
-import openapi.sdk.common.handler.symmetric.AESSymmetricCryHandler;
-import openapi.sdk.common.handler.symmetric.SM4SymmetricCryHandler;
-
-import java.util.EnumMap;
-import java.util.Map;
-
 /**
  * 对称加密处理器
  *
@@ -16,12 +9,11 @@ import java.util.Map;
 public interface SymmetricCryHandler {
 
     /**
-     * 定义所有的对称加密处理器
+     * 生成密钥
+     *
+     * @return 密钥
      */
-    Map<SymmetricCryEnum, SymmetricCryHandler> handlerMap = new EnumMap<SymmetricCryEnum, SymmetricCryHandler>(SymmetricCryEnum.class) {{
-        put(SymmetricCryEnum.AES, new AESSymmetricCryHandler());
-        put(SymmetricCryEnum.SM4, new SM4SymmetricCryHandler());
-    }};
+    byte[] generateKey();
 
     /**
      * 对称加密

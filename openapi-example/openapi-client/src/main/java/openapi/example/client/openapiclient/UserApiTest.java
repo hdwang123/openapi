@@ -5,9 +5,9 @@ import openapi.client.sdk.OpenApiClient;
 import openapi.client.sdk.OpenApiClientBuilder;
 import openapi.example.client.model.Gender;
 import openapi.example.client.model.User;
-import openapi.sdk.common.enums.AsymmetricCryEnum;
+import openapi.sdk.common.enums.AsymmetricCryAlgo;
 import openapi.sdk.common.enums.CryModeEnum;
-import openapi.sdk.common.enums.SymmetricCryEnum;
+import openapi.sdk.common.enums.SymmetricCryAlgo;
 import openapi.sdk.common.model.OutParams;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -23,10 +23,10 @@ import java.util.List;
 @Component
 public class UserApiTest {
 
-    @Value("${keys.local.rsa.privateKey}")
+    @Value("${keys.local.sm2.privateKey}")
     private String privateKey;
 
-    @Value("${keys.remote.rsa.publicKey}")
+    @Value("${keys.remote.sm2.publicKey}")
     private String remotePublicKey;
 
     @Value("${openapi.client.config.baseUrl}")
@@ -40,10 +40,10 @@ public class UserApiTest {
     @PostConstruct
     public void init() {
         apiClient = new OpenApiClientBuilder(baseUrl, privateKey, remotePublicKey, "001", "userApi")
-                .asymmetricCry(AsymmetricCryEnum.RSA)
+                .asymmetricCry(AsymmetricCryAlgo.SM2)
                 .retDecrypt(true)
                 .cryModeEnum(CryModeEnum.SYMMETRIC_CRY)
-                .symmetricCry(SymmetricCryEnum.AES)
+                .symmetricCry(SymmetricCryAlgo.SM4)
                 .enableCompress(false)
                 .build();
     }
@@ -113,10 +113,10 @@ public class UserApiTest {
     public void getAllUsers() {
         //存在方法级别配置，需构建新的client
         OpenApiClient client = new OpenApiClientBuilder(baseUrl, privateKey, remotePublicKey, "001", "userApi")
-                .asymmetricCry(AsymmetricCryEnum.RSA)
+                .asymmetricCry(AsymmetricCryAlgo.SM2)
                 .retDecrypt(false)
                 .cryModeEnum(CryModeEnum.ASYMMETRIC_CRY)
-                .symmetricCry(SymmetricCryEnum.AES)
+                .symmetricCry(SymmetricCryAlgo.SM4)
                 .httpReadTimeout(10)
                 .enableCompress(true)
                 .build();

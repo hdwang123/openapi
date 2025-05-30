@@ -80,10 +80,10 @@ public class OpenApiRefProxyInvocationHandler implements InvocationHandler {
                     int httpReadTimeout = this.httpReadTimeout(openApiMethod);
                     boolean enableCompress = this.enableCompress(openApiMethod);
                     apiClient = new OpenApiClientBuilder(config.getBaseUrl(), config.getSelfPrivateKey(), config.getRemotePublicKey(), config.getCallerId(), api)
-                            .asymmetricCry(config.getAsymmetricCryEnum())
+                            .asymmetricCry(config.getAsymmetricCryAlgo())
                             .retDecrypt(retDecrypt)
                             .cryModeEnum(cryModeEnum)
-                            .symmetricCry(config.getSymmetricCryEnum())
+                            .symmetricCry(config.getSymmetricCryAlgo())
                             .httpConnectionTimeout(httpConnectionTimeout)
                             .httpReadTimeout(httpReadTimeout)
                             .httpProxyHost(config.getHttpProxyHost())

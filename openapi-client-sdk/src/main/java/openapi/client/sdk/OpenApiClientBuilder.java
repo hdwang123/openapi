@@ -1,9 +1,12 @@
 package openapi.client.sdk;
 
 import openapi.client.sdk.constant.ClientConstant;
-import openapi.sdk.common.enums.AsymmetricCryEnum;
+import openapi.sdk.common.enums.AsymmetricCryAlgo;
 import openapi.sdk.common.enums.CryModeEnum;
-import openapi.sdk.common.enums.SymmetricCryEnum;
+import openapi.sdk.common.enums.SymmetricCryAlgo;
+import openapi.sdk.common.handler.AsymmetricCryHandler;
+import openapi.sdk.common.handler.CryHandlerMap;
+import openapi.sdk.common.handler.SymmetricCryHandler;
 
 /**
  * OpenApiClient构造器
@@ -31,7 +34,7 @@ public class OpenApiClientBuilder {
     /**
      * 非对称加密算法
      */
-    private AsymmetricCryEnum asymmetricCryEnum = AsymmetricCryEnum.RSA;
+    private String asymmetricCryAlgo = AsymmetricCryAlgo.RSA;
 
     /**
      * 返回值是否需要解密
@@ -46,7 +49,7 @@ public class OpenApiClientBuilder {
     /**
      * 对称加密算法
      */
-    private SymmetricCryEnum symmetricCryEnum = SymmetricCryEnum.AES;
+    private String symmetricCryAlgo = SymmetricCryAlgo.AES;
 
     /**
      * 调用者ID
@@ -129,11 +132,11 @@ public class OpenApiClientBuilder {
     /**
      * 设置非对称加密算法
      *
-     * @param asymmetricCryEnum 非对称加密算法
+     * @param asymmetricCryAlgo 非对称加密算法
      * @return builder对象
      */
-    public OpenApiClientBuilder asymmetricCry(AsymmetricCryEnum asymmetricCryEnum) {
-        this.asymmetricCryEnum = asymmetricCryEnum;
+    public OpenApiClientBuilder asymmetricCry(String asymmetricCryAlgo) {
+        this.asymmetricCryAlgo = asymmetricCryAlgo;
         return this;
     }
 
@@ -162,11 +165,11 @@ public class OpenApiClientBuilder {
     /**
      * 设置对称加密算法
      *
-     * @param symmetricCryEnum 对称加密算法
+     * @param symmetricCryAlgo 对称加密算法
      * @return builder对象
      */
-    public OpenApiClientBuilder symmetricCry(SymmetricCryEnum symmetricCryEnum) {
-        this.symmetricCryEnum = symmetricCryEnum;
+    public OpenApiClientBuilder symmetricCry(String symmetricCryAlgo) {
+        this.symmetricCryAlgo = symmetricCryAlgo;
         return this;
     }
 
@@ -226,14 +229,37 @@ public class OpenApiClientBuilder {
     }
 
     /**
+     * 自定义非对称加密
+     *
+     * @param asymmetricCryHandler 非对称加密处理器
+     * @return builder对象
+     */
+    public OpenApiClientBuilder customAsymmetricCryHandler(AsymmetricCryHandler asymmetricCryHandler) {
+        CryHandlerMap.addAsymmetricCryHandler(AsymmetricCryAlgo.CUSTOM, asymmetricCryHandler);
+        return this;
+    }
+
+    /**
+     * 自定义对称加密
+     *
+     * @param symmetricCryHandler 对称加密处理器
+     * @return builder对象
+     */
+    public OpenApiClientBuilder customSymmetricCryHandler(SymmetricCryHandler symmetricCryHandler) {
+        CryHandlerMap.addSymmetricCryHandler(SymmetricCryAlgo.CUSTOM, symmetricCryHandler);
+        return this;
+    }
+
+
+    /**
      * 构建一个OpenClientApi对象
      *
      * @return OpenClientApi对象
      */
     public OpenApiClient build() {
         OpenApiClient client = new OpenApiClient(
-                baseUrl, selfPrivateKey, remotePublicKey, asymmetricCryEnum,
-                retDecrypt, cryModeEnum, symmetricCryEnum, callerId, api,
+                baseUrl, selfPrivateKey, remotePublicKey, asymmetricCryAlgo,
+                retDecrypt, cryModeEnum, symmetricCryAlgo, callerId, api,
                 httpConnectionTimeout, httpReadTimeout, httpProxyHost, httpProxyPort, enableCompress);
         return client;
     }

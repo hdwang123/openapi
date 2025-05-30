@@ -1,7 +1,9 @@
 package openapi.sdk.common.handler.symmetric;
 
 import cn.hutool.crypto.symmetric.SM4;
+import openapi.sdk.common.enums.SymmetricCryAlgo;
 import openapi.sdk.common.handler.SymmetricCryHandler;
+import openapi.sdk.common.util.SymmetricCryUtil;
 
 /**
  * SM4对称加密处理器
@@ -10,6 +12,11 @@ import openapi.sdk.common.handler.SymmetricCryHandler;
  * 时间： 2022/6/4 13:57
  */
 public class SM4SymmetricCryHandler implements SymmetricCryHandler {
+    @Override
+    public byte[] generateKey() {
+        return SymmetricCryUtil.getKey(SymmetricCryAlgo.SM4);
+    }
+
     @Override
     public String cry(String content, byte[] keyBytes) {
         SM4 sm4 = new SM4(keyBytes);

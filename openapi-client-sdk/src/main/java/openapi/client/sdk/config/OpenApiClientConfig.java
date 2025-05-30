@@ -3,9 +3,9 @@ package openapi.client.sdk.config;
 
 import lombok.Data;
 import openapi.client.sdk.constant.ClientConstant;
-import openapi.sdk.common.enums.AsymmetricCryEnum;
+import openapi.sdk.common.enums.AsymmetricCryAlgo;
 import openapi.sdk.common.enums.CryModeEnum;
-import openapi.sdk.common.enums.SymmetricCryEnum;
+import openapi.sdk.common.enums.SymmetricCryAlgo;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
@@ -22,10 +22,10 @@ import org.springframework.stereotype.Component;
  *       baseUrl: http://localhost:8080
  *       selfPrivateKey: ${keys.local.rsa.privateKey}
  *       remotePublicKey: ${keys.remote.rsa.publicKey}
- *       asymmetricCryEnum: RSA
+ *       asymmetricCryAlgo: RSA
  *       retDecrypt: true
- *       cryModeEnum: SYMMETRIC_CRY
- *       symmetricCryEnum: AES
+ *       cryModeAlgo: SYMMETRIC_CRY
+ *       symmetricCryAlgo: AES
  *       callerId: "001"
  *       httpConnectionTimeout: 3
  *       httpReadTimeout: 5
@@ -62,7 +62,7 @@ public class OpenApiClientConfig {
     /**
      * 非对称加密算法
      */
-    private AsymmetricCryEnum asymmetricCryEnum = AsymmetricCryEnum.RSA;
+    private String asymmetricCryAlgo = AsymmetricCryAlgo.RSA;
 
     /**
      * 返回值是否需要解密
@@ -77,7 +77,7 @@ public class OpenApiClientConfig {
     /**
      * 对称加密算法
      */
-    private SymmetricCryEnum symmetricCryEnum = SymmetricCryEnum.AES;
+    private String symmetricCryAlgo = SymmetricCryAlgo.AES;
 
     /**
      * 调用者ID
@@ -108,4 +108,14 @@ public class OpenApiClientConfig {
      * HTTP传输的数据是否启用压缩
      */
     private boolean enableCompress = false;
+
+    /**
+     * 自定义非对称加密处理器（bean名称）
+     */
+    private String customAsymmetricCryHandler;
+
+    /**
+     * 自定义对称加密处理器（bean名称）
+     */
+    private String customSymmetricCryHandler;
 }

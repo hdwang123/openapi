@@ -7,8 +7,11 @@ import openapi.client.sdk.OpenApiClientBuilder;
 import openapi.client.sdk.config.OpenApiClientConfig;
 import openapi.client.sdk.annotation.OpenApiRef;
 import openapi.sdk.common.exception.OpenApiClientException;
+import openapi.sdk.common.handler.AsymmetricCryHandler;
+import openapi.sdk.common.handler.SymmetricCryHandler;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 
 import java.lang.reflect.Proxy;
 
@@ -26,6 +29,9 @@ public class OpenApiRefProxyFactoryBean<T> implements FactoryBean<T> {
      */
     @Autowired
     private OpenApiClientConfig config;
+
+    @Autowired
+    private ApplicationContext context;
 
     /**
      * OpenApiRef标注的接口类
@@ -57,15 +63,17 @@ public class OpenApiRefProxyFactoryBean<T> implements FactoryBean<T> {
             throw new OpenApiClientException(interClass.getName() + "api名称不能为空");
         }
         OpenApiClient apiClient = new OpenApiClientBuilder(config.getBaseUrl(), config.getSelfPrivateKey(), config.getRemotePublicKey(), config.getCallerId(), api)
-                .asymmetricCry(config.getAsymmetricCryEnum())
+                .asymmetricCry(config.getAsymmetricCryAlgo())
                 .retDecrypt(config.isRetDecrypt())
                 .cryModeEnum(config.getCryModeEnum())
-                .symmetricCry(config.getSymmetricCryEnum())
+                .symmetricCry(config.getSymmetricCryAlgo())
                 .httpConnectionTimeout(config.getHttpConnectionTimeout())
                 .httpReadTimeout(config.getHttpReadTimeout())
                 .httpProxyHost(config.getHttpProxyHost())
                 .httpProxyPort(config.getHttpProxyPort())
                 .enableCompress(config.isEnableCompress())
+                .customAsymmetricCryHandler(getAsymmetricCryHandler(config.getCustomAsymmetricCryHandler()))
+                .customSymmetricCryHandler(getSymmetricCryHandler(config.getCustomSymmetricCryHandler()))
                 .build();
 
         //创建OpenApiRef代理调用处理器对象
@@ -101,6 +109,28 @@ public class OpenApiRefProxyFactoryBean<T> implements FactoryBean<T> {
         }
         if (StrUtil.isBlank(config.getCallerId())) {
             throw new OpenApiClientException("调用者ID未配置");
+        }
+    }
+
+    private AsymmetricCryHandler getAsymmetricCryHandler(String handlerBeanName) {
+        if (StrUtil.isBlank(handlerBeanName)) {
+            return null;
+        }
+        try {
+            return context.getBean(handlerBeanName, AsymmetricCryHandler.class);
+        } catch (Exception ex) {
+            throw new OpenApiClientException("找不到自定义的AsymmetricCryHandler", ex);
+        }
+    }
+
+    private SymmetricCryHandler getSymmetricCryHandler(String handlerBeanName) {
+        if (StrUtil.isBlank(handlerBeanName)) {
+            return null;
+        }
+        try {
+            return context.getBean(handlerBeanName, SymmetricCryHandler.class);
+        } catch (Exception ex) {
+            throw new OpenApiClientException("找不到自定义的SymmetricCryHandler", ex);
         }
     }
 }

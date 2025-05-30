@@ -8,12 +8,13 @@ import cn.hutool.json.JSONUtil;
 import lombok.extern.slf4j.Slf4j;
 import openapi.sdk.common.constant.Constant;
 import openapi.sdk.common.constant.Header;
-import openapi.sdk.common.enums.AsymmetricCryEnum;
+import openapi.sdk.common.enums.AsymmetricCryAlgo;
 import openapi.sdk.common.enums.CryModeEnum;
 import openapi.sdk.common.enums.DataType;
-import openapi.sdk.common.enums.SymmetricCryEnum;
+import openapi.sdk.common.enums.SymmetricCryAlgo;
 import openapi.sdk.common.exception.OpenApiServerException;
 import openapi.sdk.common.handler.AsymmetricCryHandler;
+import openapi.sdk.common.handler.CryHandlerMap;
 import openapi.sdk.common.handler.SymmetricCryHandler;
 import openapi.sdk.common.model.Binary;
 import openapi.sdk.common.model.InParams;
@@ -78,11 +79,12 @@ public class OpenApiGateway {
      */
     private final ThreadLocal<String> logPrefix = new ThreadLocal<>();
 
-    private AsymmetricCryEnum asymmetricCryEnum;
+    private String asymmetricCryAlgo;
     private String selfPrivateKey;
     private boolean retEncrypt;
     private CryModeEnum cryModeEnum;
-    private SymmetricCryEnum symmetricCryEnum;
+
+    private String symmetricCryAlgo;
     private boolean enableCompress;
 
     /**
@@ -110,7 +112,7 @@ public class OpenApiGateway {
         if (log.isDebugEnabled()) {
             String handlersStr = getHandlersStr();
             log.debug("OpenApiGateway Init: \nSelfPrivateKey:{},\nAsymmetricCry:{},\nretEncrypt:{},\ncryModeEnum:{},\nSymmetricCry:{},\nenableCompress:{},\nApiHandlers:\n{}",
-                    selfPrivateKey, asymmetricCryEnum, retEncrypt, cryModeEnum, symmetricCryEnum, enableCompress, handlersStr);
+                    selfPrivateKey, asymmetricCryAlgo, retEncrypt, cryModeEnum, symmetricCryAlgo, enableCompress, handlersStr);
             this.logCryMode(this.cryModeEnum, null);
             this.logEnableCompress(enableCompress, null);
         }
@@ -141,13 +143,25 @@ public class OpenApiGateway {
      */
     private void initConfig() {
         this.selfPrivateKey = config.getSelfPrivateKey();
-        this.asymmetricCryEnum = config.getAsymmetricCry();
+        this.asymmetricCryAlgo = config.getAsymmetricCry();
         this.retEncrypt = config.retEncrypt();
         this.cryModeEnum = config.getCryMode();
-        this.symmetricCryEnum = config.getSymmetricCry();
+        this.symmetricCryAlgo = config.getSymmetricCry();
         this.enableCompress = config.enableCompress();
-        this.asymmetricCryHandler = AsymmetricCryHandler.handlerMap.get(this.asymmetricCryEnum);
-        this.symmetricCryHandler = SymmetricCryHandler.handlerMap.get(this.symmetricCryEnum);
+        CryHandlerMap.addAsymmetricCryHandler(AsymmetricCryAlgo.CUSTOM, config.customAsymmetricCryHandler());
+        CryHandlerMap.addSymmetricCryHandler(SymmetricCryAlgo.CUSTOM, config.customSymmetricCryHandler());
+        this.asymmetricCryHandler = CryHandlerMap.getAsymmetricCryHandler(this.asymmetricCryAlgo);
+        if (this.asymmetricCryHandler == null) {
+            String errMsg = String.format("OpenApiGateway init failed: asymmetricCryHandler[%s] not found!", this.asymmetricCryAlgo);
+            log.error(errMsg);
+            throw new RuntimeException(errMsg);
+        }
+        this.symmetricCryHandler = CryHandlerMap.getSymmetricCryHandler(this.symmetricCryAlgo);
+        if (this.symmetricCryHandler == null) {
+            String errMsg = String.format("OpenApiGateway init failed: symmetricCryHandler[%s] not found!", this.symmetricCryAlgo);
+            log.error(errMsg);
+            throw new RuntimeException(errMsg);
+        }
     }
 
     /**
@@ -612,7 +626,7 @@ public class OpenApiGateway {
             CryModeEnum cryModeEnum = this.getCryModeEnum(apiHandler);
             if (cryModeEnum == CryModeEnum.SYMMETRIC_CRY) {
                 //启用对称加密模式
-                byte[] keyBytes = SymmetricCryUtil.getKey(symmetricCryEnum);
+                byte[] keyBytes = this.symmetricCryHandler.generateKey();
                 String key = Base64Util.bytesToBase64(keyBytes);
                 String cryKey = this.asymmetricCryHandler.cry(callerPublicKey, key);
                 outParams.setSymmetricCryKey(cryKey);
@@ -702,11 +716,11 @@ public class OpenApiGateway {
             methodId = apiMethod.value();
         }
         if (cryModeEnum == CryModeEnum.SYMMETRIC_CRY) {
-            log.debug("{}采用非对称加密{}+对称加密{}模式", methodId, asymmetricCryEnum, symmetricCryEnum);
+            log.debug("{}采用非对称加密{}+对称加密{}模式", methodId, asymmetricCryAlgo, symmetricCryAlgo);
         } else if (cryModeEnum == CryModeEnum.ASYMMETRIC_CRY) {
-            log.debug("{}仅采用非对称加密{}模式", methodId, asymmetricCryEnum);
+            log.debug("{}仅采用非对称加密{}模式", methodId, asymmetricCryAlgo);
         } else {
-            log.debug("{}采用不加密模式,签名用的非对称加密{}", methodId, asymmetricCryEnum);
+            log.debug("{}采用不加密模式,签名用的非对称加密{}", methodId, asymmetricCryAlgo);
         }
     }
 

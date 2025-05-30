@@ -1,8 +1,12 @@
 package openapi.example.server.openapi;
 
-import openapi.sdk.common.enums.AsymmetricCryEnum;
+import openapi.sdk.common.enums.AsymmetricCryAlgo;
 import openapi.sdk.common.enums.CryModeEnum;
-import openapi.sdk.common.enums.SymmetricCryEnum;
+import openapi.sdk.common.enums.SymmetricCryAlgo;
+import openapi.sdk.common.handler.AsymmetricCryHandler;
+import openapi.sdk.common.handler.SymmetricCryHandler;
+import openapi.sdk.common.handler.asymmetric.SM2AsymmetricCryHandler;
+import openapi.sdk.common.handler.symmetric.SM4SymmetricCryHandler;
 import openapi.server.sdk.config.OpenApiConfig;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -15,16 +19,16 @@ import org.springframework.stereotype.Component;
 @Component
 public class OpenApiConfigImpl implements OpenApiConfig {
 
-    @Value("${keys.local.rsa.privateKey}")
+    @Value("${keys.local.sm2.privateKey}")
     private String privateKey;
 
-    @Value("${keys.remote.rsa.publicKey}")
+    @Value("${keys.remote.sm2.publicKey}")
     private String callerPublicKey;
 
     @Override
-    public AsymmetricCryEnum getAsymmetricCry() {
+    public String getAsymmetricCry() {
         //设置非对称加密算法
-        return AsymmetricCryEnum.RSA;
+        return AsymmetricCryAlgo.CUSTOM;
     }
 
     @Override
@@ -52,9 +56,9 @@ public class OpenApiConfigImpl implements OpenApiConfig {
     }
 
     @Override
-    public SymmetricCryEnum getSymmetricCry() {
+    public String getSymmetricCry() {
         //设置对称加密算法
-        return SymmetricCryEnum.AES;
+        return SymmetricCryAlgo.CUSTOM;
     }
 
     @Override
@@ -67,5 +71,17 @@ public class OpenApiConfigImpl implements OpenApiConfig {
     public boolean enableCompress() {
         //HTTP传输内容不启用压缩
         return false;
+    }
+
+    @Override
+    public AsymmetricCryHandler customAsymmetricCryHandler() {
+        // 自定义加密算法
+        return new SM2AsymmetricCryHandler();
+    }
+
+    @Override
+    public SymmetricCryHandler customSymmetricCryHandler() {
+        // 自定义加密算法
+        return new SM4SymmetricCryHandler();
     }
 }

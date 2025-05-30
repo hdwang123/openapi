@@ -13,12 +13,11 @@ import openapi.client.sdk.model.BinaryParam;
 import openapi.sdk.common.constant.Constant;
 import openapi.sdk.common.constant.ErrorCode;
 import openapi.sdk.common.constant.Header;
-import openapi.sdk.common.enums.AsymmetricCryEnum;
 import openapi.sdk.common.enums.CryModeEnum;
 import openapi.sdk.common.enums.DataType;
-import openapi.sdk.common.enums.SymmetricCryEnum;
 import openapi.sdk.common.exception.OpenApiClientException;
 import openapi.sdk.common.handler.AsymmetricCryHandler;
+import openapi.sdk.common.handler.CryHandlerMap;
 import openapi.sdk.common.handler.SymmetricCryHandler;
 import openapi.sdk.common.model.Binary;
 import openapi.sdk.common.model.InParams;
@@ -55,7 +54,7 @@ public class OpenApiClient {
     /**
      * 非对称加密算法
      */
-    private final AsymmetricCryEnum asymmetricCryEnum;
+    private final String asymmetricCryAlgo;
 
     /**
      * 返回值是否需要解密
@@ -70,7 +69,7 @@ public class OpenApiClient {
     /**
      * 对称加密算法
      */
-    private final SymmetricCryEnum symmetricCryEnum;
+    private final String symmetricCryAlgo;
 
     /**
      * 调用者ID
@@ -129,10 +128,10 @@ public class OpenApiClient {
      * @param baseUrl               openapi基础路径
      * @param selfPrivateKey        本系统私钥
      * @param remotePublicKey       远程系统的公钥
-     * @param asymmetricCryEnum     非对称加密算法
+     * @param asymmetricCryAlgo     非对称加密算法
      * @param retDecrypt            返回值是否需要解密
      * @param cryModeEnum           加密模式
-     * @param symmetricCryEnum      对称加密算法
+     * @param symmetricCryAlgo      对称加密算法
      * @param callerId              调用者ID
      * @param api                   接口名称
      * @param httpConnectionTimeout HTTP建立连接超时时间（单位秒）
@@ -141,20 +140,20 @@ public class OpenApiClient {
      * @param httpProxyPort         HTTP请求代理端口
      * @param enableCompress        是否启用压缩
      */
-    public OpenApiClient(String baseUrl, String selfPrivateKey, String remotePublicKey, AsymmetricCryEnum asymmetricCryEnum,
-                         boolean retDecrypt, CryModeEnum cryModeEnum, SymmetricCryEnum symmetricCryEnum, String callerId, String api,
+    public OpenApiClient(String baseUrl, String selfPrivateKey, String remotePublicKey, String asymmetricCryAlgo,
+                         boolean retDecrypt, CryModeEnum cryModeEnum, String symmetricCryAlgo, String callerId, String api,
                          int httpConnectionTimeout, int httpReadTimeout, String httpProxyHost, Integer httpProxyPort, boolean enableCompress) {
         this.baseUrl = baseUrl;
         this.selfPrivateKey = selfPrivateKey;
         this.remotePublicKey = remotePublicKey;
-        this.asymmetricCryEnum = asymmetricCryEnum;
+        this.asymmetricCryAlgo = asymmetricCryAlgo;
         this.retDecrypt = retDecrypt;
         this.cryModeEnum = cryModeEnum;
-        this.symmetricCryEnum = symmetricCryEnum;
+        this.symmetricCryAlgo = symmetricCryAlgo;
         this.callerId = callerId;
         this.api = api;
-        this.asymmetricCryHandler = AsymmetricCryHandler.handlerMap.get(asymmetricCryEnum);
-        this.symmetricCryHandler = SymmetricCryHandler.handlerMap.get(symmetricCryEnum);
+        this.asymmetricCryHandler = CryHandlerMap.getAsymmetricCryHandler(asymmetricCryAlgo);
+        this.symmetricCryHandler = CryHandlerMap.getSymmetricCryHandler(symmetricCryAlgo);
         this.httpConnectionTimeout = httpConnectionTimeout;
         this.httpReadTimeout = httpReadTimeout;
         this.httpProxyHost = httpProxyHost;
@@ -394,7 +393,7 @@ public class OpenApiClient {
         if (ArrayUtil.isNotEmpty(bodyBytes)) {
             if (this.cryModeEnum == CryModeEnum.SYMMETRIC_CRY) {
                 //生成对称密钥key
-                byte[] keyBytes = SymmetricCryUtil.getKey(symmetricCryEnum);
+                byte[] keyBytes = this.symmetricCryHandler.generateKey();
 
                 //转成base64不会有问题，如果采用new String("utf-8"),再转回来字节数会变大
                 String key = Base64Util.bytesToBase64(keyBytes);
@@ -589,11 +588,11 @@ public class OpenApiClient {
      */
     private void logCryModel(CryModeEnum cryModeEnum) {
         if (cryModeEnum == CryModeEnum.SYMMETRIC_CRY) {
-            log.debug("采用非对称加密{}+对称加密{}模式", asymmetricCryEnum, symmetricCryEnum);
+            log.debug("采用非对称加密{}+对称加密{}模式", asymmetricCryAlgo, symmetricCryAlgo);
         } else if (cryModeEnum == CryModeEnum.ASYMMETRIC_CRY) {
-            log.debug("仅采用非对称加密{}模式", asymmetricCryEnum);
+            log.debug("仅采用非对称加密{}模式", asymmetricCryAlgo);
         } else if (cryModeEnum == CryModeEnum.NONE) {
-            log.debug("采用不加密模式,签名用的非对称加密{}", asymmetricCryEnum);
+            log.debug("采用不加密模式,签名用的非对称加密{}", asymmetricCryAlgo);
         }
     }
 
@@ -610,10 +609,10 @@ public class OpenApiClient {
     @Override
     public String toString() {
         return String.format("\nopenApiClient hashCode:%x,\nbaseUrl:%s,\nselfPrivateKey:%s,\nremotePublicKey:%s," +
-                        "\nasymmetricCryEnum:%s,\nretDecrypt:%s;\ncryModeEnum:%s,\nsymmetricCryEnum:%s," +
+                        "\nasymmetricCryAlgo:%s,\nretDecrypt:%s;\ncryModeEnum:%s,\nsymmetricCryAlgo:%s," +
                         "\ncallerId:%s,\napi:%s,\nhttpConnectionTimeout:%s,\nhttpReadTimeout:%s,\nenableCompress:%s",
                 this.hashCode(), baseUrl, selfPrivateKey, remotePublicKey,
-                asymmetricCryEnum, retDecrypt, cryModeEnum, symmetricCryEnum,
+                asymmetricCryAlgo, retDecrypt, cryModeEnum, symmetricCryAlgo,
                 callerId, api, httpConnectionTimeout, httpReadTimeout, enableCompress);
     }
 
