@@ -7,7 +7,6 @@ import openapi.example.client.model.Gender;
 import openapi.example.client.model.User;
 import openapi.sdk.common.enums.AsymmetricCryAlgo;
 import openapi.sdk.common.enums.CryModeEnum;
-import openapi.sdk.common.enums.SymmetricCryAlgo;
 import openapi.sdk.common.model.OutParams;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -43,7 +42,6 @@ public class UserApiTest {
                 .asymmetricCry(AsymmetricCryAlgo.SM2)
                 .retDecrypt(true)
                 .cryModeEnum(CryModeEnum.SYMMETRIC_CRY)
-                .symmetricCry(SymmetricCryAlgo.SM4)
                 .enableCompress(false)
                 .build();
     }
@@ -113,10 +111,9 @@ public class UserApiTest {
     public void getAllUsers() {
         //存在方法级别配置，需构建新的client
         OpenApiClient client = new OpenApiClientBuilder(baseUrl, privateKey, remotePublicKey, "001", "userApi")
-                .asymmetricCry(AsymmetricCryAlgo.SM2)
                 .retDecrypt(false)
+                .asymmetricCry(AsymmetricCryAlgo.SM2)
                 .cryModeEnum(CryModeEnum.ASYMMETRIC_CRY)
-                .symmetricCry(SymmetricCryAlgo.SM4)
                 .httpReadTimeout(10)
                 .enableCompress(true)
                 .build();

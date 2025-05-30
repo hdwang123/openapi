@@ -14,7 +14,7 @@ openapi:
       asymmetricCryAlgo: SM2
       retDecrypt: true
       cryModeEnum: SYMMETRIC_CRY
-      symmetricCryAlgo: SM4
+      symmetricCryAlgo: AES
       callerId: "001"
       httpConnectionTimeout: 3
       httpReadTimeout: 6

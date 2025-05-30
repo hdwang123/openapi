@@ -1,7 +1,6 @@
 package openapi.example.server.openapi;
 
 import openapi.sdk.common.enums.AsymmetricCryAlgo;
-import openapi.sdk.common.enums.SymmetricCryAlgo;
 import openapi.server.sdk.config.OpenApiConfig;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -44,8 +43,4 @@ public class SimpleConfig implements OpenApiConfig {
         return true;
     }
 
-    @Override
-    public String getSymmetricCry() {
-        return SymmetricCryAlgo.SM4;
-    }
 }
