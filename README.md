@@ -71,9 +71,9 @@ public class OpenApiConfigImpl implements OpenApiConfig {
     private String callerPublicKey;
 
     @Override
-    public AsymmetricCryEnum getAsymmetricCry() {
+    public String getAsymmetricCry() {
         //设置非对称加密算法
-        return AsymmetricCryEnum.RSA;
+        return AsymmetricCryAlgo.RSA;
     }
 
     @Override
@@ -101,9 +101,9 @@ public class OpenApiConfigImpl implements OpenApiConfig {
     }
 
     @Override
-    public SymmetricCryEnum getSymmetricCry() {
+    public String getSymmetricCry() {
         //设置对称加密算法
-        return SymmetricCryEnum.AES;
+        return SymmetricCryAlgo.AES;
     }
 
     @Override
@@ -183,10 +183,10 @@ public class UserApiClient {
     @PostConstruct
     public void init() {
         apiClient = new OpenApiClientBuilder(baseUrl, privateKey, remotePublicKey, "001", "userApi")
-                .asymmetricCry(AsymmetricCryEnum.RSA)
+                .asymmetricCry(AsymmetricCryAlgo.RSA)
                 .retDecrypt(true)
                 .cryModeEnum(CryModeEnum.SYMMETRIC_CRY)
-                .symmetricCry(SymmetricCryEnum.AES)
+                .symmetricCry(SymmetricCryAlgo.AES)
                 .build();
     }
 
