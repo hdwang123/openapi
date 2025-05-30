@@ -29,7 +29,7 @@ cn.hutool.hutool-all
 
 1.提供客户端sdk和服务端sdk,方便在已有项目中快速集成开放api功能  
 2.实现了三种API的安全交互方式：仅加签+非对称加密+对称加密，可以进行配置切换  
-3.实现了RSA和SM2等多种加密算法用于接口参数与返回值的加解密  
+3.实现了RSA和SM2等多种加密算法用于接口参数与返回值的加解密，支持扩展自定义加密算法  
 4.专门为文件传输定制一套数据传输机制，使得文件传输更加方便、快速  
 5.实现了服务端接口文档功能，方便查询所有的API接口  
 6.方法调用实现了HTTP超时时间、HTTP代理等设置，且支持方法级别的配置
@@ -50,7 +50,7 @@ cn.hutool.hutool-all
 <dependency>
     <groupId>io.github.hdwang123</groupId>
     <artifactId>openapi-server-sdk</artifactId>
-    <version>1.5.12</version>
+    <version>2.0.0</version>
 </dependency>
 ```
 
@@ -151,7 +151,7 @@ public class UserApi {
 <dependency>
     <groupId>io.github.hdwang123</groupId>
     <artifactId>openapi-client-sdk</artifactId>
-    <version>1.5.12</version>
+    <version>2.0.0</version>
 </dependency>
 ```
 

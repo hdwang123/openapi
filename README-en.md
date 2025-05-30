@@ -32,7 +32,7 @@ cn.hutool.hutool-all
 2. Implemented three API security interaction methods: only signing + asymmetric encryption + symmetric encryption,
    configuration switching can be performed
 3. Implemented a variety of encryption algorithms such as RSA and SM2 for encryption and decryption of interface
-   parameters and return values
+   parameters and return values, supports extensible custom encryption algorithms
 4. A set of data transmission mechanism is specially customized for file transfer, making file transfer more convenient
    and fast
 5. Implemented the server interface document function, which is convenient for querying all API interfaces
@@ -54,7 +54,7 @@ cn.hutool.hutool-all
 <dependency>
     <groupId>io.github.hdwang123</groupId>
     <artifactId>openapi-server-sdk</artifactId>
-    <version>1.5.12</version>
+    <version>2.0.0</version>
 </dependency>
 ```
 
@@ -157,7 +157,7 @@ Replace http://localhost:8080 with the actual path in the actual project
 <dependency>
     <groupId>io.github.hdwang123</groupId>
     <artifactId>openapi-client-sdk</artifactId>
-    <version>1.5.12</version>
+    <version>2.0.0</version>
 </dependency>
 ```
 
