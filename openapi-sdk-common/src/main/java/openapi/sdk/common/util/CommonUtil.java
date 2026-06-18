@@ -7,6 +7,8 @@ import lombok.extern.slf4j.Slf4j;
 import openapi.sdk.common.exception.OpenApiException;
 import openapi.sdk.common.model.InParams;
 
+import java.nio.charset.StandardCharsets;
+
 /**
  * 通用工具类
  *
@@ -25,7 +27,13 @@ public class CommonUtil {
     public static byte[] getSignContent(InParams inParams) {
         //使用数据+uuid作为签名的内容，保证无参函数调用也能经过签名的验证
         byte[] bodyBytes = inParams.getBodyBytes();
-        return ArrayUtil.addAll(bodyBytes, inParams.getUuid().getBytes());
+        if (bodyBytes == null) {
+            bodyBytes = new byte[0];
+        }
+        if (inParams.getUuid() == null) {
+            throw new OpenApiException("流水号不能为空");
+        }
+        return ArrayUtil.addAll(bodyBytes, inParams.getUuid().getBytes(StandardCharsets.UTF_8));
     }
 
     /**
@@ -61,7 +69,10 @@ public class CommonUtil {
     public static <T> T cloneInstance(T obj) {
         try {
             //创建新实例以免影响原来的对象
-            T tmp = (T) obj.getClass().newInstance();
+            if (obj == null) {
+                return null;
+            }
+            T tmp = (T) obj.getClass().getDeclaredConstructor().newInstance();
             BeanUtil.copyProperties(obj, tmp);
             return tmp;
         } catch (Exception ex) {

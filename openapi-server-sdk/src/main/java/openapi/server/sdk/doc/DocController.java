@@ -37,7 +37,7 @@ public class DocController {
     /**
      * 忽略添加属性的类型
      */
-    private static final List<Class> ignoreAddPropertyTypes = Arrays.asList(
+    private static final List<Class<?>> IGNORE_PROPERTY_TYPES = Arrays.asList(
             String.class,
             Collection.class,
             Map.class
@@ -86,12 +86,12 @@ public class DocController {
         Api api = new Api();
         api.setOpenApiName(apiHandler.getOpenApiName());
 
-        Class apiClass = apiHandler.getBean().getClass();
+        Class<?> apiClass = apiHandler.getMethod().getDeclaringClass();
         api.setName(apiClass.getSimpleName());
         api.setFullName(apiClass.getName());
 
         if (apiClass.isAnnotationPresent(OpenApiDoc.class)) {
-            OpenApiDoc apiDoc = (OpenApiDoc) apiClass.getAnnotation(OpenApiDoc.class);
+            OpenApiDoc apiDoc = apiClass.getAnnotation(OpenApiDoc.class);
             api.setCnName(apiDoc.cnName());
             api.setDescribe(apiDoc.describe());
             if (apiDoc.ignore()) {
@@ -213,15 +213,15 @@ public class DocController {
             }
 
             //忽略的类型(及其子类)直接返回
-            for (Class ignoreType : ignoreAddPropertyTypes) {
-                if (ignoreType.isAssignableFrom((Class) type)) {
+            for (Class<?> ignoreType : IGNORE_PROPERTY_TYPES) {
+                if (ignoreType.isAssignableFrom((Class<?>) type)) {
                     return null;
                 }
             }
 
             //数组类型则获取元素的属性
             if (((Class) type).isArray()) {
-                Class elementType = ((Class) type).getComponentType();
+                Class<?> elementType = ((Class<?>) type).getComponentType();
                 return getProperties(elementType, recurredTypeNames);
             }
 
@@ -249,7 +249,7 @@ public class DocController {
             }
         } else if (type instanceof ParameterizedType) {
             ParameterizedType parameterizedType = (ParameterizedType) type;
-            Class rawType = (Class) parameterizedType.getRawType();
+            Class<?> rawType = (Class<?>) parameterizedType.getRawType();
             //集合泛型类（Collection/List/Set等）
             if (Collection.class.isAssignableFrom(rawType)) {
                 //取第一个泛型参数(集合元素)的属性
@@ -286,9 +286,9 @@ public class DocController {
         property.setName("key");
         property.setType(keyType.getTypeName());
         property.setProperties(getProperties(keyType, recurredTypeNames));
-        Class keyClass = getClassByType(keyType);
+        Class<?> keyClass = getClassByType(keyType);
         if (keyClass != null && keyClass.isAnnotationPresent(OpenApiDoc.class)) {
-            OpenApiDoc apiDoc = (OpenApiDoc) keyClass.getAnnotation(OpenApiDoc.class);
+            OpenApiDoc apiDoc = keyClass.getAnnotation(OpenApiDoc.class);
             property.setCnName(apiDoc.cnName());
             property.setDescribe(apiDoc.describe());
         }
@@ -300,9 +300,9 @@ public class DocController {
         property.setName("value");
         property.setType(valueType.getTypeName());
         property.setProperties(getProperties(valueType, recurredTypeNames));
-        Class valueClass = getClassByType(valueType);
+        Class<?> valueClass = getClassByType(valueType);
         if (valueClass != null && valueClass.isAnnotationPresent(OpenApiDoc.class)) {
-            OpenApiDoc apiDoc = (OpenApiDoc) valueClass.getAnnotation(OpenApiDoc.class);
+            OpenApiDoc apiDoc = valueClass.getAnnotation(OpenApiDoc.class);
             property.setCnName(apiDoc.cnName());
             property.setDescribe(apiDoc.describe());
         }
@@ -316,13 +316,13 @@ public class DocController {
      * @param type 类型
      * @return Class
      */
-    private Class getClassByType(Type type) {
-        Class typeClass;
+    private Class<?> getClassByType(Type type) {
+        Class<?> typeClass;
         if (type instanceof Class) {
-            typeClass = (Class) type;
+            typeClass = (Class<?>) type;
         } else if (type instanceof ParameterizedType) {
             ParameterizedType parameterizedType = (ParameterizedType) type;
-            typeClass = (Class) parameterizedType.getRawType();
+            typeClass = (Class<?>) parameterizedType.getRawType();
         } else {
             return null;
         }

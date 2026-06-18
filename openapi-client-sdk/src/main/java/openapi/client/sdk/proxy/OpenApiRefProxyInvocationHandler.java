@@ -15,6 +15,9 @@ import openapi.sdk.common.util.StrObjectConvert;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
+import java.lang.reflect.Type;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * OpenApiRef代理对象调用处理器
@@ -34,6 +37,11 @@ public class OpenApiRefProxyInvocationHandler implements InvocationHandler {
      * 开放api客户端配置
      */
     private final OpenApiClientConfig config;
+
+    /**
+     * 方法级配置对应的客户端缓存，避免每次调用重复构建客户端。
+     */
+    private final Map<Method, OpenApiClient> methodClientCache = new ConcurrentHashMap<>();
 
     /**
      * 构造函数
@@ -65,37 +73,20 @@ public class OpenApiRefProxyInvocationHandler implements InvocationHandler {
             //远程调用指定的openapi方法
             if (method.isAnnotationPresent(OpenApiMethod.class)) {
                 OpenApiMethod openApiMethod = method.getAnnotation(OpenApiMethod.class);
-                String methodName = openApiMethod.value();
-                if (StrUtil.isBlank(methodName)) {
-                    throw new OpenApiClientException(method.getName() + "api方法名称不能为空");
-                }
+                validateMethodConfig(openApiMethod);
+                String methodName = StrUtil.blankToDefault(openApiMethod.value(), method.getName());
                 //方法级别的配置与默认配置不同，需要构建新的Client
                 OpenApiClient apiClient = this.openApiClient;
                 boolean configDif = this.methodConfigDif(openApiMethod);
                 if (configDif) {
-                    String api = method.getDeclaringClass().getAnnotation(OpenApiRef.class).value();
-                    boolean retDecrypt = this.retDecrypt(openApiMethod);
-                    CryModeEnum cryModeEnum = this.getCryModeEnum(openApiMethod);
-                    int httpConnectionTimeout = this.httpConnectionTimeout(openApiMethod);
-                    int httpReadTimeout = this.httpReadTimeout(openApiMethod);
-                    boolean enableCompress = this.enableCompress(openApiMethod);
-                    apiClient = new OpenApiClientBuilder(config.getBaseUrl(), config.getSelfPrivateKey(), config.getRemotePublicKey(), config.getCallerId(), api)
-                            .asymmetricCry(config.getAsymmetricCryAlgo())
-                            .retDecrypt(retDecrypt)
-                            .cryModeEnum(cryModeEnum)
-                            .symmetricCry(config.getSymmetricCryAlgo())
-                            .httpConnectionTimeout(httpConnectionTimeout)
-                            .httpReadTimeout(httpReadTimeout)
-                            .httpProxyHost(config.getHttpProxyHost())
-                            .httpProxyPort(config.getHttpProxyPort())
-                            .enableCompress(enableCompress)
-                            .build();
+                    apiClient = methodClientCache.computeIfAbsent(method, key -> buildMethodClient(key, openApiMethod));
                 }
                 //调用远程openapi
                 OutParams outParams = apiClient.callOpenApi(methodName, args);
                 Class<?> returnClass = method.getReturnType();
                 if (OutParams.isSuccess(outParams)) {
-                    Object obj = StrObjectConvert.strToObj(outParams.getData(), returnClass);
+                    Type returnType = method.getGenericReturnType();
+                    Object obj = StrObjectConvert.strToObj(outParams.getData(), returnType);
                     if (Binary.class.isAssignableFrom(returnClass)) {
                         //二进制类型则填充二进制数据
                         Binary binary = (Binary) obj;
@@ -110,6 +101,21 @@ public class OpenApiRefProxyInvocationHandler implements InvocationHandler {
             }
         }
         return null;
+    }
+
+    private OpenApiClient buildMethodClient(Method method, OpenApiMethod openApiMethod) {
+        String api = method.getDeclaringClass().getAnnotation(OpenApiRef.class).value();
+        return new OpenApiClientBuilder(config.getBaseUrl(), config.getSelfPrivateKey(), config.getRemotePublicKey(), config.getCallerId(), api)
+                .asymmetricCry(config.getAsymmetricCryAlgo())
+                .retDecrypt(this.retDecrypt(openApiMethod))
+                .cryModeEnum(this.getCryModeEnum(openApiMethod))
+                .symmetricCry(config.getSymmetricCryAlgo())
+                .httpConnectionTimeout(this.httpConnectionTimeout(openApiMethod))
+                .httpReadTimeout(this.httpReadTimeout(openApiMethod))
+                .httpProxyHost(config.getHttpProxyHost())
+                .httpProxyPort(config.getHttpProxyPort())
+                .enableCompress(this.enableCompress(openApiMethod))
+                .build();
     }
 
     /**
@@ -151,7 +157,7 @@ public class OpenApiRefProxyInvocationHandler implements InvocationHandler {
     private boolean retDecrypt(OpenApiMethod openApiMethod) {
         boolean retDecrypt = config.isRetDecrypt();
         if (StrUtil.isNotBlank(openApiMethod.retDecrypt())) {
-            retDecrypt = Boolean.parseBoolean(openApiMethod.retDecrypt());
+            retDecrypt = parseBoolean(openApiMethod.retDecrypt(), "retDecrypt");
         }
         return retDecrypt;
     }
@@ -207,8 +213,32 @@ public class OpenApiRefProxyInvocationHandler implements InvocationHandler {
     private boolean enableCompress(OpenApiMethod openApiMethod) {
         boolean enableCompress = config.isEnableCompress();
         if (StrUtil.isNotBlank(openApiMethod.enableCompress())) {
-            enableCompress = Boolean.parseBoolean(openApiMethod.enableCompress());
+            enableCompress = parseBoolean(openApiMethod.enableCompress(), "enableCompress");
         }
         return enableCompress;
+    }
+
+    private void validateMethodConfig(OpenApiMethod openApiMethod) {
+        if (StrUtil.isNotBlank(openApiMethod.retDecrypt())) {
+            parseBoolean(openApiMethod.retDecrypt(), "retDecrypt");
+        }
+        if (StrUtil.isNotBlank(openApiMethod.enableCompress())) {
+            parseBoolean(openApiMethod.enableCompress(), "enableCompress");
+        }
+        if (openApiMethod.httpConnectionTimeout() != OpenApiMethod.INHERIT_TIMEOUT
+                && openApiMethod.httpConnectionTimeout() <= 0) {
+            throw new OpenApiClientException("httpConnectionTimeout必须大于0秒");
+        }
+        if (openApiMethod.httpReadTimeout() != OpenApiMethod.INHERIT_TIMEOUT
+                && openApiMethod.httpReadTimeout() <= 0) {
+            throw new OpenApiClientException("httpReadTimeout必须大于0秒");
+        }
+    }
+
+    private boolean parseBoolean(String value, String propertyName) {
+        if (!"true".equalsIgnoreCase(value) && !"false".equalsIgnoreCase(value)) {
+            throw new OpenApiClientException(propertyName + "只允许配置true或false");
+        }
+        return Boolean.parseBoolean(value);
     }
 }

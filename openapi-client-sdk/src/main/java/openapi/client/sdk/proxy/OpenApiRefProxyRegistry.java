@@ -23,6 +23,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.SystemPropertyUtils;
 
+import java.lang.annotation.Annotation;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -80,7 +81,7 @@ public class OpenApiRefProxyRegistry implements BeanDefinitionRegistryPostProces
      * @param aClass 注解类
      * @return 接口类
      */
-    private Set<Class<?>> getInterfacesAnnotatedWith(Class<?> aClass) {
+    private Set<Class<?>> getInterfacesAnnotatedWith(Class<? extends Annotation> annotationClass) {
         String scanPath = environment.getProperty(ClientConstant.OPENAPI_REF_PATH);
         if (StrUtil.isBlank(scanPath)) {
             throw new OpenApiClientException("OpenApiRef接口所在路径为空");
@@ -97,17 +98,20 @@ public class OpenApiRefProxyRegistry implements BeanDefinitionRegistryPostProces
                     metadataReader = metadataReaderFactory.getMetadataReader(resource);
                     // 当类型是接口再添加到集合
                     if (metadataReader.getClassMetadata().isInterface()) {
-                        Class interClass = Class.forName(metadataReader.getClassMetadata().getClassName());
-                        if (interClass.isAnnotationPresent(aClass)) {
-                            classes.add(interClass);
+                        Class<?> interfaceClass = Class.forName(
+                                metadataReader.getClassMetadata().getClassName(),
+                                false,
+                                ClassUtils.getDefaultClassLoader()
+                        );
+                        if (interfaceClass.isAnnotationPresent(annotationClass)) {
+                            classes.add(interfaceClass);
                         }
                     }
                 }
             }
             return classes;
         } catch (Exception ex) {
-            log.error(String.format("扫描%s下的OpenApiRef接口信息异常", scanPath), ex);
-            return classes;
+            throw new OpenApiClientException("扫描" + scanPath + "下的OpenApiRef接口信息异常", ex);
         }
     }
 
@@ -119,6 +123,9 @@ public class OpenApiRefProxyRegistry implements BeanDefinitionRegistryPostProces
      */
     private void registerOpenApiRefProxies(BeanDefinitionRegistry registry, Set<Class<?>> interClazzSet) {
         for (Class<?> interClazz : interClazzSet) {
+            if (registry.containsBeanDefinition(interClazz.getName())) {
+                throw new OpenApiClientException("OpenApiRef代理Bean重复：" + interClazz.getName());
+            }
             GenericBeanDefinition definition = new GenericBeanDefinition();
             //设置Bean的类型，指定为代理工厂对象
             definition.setBeanClass(OpenApiRefProxyFactoryBean.class);

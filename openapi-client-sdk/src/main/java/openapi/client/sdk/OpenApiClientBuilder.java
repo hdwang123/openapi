@@ -1,6 +1,8 @@
 package openapi.client.sdk;
 
+import cn.hutool.core.util.StrUtil;
 import openapi.client.sdk.constant.ClientConstant;
+import openapi.sdk.common.exception.OpenApiClientException;
 import openapi.sdk.common.enums.AsymmetricCryAlgo;
 import openapi.sdk.common.enums.CryModeEnum;
 import openapi.sdk.common.enums.SymmetricCryAlgo;
@@ -257,10 +259,45 @@ public class OpenApiClientBuilder {
      * @return OpenClientApi对象
      */
     public OpenApiClient build() {
+        validate();
         OpenApiClient client = new OpenApiClient(
                 baseUrl, selfPrivateKey, remotePublicKey, asymmetricCryAlgo,
                 retDecrypt, cryModeEnum, symmetricCryAlgo, callerId, api,
                 httpConnectionTimeout, httpReadTimeout, httpProxyHost, httpProxyPort, enableCompress);
         return client;
+    }
+
+    private void validate() {
+        if (StrUtil.isBlank(baseUrl)) {
+            throw new OpenApiClientException("openapi基础路径不能为空");
+        }
+        if (StrUtil.isBlank(selfPrivateKey)) {
+            throw new OpenApiClientException("本系统私钥不能为空");
+        }
+        if (StrUtil.isBlank(remotePublicKey)) {
+            throw new OpenApiClientException("远程系统公钥不能为空");
+        }
+        if (StrUtil.isBlank(callerId)) {
+            throw new OpenApiClientException("调用者ID不能为空");
+        }
+        if (cryModeEnum == null || cryModeEnum == CryModeEnum.UNKNOWN) {
+            throw new OpenApiClientException("加密模式不能为空或UNKNOWN");
+        }
+        if (httpConnectionTimeout <= 0 || httpReadTimeout <= 0) {
+            throw new OpenApiClientException("HTTP超时时间必须大于0秒");
+        }
+        if (CryHandlerMap.getAsymmetricCryHandler(asymmetricCryAlgo) == null) {
+            throw new OpenApiClientException("找不到非对称加密处理器：" + asymmetricCryAlgo);
+        }
+        if (cryModeEnum == CryModeEnum.SYMMETRIC_CRY
+                && CryHandlerMap.getSymmetricCryHandler(symmetricCryAlgo) == null) {
+            throw new OpenApiClientException("找不到对称加密处理器：" + symmetricCryAlgo);
+        }
+        if (StrUtil.isBlank(httpProxyHost) != (httpProxyPort == null)) {
+            throw new OpenApiClientException("HTTP代理地址和端口必须同时配置");
+        }
+        if (httpProxyPort != null && (httpProxyPort <= 0 || httpProxyPort > 65535)) {
+            throw new OpenApiClientException("HTTP代理端口必须在1到65535之间");
+        }
     }
 }

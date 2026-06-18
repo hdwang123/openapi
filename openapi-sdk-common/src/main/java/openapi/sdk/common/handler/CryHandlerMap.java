@@ -7,29 +7,33 @@ import openapi.sdk.common.handler.asymmetric.SM2AsymmetricCryHandler;
 import openapi.sdk.common.handler.symmetric.AESSymmetricCryHandler;
 import openapi.sdk.common.handler.symmetric.SM4SymmetricCryHandler;
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * 加密处理器集合
  */
-public class CryHandlerMap {
+public final class CryHandlerMap {
 
     /**
      * 定义所有的非对称加密处理器
      */
-    private static Map<String, AsymmetricCryHandler> asymmetricMap = new HashMap<String, AsymmetricCryHandler>() {{
-        put(AsymmetricCryAlgo.RSA, new RSAAsymmetricCryHandler());
-        put(AsymmetricCryAlgo.SM2, new SM2AsymmetricCryHandler());
-    }};
+    private static final Map<String, AsymmetricCryHandler> ASYMMETRIC_HANDLERS = new ConcurrentHashMap<>();
 
     /**
      * 定义所有的对称加密处理器
      */
-    private static Map<String, SymmetricCryHandler> symmetricMap = new HashMap<String, SymmetricCryHandler>() {{
-        put(SymmetricCryAlgo.AES, new AESSymmetricCryHandler());
-        put(SymmetricCryAlgo.SM4, new SM4SymmetricCryHandler());
-    }};
+    private static final Map<String, SymmetricCryHandler> SYMMETRIC_HANDLERS = new ConcurrentHashMap<>();
+
+    static {
+        ASYMMETRIC_HANDLERS.put(AsymmetricCryAlgo.RSA, new RSAAsymmetricCryHandler());
+        ASYMMETRIC_HANDLERS.put(AsymmetricCryAlgo.SM2, new SM2AsymmetricCryHandler());
+        SYMMETRIC_HANDLERS.put(SymmetricCryAlgo.AES, new AESSymmetricCryHandler());
+        SYMMETRIC_HANDLERS.put(SymmetricCryAlgo.SM4, new SM4SymmetricCryHandler());
+    }
+
+    private CryHandlerMap() {
+    }
 
     /**
      * 增加非对称加密处理器
@@ -38,7 +42,9 @@ public class CryHandlerMap {
      * @param handler  加密处理器
      */
     public static void addAsymmetricCryHandler(String algoName, AsymmetricCryHandler handler) {
-        asymmetricMap.put(algoName, handler);
+        if (algoName != null && handler != null) {
+            ASYMMETRIC_HANDLERS.put(algoName, handler);
+        }
     }
 
     /**
@@ -48,7 +54,7 @@ public class CryHandlerMap {
      * @return 加密处理器
      */
     public static AsymmetricCryHandler getAsymmetricCryHandler(String algoName) {
-        return asymmetricMap.get(algoName);
+        return ASYMMETRIC_HANDLERS.get(algoName);
     }
 
     /**
@@ -58,7 +64,9 @@ public class CryHandlerMap {
      * @param handler  加密处理器
      */
     public static void addSymmetricCryHandler(String algoName, SymmetricCryHandler handler) {
-        symmetricMap.put(algoName, handler);
+        if (algoName != null && handler != null) {
+            SYMMETRIC_HANDLERS.put(algoName, handler);
+        }
     }
 
     /**
@@ -68,7 +76,7 @@ public class CryHandlerMap {
      * @return 加密处理器
      */
     public static SymmetricCryHandler getSymmetricCryHandler(String algoName) {
-        return symmetricMap.get(algoName);
+        return SYMMETRIC_HANDLERS.get(algoName);
     }
 
 

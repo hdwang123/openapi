@@ -27,6 +27,7 @@ import openapi.server.sdk.model.ApiHandler;
 import openapi.server.sdk.model.Context;
 import openapi.server.sdk.model.OpenApiRequest;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.aop.support.AopUtils;
 import org.springframework.context.ApplicationContext;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -39,6 +40,7 @@ import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.lang.reflect.Type;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
@@ -111,8 +113,8 @@ public class OpenApiGateway {
         //打印基本信息
         if (log.isDebugEnabled()) {
             String handlersStr = getHandlersStr();
-            log.debug("OpenApiGateway Init: \nSelfPrivateKey:{},\nAsymmetricCry:{},\nretEncrypt:{},\ncryModeEnum:{},\nSymmetricCry:{},\nenableCompress:{},\nApiHandlers:\n{}",
-                    selfPrivateKey, asymmetricCryAlgo, retEncrypt, cryModeEnum, symmetricCryAlgo, enableCompress, handlersStr);
+            log.debug("OpenApiGateway Init: \nAsymmetricCry:{},\nretEncrypt:{},\ncryModeEnum:{},\nSymmetricCry:{},\nenableCompress:{},\nApiHandlers:\n{}",
+                    asymmetricCryAlgo, retEncrypt, cryModeEnum, symmetricCryAlgo, enableCompress, handlersStr);
             this.logCryMode(this.cryModeEnum, null);
             this.logEnableCompress(enableCompress, null);
         }
@@ -148,6 +150,15 @@ public class OpenApiGateway {
         this.cryModeEnum = config.getCryMode();
         this.symmetricCryAlgo = config.getSymmetricCry();
         this.enableCompress = config.enableCompress();
+        if (StrUtil.isBlank(this.selfPrivateKey)) {
+            throw new IllegalStateException("OpenApiGateway init failed: selfPrivateKey is blank");
+        }
+        if (StrUtil.isBlank(this.asymmetricCryAlgo)) {
+            throw new IllegalStateException("OpenApiGateway init failed: asymmetricCry is blank");
+        }
+        if (this.cryModeEnum == null || this.cryModeEnum == CryModeEnum.UNKNOWN) {
+            throw new IllegalStateException("OpenApiGateway init failed: cryMode is null or UNKNOWN");
+        }
         CryHandlerMap.addAsymmetricCryHandler(AsymmetricCryAlgo.CUSTOM, config.customAsymmetricCryHandler());
         CryHandlerMap.addSymmetricCryHandler(SymmetricCryAlgo.CUSTOM, config.customSymmetricCryHandler());
         this.asymmetricCryHandler = CryHandlerMap.getAsymmetricCryHandler(this.asymmetricCryAlgo);
@@ -172,10 +183,13 @@ public class OpenApiGateway {
         for (Map.Entry<String, Object> entry : beanMap.entrySet()) {
             String beanName = entry.getKey();
             Object bean = entry.getValue();
-            Class c = bean.getClass();
+            Class<?> c = AopUtils.getTargetClass(bean);
             //获取开放api名称
-            OpenApi openApi = (OpenApi) c.getAnnotation(OpenApi.class);
+            OpenApi openApi = c.getAnnotation(OpenApi.class);
             String openApiName = openApi.value();
+            if (StrUtil.isBlank(openApiName)) {
+                throw new IllegalStateException("@OpenApi名称不能为空：" + c.getName());
+            }
             //遍历方法
             Method[] methods = c.getDeclaredMethods();
             if (ArrayUtil.isNotEmpty(methods)) {
@@ -183,7 +197,7 @@ public class OpenApiGateway {
                     if (method.isAnnotationPresent(OpenApiMethod.class)) {
                         //获取开放api方法名称
                         OpenApiMethod openApiMethod = method.getAnnotation(OpenApiMethod.class);
-                        String openApiMethodName = openApiMethod.value();
+                        String openApiMethodName = StrUtil.blankToDefault(openApiMethod.value(), method.getName());
 
                         //获取方法参数类型
                         Type[] types = method.getGenericParameterTypes();
@@ -202,13 +216,17 @@ public class OpenApiGateway {
                         apiHandler.setParamTypes(types);
                         apiHandler.setParameters(parameters);
                         apiHandler.setOpenApiMethod(openApiMethod);
-                        apiHandlerMap.put(handlerKey, apiHandler);
+                        ApiHandler previous = apiHandlerMap.putIfAbsent(handlerKey, apiHandler);
+                        if (previous != null) {
+                            throw new IllegalStateException("OpenAPI路由重复：" + handlerKey
+                                    + "，已存在 " + previous + "，冲突 " + apiHandler);
+                        }
                     }
                 }
             }
         }
         //将openapi处理器保存到上下文对象中去
-        context.setApiHandlers(this.apiHandlerMap.values());
+        context.setApiHandlers(Collections.unmodifiableList(new ArrayList<>(this.apiHandlerMap.values())));
     }
 
 
@@ -259,6 +277,7 @@ public class OpenApiGateway {
             writeOutParams(response, outParams);
 
             log.debug("{}调用完毕：{}", logPrefix.get(), outParams);
+            logPrefix.remove();
         }
     }
 
@@ -289,11 +308,30 @@ public class OpenApiGateway {
             InputStream inputStream = request.getInputStream();
             byte[] inputBytes = IoUtil.readBytes(inputStream);
             inParams.setBodyBytes(inputBytes);
+            validateInParams(inParams);
         } catch (Exception ex) {
             log.error(logPrefix.get() + "从请求流读取数据异常", ex);
             throw new OpenApiServerException("从请求流读取数据异常:" + ex.getMessage());
         }
         return inParams;
+    }
+
+    private void validateInParams(InParams inParams) {
+        if (StrUtil.isBlank(inParams.getUuid())) {
+            throw new OpenApiServerException("请求流水号不能为空");
+        }
+        if (StrUtil.isBlank(inParams.getCallerId())) {
+            throw new OpenApiServerException("调用者ID不能为空");
+        }
+        if (StrUtil.isBlank(inParams.getApi())) {
+            throw new OpenApiServerException("API接口名不能为空");
+        }
+        if (StrUtil.isBlank(inParams.getMethod())) {
+            throw new OpenApiServerException("API方法名不能为空");
+        }
+        if (StrUtil.isBlank(inParams.getSign())) {
+            throw new OpenApiServerException("请求签名不能为空");
+        }
     }
 
     /**
@@ -305,10 +343,16 @@ public class OpenApiGateway {
     private void writeOutParams(HttpServletResponse response, OutParams outParams) {
         try {
             response.setContentType(MediaType.APPLICATION_OCTET_STREAM_VALUE);
-            response.addHeader(Header.Response.UUID, outParams.getUuid());
+            if (outParams.getUuid() != null) {
+                response.addHeader(Header.Response.UUID, outParams.getUuid());
+            }
             response.addHeader(Header.Response.CODE, String.valueOf(outParams.getCode()));
-            response.addHeader(Header.Response.MESSAGE, Base64Util.strToBase64(outParams.getMessage()));
-            response.addHeader(Header.Response.SYMMETRIC_CRY_KEY, outParams.getSymmetricCryKey());
+            if (outParams.getMessage() != null) {
+                response.addHeader(Header.Response.MESSAGE, Base64Util.strToBase64(outParams.getMessage()));
+            }
+            if (outParams.getSymmetricCryKey() != null) {
+                response.addHeader(Header.Response.SYMMETRIC_CRY_KEY, outParams.getSymmetricCryKey());
+            }
             response.addHeader(Header.Response.DATA_TYPE, outParams.getDataType().name());
             if (ArrayUtil.isEmpty(outParams.getDataBytes())) {
                 return;
@@ -348,7 +392,7 @@ public class OpenApiGateway {
 
         //请求体为空，即参数为空
         if (ArrayUtil.isEmpty(inParams.getBodyBytes())) {
-            return Collections.EMPTY_LIST;
+            return Collections.emptyList();
         }
 
         //解密
@@ -506,7 +550,9 @@ public class OpenApiGateway {
     private void verifySign(InParams inParams) {
         long startTime = System.nanoTime();
         String callerPublicKey = config.getCallerPublicKey(inParams.getCallerId());
-        log.debug("{}caller({}) publicKey:{}", logPrefix.get(), inParams.getCallerId(), callerPublicKey);
+        if (StrUtil.isBlank(callerPublicKey)) {
+            throw new OpenApiServerException("找不到调用者公钥");
+        }
         byte[] signContent = CommonUtil.getSignContent(inParams);
         boolean verify = this.asymmetricCryHandler.verifySign(callerPublicKey, signContent, inParams.getSign());
         this.logCostTime("验签", startTime);
@@ -562,7 +608,16 @@ public class OpenApiGateway {
             Object[] params = paramList.toArray();
 
             log.debug("{}调用API:{},入参：{}", logPrefix.get(), apiHandler, TruncateUtil.truncate(paramList));
-            Object ret = apiHandler.getMethod().invoke(apiHandler.getBean(), params);
+            Object ret;
+            try {
+                ret = apiHandler.getMethod().invoke(apiHandler.getBean(), params);
+            } catch (InvocationTargetException ex) {
+                Throwable target = ex.getTargetException();
+                if (target instanceof OpenApiServerException) {
+                    throw (OpenApiServerException) target;
+                }
+                throw ex;
+            }
             log.debug("{}调用API:{},出参：{}", logPrefix.get(), apiHandler, TruncateUtil.truncate(ret));
             this.logCostTime("调用API", startTime);
 
@@ -620,7 +675,9 @@ public class OpenApiGateway {
             long startTime = System.nanoTime();
             //获取调用者公钥
             String callerPublicKey = config.getCallerPublicKey(inParams.getCallerId());
-            log.debug("{}caller({}) publicKey:{}", logPrefix.get(), inParams.getCallerId(), callerPublicKey);
+            if (StrUtil.isBlank(callerPublicKey)) {
+                throw new OpenApiServerException("找不到调用者公钥");
+            }
 
             //加密返回值
             CryModeEnum cryModeEnum = this.getCryModeEnum(apiHandler);
@@ -671,7 +728,7 @@ public class OpenApiGateway {
     private boolean isRetEncrypt(ApiHandler apiHandler) {
         boolean retEncrypt = this.retEncrypt;
         if (StrUtil.isNotBlank(apiHandler.getOpenApiMethod().retEncrypt())) {
-            retEncrypt = Boolean.parseBoolean(apiHandler.getOpenApiMethod().retEncrypt());
+            retEncrypt = parseBoolean(apiHandler.getOpenApiMethod().retEncrypt(), "retEncrypt");
         }
         log.debug("{}返回值是否需要加密：{}", logPrefix.get(), retEncrypt);
         return retEncrypt;
@@ -687,10 +744,17 @@ public class OpenApiGateway {
         boolean enableCompress = this.enableCompress;
         OpenApiMethod apiMethod = apiHandler.getOpenApiMethod();
         if (StrUtil.isNotBlank(apiMethod.enableCompress())) {
-            enableCompress = Boolean.parseBoolean(apiMethod.enableCompress());
+            enableCompress = parseBoolean(apiMethod.enableCompress(), "enableCompress");
             this.logEnableCompress(enableCompress, apiMethod);
         }
         return enableCompress;
+    }
+
+    private boolean parseBoolean(String value, String propertyName) {
+        if (!"true".equalsIgnoreCase(value) && !"false".equalsIgnoreCase(value)) {
+            throw new OpenApiServerException(propertyName + "只允许配置true或false");
+        }
+        return Boolean.parseBoolean(value);
     }
 
     /**

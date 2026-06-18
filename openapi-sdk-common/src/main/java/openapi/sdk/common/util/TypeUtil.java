@@ -76,10 +76,16 @@ public class TypeUtil extends cn.hutool.core.util.TypeUtil {
      * @return 是否是Binary及其子类的集合类型
      */
     public static boolean isBinaryCollection(Object obj) {
+        if (obj == null) {
+            return false;
+        }
         Class clazz = obj.getClass();
         //由于获取不到泛型信息，故改用直接获取元素来判断(假定集合内都是存储Binary或其子类的)
         if (Collection.class.isAssignableFrom(clazz)) {
             Collection coll = (Collection) obj;
+            if (coll.isEmpty()) {
+                return false;
+            }
             Object element = coll.iterator().next();
             if (element != null && Binary.class.isAssignableFrom(element.getClass())) {
                 return true;

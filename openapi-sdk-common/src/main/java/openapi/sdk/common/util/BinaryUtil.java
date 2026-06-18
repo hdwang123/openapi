@@ -3,6 +3,7 @@ package openapi.sdk.common.util;
 import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.ByteUtil;
 import openapi.sdk.common.model.Binary;
+import openapi.sdk.common.exception.OpenApiException;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -23,7 +24,7 @@ public class BinaryUtil {
      * @return 是否是二进制类型对象
      */
     public static boolean isBinaryParam(Object obj) {
-        return obj instanceof Binary || TypeUtil.isBinaryArray(obj.getClass()) || TypeUtil.isBinaryCollection(obj);
+        return obj instanceof Binary || (obj != null && TypeUtil.isBinaryArray(obj.getClass())) || TypeUtil.isBinaryCollection(obj);
     }
 
     /**
@@ -109,7 +110,13 @@ public class BinaryUtil {
      * @return 参数长度
      */
     public static int getParamLength(byte[] bodyBytes) {
+        if (bodyBytes == null || bodyBytes.length < 5) {
+            throw new OpenApiException("二进制数据格式错误：缺少参数长度或文件数量");
+        }
         int paramLength = ByteUtil.bytesToInt(ArrayUtil.sub(bodyBytes, 0, 4));
+        if (paramLength < 0 || paramLength > bodyBytes.length - 5) {
+            throw new OpenApiException("二进制数据格式错误：参数长度越界");
+        }
         return paramLength;
     }
 
@@ -144,11 +151,17 @@ public class BinaryUtil {
      * @return 文件数据
      */
     public static byte[] getBinaryDataBytes(byte[] bodyBytes, long binaryLengthStartIndex) {
+        if (bodyBytes == null || binaryLengthStartIndex < 0 || binaryLengthStartIndex > bodyBytes.length - 8L) {
+            throw new OpenApiException("二进制数据格式错误：文件长度位置越界");
+        }
         //受限于hutool和底层数组拷贝工具类的位置索引为int类型，文件传输不能大于2,147,483,648字节（约2GB）
         long binaryLength = ByteUtil.bytesToLong(ArrayUtil.sub(bodyBytes, (int) binaryLengthStartIndex, (int) (binaryLengthStartIndex + 8)));
         long binaryDataStartIndex = binaryLengthStartIndex + 8;
-        byte[] binaryDataBytes = ArrayUtil.sub(bodyBytes, (int) binaryDataStartIndex, (int) (binaryDataStartIndex + binaryLength));
-        return binaryDataBytes;
+        long binaryDataEndIndex = binaryDataStartIndex + binaryLength;
+        if (binaryLength < 0 || binaryDataEndIndex < binaryDataStartIndex || binaryDataEndIndex > bodyBytes.length) {
+            throw new OpenApiException("二进制数据格式错误：文件长度越界");
+        }
+        return ArrayUtil.sub(bodyBytes, (int) binaryDataStartIndex, (int) binaryDataEndIndex);
     }
 
     /**

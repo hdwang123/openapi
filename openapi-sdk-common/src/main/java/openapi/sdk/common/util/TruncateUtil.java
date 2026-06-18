@@ -6,9 +6,9 @@ import cn.hutool.core.util.ArrayUtil;
 import openapi.sdk.common.constant.Constant;
 
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Arrays;
 
 /**
  * 截短工具类，针对大对象日志打印前提供截短功能
@@ -21,7 +21,7 @@ public class TruncateUtil {
     /**
      * 空数组
      */
-    private static final String emptyArray = "[]";
+    private static final String EMPTY_ARRAY = "[]";
 
     /**
      * 截短字符串
@@ -79,16 +79,16 @@ public class TruncateUtil {
             String[] strArray = new String[array.length];
             for (int i = 0; i < array.length; i++) {
                 Object obj = array[i];
-                if (TypeUtil.isPrimitiveByteArray(obj.getClass())) {
+                if (obj != null && TypeUtil.isPrimitiveByteArray(obj.getClass())) {
                     byte[] bytes = (byte[]) obj;
                     strArray[i] = truncate(bytes);
                 } else {
                     strArray[i] = truncate(obj);
                 }
             }
-            return strArray.toString();
+            return Arrays.toString(strArray);
         }
-        return emptyArray;
+        return EMPTY_ARRAY;
     }
 
     /**
@@ -97,13 +97,11 @@ public class TruncateUtil {
      * @param coll 集合
      * @return 截短后的集合字符串
      */
-    public static String truncate(Collection coll) {
+    public static String truncate(Collection<?> coll) {
         if (CollUtil.isNotEmpty(coll)) {
-            List list = new LinkedList();
-            Iterator iterator = coll.iterator();
-            while (iterator.hasNext()) {
-                Object obj = iterator.next();
-                if (TypeUtil.isPrimitiveByteArray(obj.getClass())) {
+            List<String> list = new LinkedList<>();
+            for (Object obj : coll) {
+                if (obj != null && TypeUtil.isPrimitiveByteArray(obj.getClass())) {
                     byte[] bytes = (byte[]) obj;
                     list.add(truncate(bytes));
                 } else {
@@ -112,7 +110,7 @@ public class TruncateUtil {
             }
             return list.toString();
         }
-        return emptyArray;
+        return EMPTY_ARRAY;
     }
 
 

@@ -177,25 +177,26 @@ public class OpenApiClient {
      * @return 返回值
      */
     public OutParams callOpenApi(InParams inParams) {
+        if (inParams == null) {
+            throw new OpenApiClientException("入参不能为空");
+        }
         //再次检查入参，可能有直接调用此函数的
         checkInParams(inParams.getCallerId(), inParams.getApi(), inParams.getMethod());
 
         //没有设置uuid则给设置一个
         if (StrUtil.isBlank(inParams.getUuid())) {
             inParams.setUuid(IdUtil.simpleUUID());
-            //设置日志前缀
-            logPrefix.set(String.format("uuid=%s:", inParams.getUuid()));
         }
-        log.debug("{}入参：{}", logPrefix.get(), inParams);
-
-
-        //加密&加签
-        encryptAndSign(inParams);
-
-        //调用openapi 并 处理返回值
-        OutParams outParams = doCall(inParams);
-        log.debug("{}出参：{}", logPrefix.get(), outParams);
-        return outParams;
+        logPrefix.set(String.format("uuid=%s:", inParams.getUuid()));
+        try {
+            log.debug("{}入参：{}", logPrefix.get(), inParams);
+            encryptAndSign(inParams);
+            OutParams outParams = doCall(inParams);
+            log.debug("{}出参：{}", logPrefix.get(), outParams);
+            return outParams;
+        } finally {
+            logPrefix.remove();
+        }
     }
 
     /**
@@ -216,9 +217,6 @@ public class OpenApiClient {
         inParams.setCallerId(callerId);
         inParams.setApi(api);
         inParams.setMethod(method);
-
-        //设置日志前缀
-        logPrefix.set(String.format("uuid=%s:", inParams.getUuid()));
 
         //设置入参的body
         setInParamsBody(inParams, params);
@@ -247,9 +245,6 @@ public class OpenApiClient {
         inParams.setApi(api);
         inParams.setMethod(method);
 
-        //设置日志前缀
-        logPrefix.set(String.format("uuid=%s:", inParams.getUuid()));
-
         //设置入参的body
         setInParamsBody(inParams, params);
 
@@ -277,9 +272,6 @@ public class OpenApiClient {
         inParams.setApi(api);
         inParams.setMethod(method);
 
-        //设置日志前缀
-        logPrefix.set(String.format("uuid=%s:", inParams.getUuid()));
-
         //设置入参的body
         setInParamsBody(inParams, params);
 
@@ -304,6 +296,9 @@ public class OpenApiClient {
         } else if (params.length == 1) {
             //单参函数
             Object param = params[0];
+            if (param == null) {
+                throw new OpenApiClientException("单个方法参数不能为null");
+            }
             Class paramClass = param.getClass();
             if (BinaryUtil.isBinaryParam(param)) {
                 BinaryParam binaryParam = this.getBinaryParam(param);
@@ -318,6 +313,9 @@ public class OpenApiClient {
             List<String> paramStrList = new ArrayList<>();
             List<Binary> binaryList = new ArrayList<>();
             for (Object param : params) {
+                if (param == null) {
+                    throw new OpenApiClientException("方法参数不能为null");
+                }
                 //按照参数的顺序，依次转换成字符串或二进制数据类型
                 if (BinaryUtil.isBinaryParam(param)) {
                     BinaryParam binaryParam = this.getBinaryParam(param);
@@ -446,11 +444,19 @@ public class OpenApiClient {
             request.setHttpProxy(httpProxyHost, httpProxyPort);
         }
         //执行http请求
-        HttpResponse response = request.execute();
-        OutParams outParams = getOutParams(response);
-        log.debug("{}调用openapi出参：{}", logPrefix.get(), outParams);
-        log.debug("{}响应体的数据类型为：{}", logPrefix.get(), outParams.getDataType());
-        this.logCostTime("调用openapi", startTime);
+        HttpResponse response = null;
+        OutParams outParams;
+        try {
+            response = request.execute();
+            outParams = getOutParams(response);
+            log.debug("{}调用openapi出参：{}", logPrefix.get(), outParams);
+            log.debug("{}响应体的数据类型为：{}", logPrefix.get(), outParams.getDataType());
+            this.logCostTime("调用openapi", startTime);
+        } finally {
+            if (response != null) {
+                response.close();
+            }
+        }
 
         if (OutParams.isSuccess(outParams)) {
             //判断是否需要解密数据
@@ -501,11 +507,25 @@ public class OpenApiClient {
         String resCode = response.header(Header.Response.CODE);
         if (StrUtil.isBlank(resCode)) {
             outParams.setCode(ErrorCode.NOT_FOUND);
+            outParams.setMessage("服务端未返回OpenAPI响应头，HTTP状态码：" + response.getStatus());
         } else {
-            outParams.setCode(Integer.valueOf(resCode));
-            outParams.setMessage(Base64Util.base64ToStr(response.header(Header.Response.MESSAGE)));
+            try {
+                outParams.setCode(Integer.valueOf(resCode));
+            } catch (NumberFormatException ex) {
+                throw new OpenApiClientException("服务端返回了非法响应码：" + resCode, ex);
+            }
+            String message = response.header(Header.Response.MESSAGE);
+            outParams.setMessage(StrUtil.isBlank(message) ? null : Base64Util.base64ToStr(message));
             outParams.setSymmetricCryKey(response.header(Header.Response.SYMMETRIC_CRY_KEY));
-            outParams.setDataType(Enum.valueOf(DataType.class, response.header(Header.Response.DATA_TYPE)));
+            String dataType = response.header(Header.Response.DATA_TYPE);
+            if (StrUtil.isBlank(dataType)) {
+                throw new OpenApiClientException("服务端未返回数据类型");
+            }
+            try {
+                outParams.setDataType(Enum.valueOf(DataType.class, dataType));
+            } catch (IllegalArgumentException ex) {
+                throw new OpenApiClientException("服务端返回了非法数据类型：" + dataType, ex);
+            }
             outParams.setDataBytes(response.bodyBytes());
         }
         return outParams;
@@ -611,9 +631,16 @@ public class OpenApiClient {
         return String.format("\nopenApiClient hashCode:%x,\nbaseUrl:%s,\nselfPrivateKey:%s,\nremotePublicKey:%s," +
                         "\nasymmetricCryAlgo:%s,\nretDecrypt:%s;\ncryModeEnum:%s,\nsymmetricCryAlgo:%s," +
                         "\ncallerId:%s,\napi:%s,\nhttpConnectionTimeout:%s,\nhttpReadTimeout:%s,\nenableCompress:%s",
-                this.hashCode(), baseUrl, selfPrivateKey, remotePublicKey,
+                this.hashCode(), baseUrl, maskKey(selfPrivateKey), maskKey(remotePublicKey),
                 asymmetricCryAlgo, retDecrypt, cryModeEnum, symmetricCryAlgo,
                 callerId, api, httpConnectionTimeout, httpReadTimeout, enableCompress);
+    }
+
+    private String maskKey(String key) {
+        if (StrUtil.isBlank(key)) {
+            return null;
+        }
+        return "******(" + key.length() + " chars)";
     }
 
 
