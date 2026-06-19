@@ -192,6 +192,11 @@
                             <publishingServerId>ossrh</publishingServerId>
                             <autoPublish>true</autoPublish>
                             <waitUntil>published</waitUntil>
+                            <excludeArtifacts>
+                                <excludeArtifact>openapi-example</excludeArtifact>
+                                <excludeArtifact>openapi-client</excludeArtifact>
+                                <excludeArtifact>openapi-server</excludeArtifact>
+                            </excludeArtifacts>
                         </configuration>
                     </plugin>
                 </plugins>
