@@ -10,6 +10,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>openapi-sdk-common</artifactId>
+    <name>OpenAPI SDK Common</name>
     <description>openapi基础sdk</description>
     <url>https://github.com/hdwang123/openapi</url>
     <!-- 许可证信息 -->

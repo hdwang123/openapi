@@ -6,6 +6,7 @@
 
     <groupId>io.github.hdwang123</groupId>
     <artifactId>openapi</artifactId>
+    <name>OpenAPI SDK</name>
     <packaging>pom</packaging>
     <version>2.0.1</version>
     <description>一个能够让您快速搭建开放api的sdk,包括openapi-client-sdk/openapi-server-sdk</description>

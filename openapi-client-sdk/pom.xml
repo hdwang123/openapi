@@ -10,6 +10,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>openapi-client-sdk</artifactId>
+    <name>OpenAPI Client SDK</name>
     <description>openapi客户端sdk</description>
     <url>https://github.com/hdwang123/openapi</url>
     <!-- 许可证信息 -->

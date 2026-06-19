@@ -10,6 +10,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>openapi-example</artifactId>
+    <name>OpenAPI Examples</name>
     <packaging>pom</packaging>
     <modules>
         <module>openapi-client</module>
