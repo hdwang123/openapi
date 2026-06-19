@@ -55,7 +55,7 @@ public @interface OpenApiMethod {
      * <ul>
      *     <li>{@code "true"}：解密返回值</li>
      *     <li>{@code "false"}：不解密返回值</li>
-     *     <li>空字符串：继承 {@link OpenApiClientConfig#isRetDecrypt()} 的配置</li>
+     *     <li>空字符串：继承 {@link OpenApiClientConfig} 的配置</li>
      * </ul>
      *
      * @return 返回值是否需要解密
@@ -65,7 +65,7 @@ public @interface OpenApiMethod {
     /**
      * 请求和响应使用的加密模式。
      * {@link CryModeEnum#UNKNOWN} 表示继承
-     * {@link OpenApiClientConfig#getCryModeEnum()} 的配置。
+     * {@link OpenApiClientConfig} 的配置。
      *
      * @return 加密模式
      */
@@ -74,7 +74,7 @@ public @interface OpenApiMethod {
     /**
      * HTTP 建立连接超时时间，单位为秒。
      * {@link #INHERIT_TIMEOUT} 表示继承
-     * {@link OpenApiClientConfig#getHttpConnectionTimeout()} 的配置。
+     * {@link OpenApiClientConfig} 的配置。
      *
      * @return HTTP 建立连接超时时间
      */
@@ -83,7 +83,7 @@ public @interface OpenApiMethod {
     /**
      * HTTP 数据读取超时时间，单位为秒。
      * {@link #INHERIT_TIMEOUT} 表示继承
-     * {@link OpenApiClientConfig#getHttpReadTimeout()} 的配置。
+     * {@link OpenApiClientConfig} 的配置。
      *
      * @return HTTP 数据读取超时时间
      */
@@ -94,7 +94,7 @@ public @interface OpenApiMethod {
      * <ul>
      *     <li>{@code "true"}：启用压缩</li>
      *     <li>{@code "false"}：禁用压缩</li>
-     *     <li>空字符串：继承 {@link OpenApiClientConfig#isEnableCompress()} 的配置</li>
+     *     <li>空字符串：继承 {@link OpenApiClientConfig} 的配置</li>
      * </ul>
      *
      * @return 是否启用压缩
